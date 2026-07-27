@@ -1,0 +1,7 @@
+# Netlify: pretty URLs for the app's entry points.
+# Deploy this file (named exactly "_redirects", no extension)
+# in the same folder as index.html.
+
+/organize   /index.html?organize   200
+/organise   /index.html?organize   200
+/join/*     /index.html?s=:splat   200

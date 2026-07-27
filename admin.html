@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Sideout — Billing</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#071320; --card:#0E2033; --card-2:#132A42;
+  --edge:#1C3852; --edge-2:#27506F;
+  --ink:#E8F1F8; --ink-2:#B4C8D8; --ink-3:#7A93A8;
+  --court:#2C82C9; --grass:#1FA37F; --fault:#E5533D; --ball:#C3D92B;
+  --r:12px; --r-s:9px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5;
+  padding:calc(18px + env(safe-area-inset-top)) 14px 40px}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;margin:0 0 2px}
+.sub{color:var(--ink-3);font-size:13px;margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:var(--r);
+  padding:16px;margin-bottom:14px}
+label{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+input{width:100%;padding:11px 12px;border-radius:var(--r-s);border:1px solid var(--edge-2);
+  background:var(--card-2);color:var(--ink);font-family:inherit;font-size:16px;outline:none;margin-bottom:10px}
+input:focus{border-color:var(--court)}
+button{font-family:inherit;cursor:pointer}
+.btn{width:100%;padding:13px;border:0;border-radius:var(--r-s);background:var(--court);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;
+  letter-spacing:.14em;text-transform:uppercase}
+.btn.quiet{background:transparent;border:1px solid var(--edge-2);color:var(--ink-2)}
+.err{color:var(--fault);font-size:13px;margin:4px 0 0}
+.seg{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.seg button{padding:8px 14px;border-radius:99px;background:transparent;
+  border:1px solid var(--edge);color:var(--ink-3);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase}
+.seg button.on{background:var(--court);border-color:var(--court);color:#fff}
+
+.club{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+  margin:22px 0 8px;display:flex;align-items:center;gap:10px}
+.club::after{content:'';flex:1;height:1px;background:var(--edge)}
+.club b{color:var(--ball);font-size:12px}
+
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:var(--card);border:1px solid var(--edge);border-radius:var(--r-s);margin-bottom:7px}
+.row.done{border-color:var(--grass);background:#0E2A24}
+.row .n{flex:1;min-width:0}
+.row .n b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .n span{font-size:12px;color:var(--ink-3)}
+.amt{font-family:'Bebas Neue',sans-serif;font-size:23px;line-height:1;color:var(--ball);
+  text-align:right;flex:0 0 auto}
+.amt i{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:8.5px;letter-spacing:.12em;color:var(--ink-3)}
+.mark{flex:0 0 auto;padding:7px 12px;border-radius:99px;border:1.5px dashed var(--edge-2);
+  background:transparent;color:var(--ink-3);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9.5px;
+  letter-spacing:.12em;text-transform:uppercase}
+.mark.on{background:var(--grass);border-color:var(--grass);border-style:solid;color:#fff}
+
+.tot{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px}
+.tot div{flex:1;min-width:88px}
+.tot b{display:block;font-family:'Bebas Neue',sans-serif;font-size:27px;line-height:1;color:var(--ink)}
+.tot i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.tot .owed b{color:var(--fault)}
+.muted{color:var(--ink-3);font-size:13px;padding:14px 0}
+.ring{width:15px;height:15px;border-radius:50%;border:2px solid var(--edge-2);
+  border-top-color:var(--court);animation:sp .7s linear infinite;display:inline-block;
+  vertical-align:-3px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Billing</h1>
+  <p class="sub">Sessions run by every club, at 1 AED per player who finished.</p>
+
+  <div class="card" id="gate">
+    <label>Email</label>
+    <input type="email" id="em" autocomplete="email" placeholder="you@example.com">
+    <label>Password</label>
+    <input type="password" id="pw" autocomplete="current-password">
+    <button class="btn" id="go" onclick="signIn()">Sign in</button>
+    <p class="err" id="err" hidden></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="card">
+      <div class="tot" id="tot"></div>
+    </div>
+    <div class="seg">
+      <button id="f-all" class="on" onclick="setFilter('all')">Everything</button>
+      <button id="f-owed" onclick="setFilter('owed')">Not billed</button>
+      <button class="btn quiet" style="width:auto;padding:8px 14px" onclick="load()">Refresh</button>
+      <button class="btn quiet" style="width:auto;padding:8px 14px" onclick="signOut()">Sign out</button>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+/* Same Supabase project as the app — this reads the very same
+   results table. Nothing is duplicated; the invoice is derived from
+   the sessions that were already played. */
+const CONFIG = {
+  url: 'https://nldagoxaqslqojbtwmca.supabase.co',
+  key: 'sb_publishable_dxhSZl2dLHBm1heEhPoR0g_608h7dhq'
+};
+const RATE = 1;                    /* AED per player who finished */
+const KEY  = 'sideout_admin_session';
+
+let session = null, rows = [], filter = 'all';
+
+/* ── plumbing ───────────────────────────────────────── */
+async function call(path, opts){
+  const r = await fetch(CONFIG.url + path, Object.assign({
+    headers: Object.assign({
+      'apikey': CONFIG.key, 'Content-Type': 'application/json'
+    }, session ? { 'Authorization': 'Bearer ' + session.access_token } : {})
+  }, opts || {}));
+  const text = await r.text();
+  let data = null; try{ data = text ? JSON.parse(text) : null; }catch(e){}
+  if(!r.ok){
+    const e = new Error((data && (data.msg || data.message || data.error_description)) || ('HTTP ' + r.status));
+    e.status = r.status; throw e;
+  }
+  return data;
+}
+const rpc = (fn, body) => call('/rest/v1/rpc/' + fn, { method: 'POST', body: JSON.stringify(body || {}) });
+
+function saveSession(s){
+  session = s;
+  try{ s ? localStorage.setItem(KEY, JSON.stringify(s)) : localStorage.removeItem(KEY); }catch(e){}
+}
+
+/* ── signing in ─────────────────────────────────────── */
+async function signIn(){
+  const err = document.getElementById('err');
+  const btn = document.getElementById('go');
+  const email = document.getElementById('em').value.trim();
+  const pass  = document.getElementById('pw').value;
+  err.hidden = true;
+  if(!email || !pass){ err.textContent = 'Both, please.'; err.hidden = false; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try{
+    const s = await call('/auth/v1/token?grant_type=password',
+      { method: 'POST', body: JSON.stringify({ email, password: pass }) });
+    saveSession(s);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Sign in';
+    err.textContent = e.status === 400 ? 'That email and password do not match.' : (e.message || 'Could not sign in.');
+    err.hidden = false; return;
+  }
+  btn.disabled = false; btn.textContent = 'Sign in';
+  show();
+  load();
+}
+
+function signOut(){ saveSession(null); location.reload(); }
+
+function show(){
+  document.getElementById('gate').hidden = !!session;
+  document.getElementById('app').hidden  = !session;
+}
+
+/* ── the numbers ────────────────────────────────────── */
+async function load(){
+  const list = document.getElementById('list');
+  list.innerHTML = '<p class="muted"><span class="ring"></span>Reading the record…</p>';
+  try{
+    rows = await rpc('admin_sessions', { p_unpaid_only: false }) || [];
+  }catch(e){
+    /* An expired token and "not an admin" look the same from here,
+       so say both rather than guessing which. */
+    list.innerHTML = '<p class="muted">Could not read anything. Either this account is not a platform admin yet, or the sign-in has expired.</p>';
+    document.getElementById('tot').innerHTML = '';
+    return;
+  }
+  paint();
+}
+
+function paint(){
+  const shown = filter === 'owed' ? rows.filter(r => !r.paid) : rows;
+  const players = rows.reduce((n, r) => n + r.players, 0);
+  const owed    = rows.filter(r => !r.paid).reduce((n, r) => n + r.players, 0);
+
+  document.getElementById('tot').innerHTML =
+    `<div><b>${rows.length}</b><i>sessions</i></div>
+     <div><b>${players}</b><i>players billed</i></div>
+     <div><b>${players * RATE}</b><i>AED total</i></div>
+     <div class="owed"><b>${owed * RATE}</b><i>AED outstanding</i></div>`;
+
+  if(!shown.length){
+    document.getElementById('list').innerHTML =
+      `<p class="muted">${filter === 'owed' ? 'Everything is billed.' : 'No finished sessions yet.'}</p>`;
+    return;
+  }
+
+  /* Grouped by club, newest first, because you invoice a club and
+     not a night. */
+  const byClub = {};
+  shown.forEach(r =>{ (byClub[r.club] = byClub[r.club] || []).push(r); });
+
+  document.getElementById('list').innerHTML = Object.keys(byClub).map(club =>{
+    const list = byClub[club];
+    const due = list.filter(r => !r.paid).reduce((n, r) => n + r.players, 0);
+    return `<div class="club">${esc(club)}${due ? `<b>${due * RATE} AED due</b>` : ''}</div>` +
+      list.map(r => `
+        <div class="row${r.paid ? ' done' : ''}">
+          <span class="n"><b>${esc(r.title || 'Open play')}</b>
+            <span>${when(r.played_at)} · ${r.code}</span></span>
+          <span class="amt">${r.players * RATE}<i>AED · ${r.players} in</i></span>
+          <button class="mark${r.paid ? ' on' : ''}"
+            onclick="mark('${esc(r.club)}','${esc(r.code)}',${!r.paid})">
+            ${r.paid ? 'Billed' : 'Mark billed'}</button>
+        </div>`).join('');
+  }).join('');
+}
+
+async function mark(club, code, paid){
+  try{ await rpc('admin_set_billed', { p_club: club, p_code: code, p_paid: paid }); }
+  catch(e){ alert('Could not save that.'); return; }
+  const r = rows.find(x => x.club === club && x.code === code);
+  if(r) r.paid = paid;
+  paint();
+}
+
+function setFilter(f){
+  filter = f;
+  document.getElementById('f-all').classList.toggle('on', f === 'all');
+  document.getElementById('f-owed').classList.toggle('on', f === 'owed');
+  paint();
+}
+
+/* ── odds and ends ──────────────────────────────────── */
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function when(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
+}
+
+document.addEventListener('keydown', ev =>{
+  if(ev.key === 'Enter' && !session) signIn();
+});
+
+(function boot(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw) session = JSON.parse(raw);
+  }catch(e){}
+  show();
+  if(session) load();
+})();
+</script>
+</body>
+</html>

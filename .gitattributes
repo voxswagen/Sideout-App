@@ -1,0 +1,7 @@
+# The files here are all LF and get served straight to browsers, so keep them
+# LF everywhere. Without this, Windows' autocrlf would rewrite index.html on
+# checkout and the next diff would show all 12,500 lines as changed.
+
+* text=auto eol=lf
+
+*.png binary

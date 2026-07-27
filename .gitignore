@@ -1,0 +1,11 @@
+# No build step here — nothing in this folder is generated. The only things
+# worth ignoring are the files Windows and macOS scatter around on their own,
+# plus the Netlify CLI's local state if it ever gets used from this directory.
+
+Thumbs.db
+desktop.ini
+.DS_Store
+
+.netlify/
+.env
+.env.*
