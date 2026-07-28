@@ -12205,10 +12205,6 @@ const Recap = {
     x.fillText('WON  LOST', W - PAD - 42, y + 190);
     track(x, 0);
 
-    /* the winner's medal sits on the panel, after their name */
-    x.font = nameSize + 'px "Bebas Neue"';
-    drawMedal(x, PAD + 68 + x.measureText(cn).width, y + 118, 26, 1);
-
     y += cH + 22;
 
     /* Ten on the card, so the chasing pack is nine. The row height is worked
@@ -12231,22 +12227,19 @@ const Recap = {
 
       const place = i + 2;
       x.textAlign = 'left';
-      x.fillStyle = 'rgba(255,255,255,.42)'; x.font = Math.round(rH * .44) + 'px "Bebas Neue"';
+      /* silver and bronze on the numeral. The winner is already gold, on a
+         gold panel, above — repeating it here would be saying it twice. */
+      x.fillStyle = place <= 3 ? METAL[place - 1] : 'rgba(255,255,255,.42)';
+      x.font = Math.round(rH * (place <= 3 ? .5 : .44)) + 'px "Bebas Neue"';
       x.fillText(String(place), PAD + 34, mid);
 
       const n2 = String(p.name || '').toUpperCase();
-      const ns = fitFont(x, n2, '', 'Bebas Neue', Math.round(rH * .52), 430);
+      const ns = fitFont(x, n2, '', 'Bebas Neue', Math.round(rH * .52), 470);
       x.fillStyle = '#fff'; x.font = ns + 'px "Bebas Neue"';
       x.fillText(n2, PAD + 104, mid);
-      let after = PAD + 104 + x.measureText(n2).width;
+      const after = PAD + 104 + x.measureText(n2).width;
 
-      /* second and third get their medal here; first has one on the panel */
-      if(place <= 3){
-        const mr = Math.round(rH * .21);
-        drawMedal(x, after + mr + 12, mid - rH * .17, mr, place);
-        after += mr * 2 + 20;
-      }
-      if(p.crowns) drawCrowns(x, p.crowns, after + 4, mid - rH * .17, Math.round(rH * .10), GOLD);
+      if(p.crowns) drawCrowns(x, p.crowns, after + 8, mid - rH * .17, Math.round(rH * .10), GOLD);
 
       x.textAlign = 'right';
       x.fillStyle = BALL; x.font = Math.round(rH * .46) + 'px "Bebas Neue"';
@@ -12283,7 +12276,19 @@ const Recap = {
     });
 
     track(x, 8); x.fillStyle = 'rgba(255,255,255,.32)'; x.font = '800 24px "Barlow Condensed"';
-    x.fillText('SIDEOUT SOCIETY', W / 2, 1852);
+    x.fillText('SIDEOUT SOCIETY', W / 2, 1824);
+    track(x, 0);
+
+    /* Where to find the whole night. Nothing inside a picture can be tapped —
+       an image is an image on every platform there is — so this is printed to
+       be read and typed, and to give somebody something to lay Instagram's
+       own link sticker over. The short form, because a query string across
+       the foot of a story is unreadable and nobody would type it. */
+    const host = (location.origin && location.origin !== 'null')
+      ? location.host.replace(/^www\./, '') : '';
+    const link = host ? host + '/recap/' + (d.code || '') : 'CODE ' + (d.code || '');
+    track(x, 3); x.fillStyle = BALL; x.font = '800 25px "Barlow Condensed"';
+    x.fillText(link.toUpperCase(), W / 2, 1872);
     track(x, 0);
 
     try{
@@ -13902,28 +13907,13 @@ function drawCrown(x, cx, cy, s, color){
   x.fillRect(cx-s, cy+s*0.66, s*2, s*0.34);
   x.restore();
 }
-/* Gold, silver, bronze as small struck discs with the place on them. Drawn
-   rather than typed: a medal emoji is three different pictures on three
-   different phones, and at this size they turn to mush anyway. */
-const MEDALS = [
-  { face:'#E8B23C', edge:'#8A5F12', ink:'#40290A' },
-  { face:'#C7CDD4', edge:'#7C858E', ink:'#33383D' },
-  { face:'#C08552', edge:'#7A4E28', ink:'#3A2413' }
-];
-function drawMedal(x, cx, cy, r, place){
-  const m = MEDALS[place - 1];
-  if(!m) return;
-  x.save();
-  x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2);
-  x.fillStyle = m.face; x.fill();
-  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = m.edge; x.stroke();
-  x.fillStyle = m.ink;
-  x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.font = '800 ' + Math.round(r * 1.15) + 'px "Barlow Condensed"';
-  x.fillText(String(place), cx, cy + r * .06);
-  x.restore();
-  x.textBaseline = 'alphabetic';
-}
+/* Gold, silver and bronze — for the place number itself rather than a badge
+   beside it. A drawn medal at this size is a small muddy circle competing
+   with the name next to it; the numeral is already there, already the thing
+   the eye goes to, and colouring it says the same thing with nothing added.
+   (An emoji medal is worse again: three different pictures on three
+   different phones.) */
+const METAL = ['#E8B23C', '#C9D1D9', '#C08552'];
 function drawCrowns(x, n, startX, cy, s, color){
   const cap = Math.min(n, 5);
   for(let i=0;i<cap;i++) drawCrown(x, startX + s + i*s*2.5, cy, s, color);
