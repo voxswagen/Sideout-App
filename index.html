@@ -2161,7 +2161,7 @@ body.casting{overflow:hidden}
         </button>
         <button class="mode" id="mode-river" aria-pressed="false" onclick="setMode('river')">
           <span class="glyph" data-ic="swords"></span>
-          <span><b>Court Wars</b><span>Up and down the river. Every court is a rank and Court 1 is the top — win your way up, lose and you drop one. Works with any number of players.</span></span>
+          <span><b>Up &amp; Down the River</b><span>Every court is a rank and Court 1 is the top. The whole field is re-ranked at the end of every round, so a good round moves you up and a bad one moves you down. Works with any number of players.</span></span>
         </button>
         <button class="mode" id="mode-tour" aria-pressed="false" onclick="setMode('tour')">
           <span class="glyph" data-ic="trophy"></span>
@@ -2296,7 +2296,7 @@ body.casting{overflow:hidden}
       <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Mix</button>
       <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill</button>
       <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> Ladder</button>
-      <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Court Wars</button>
+      <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down</button>
       <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed</button>
       <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
     </div>
@@ -4401,12 +4401,18 @@ function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt
 function activeIds(){ return S.order.filter(id => P(id) && !P(id).out); }
 function onCourtIds(){ return S.courts.flatMap(c => c.teams.flat()).filter(Boolean); }
 function ordinal(i){ return 'Court ' + (i+1); }
+/* Plain words, no markup. This goes into the published snapshot as the
+   court's tag, and a watcher or the big screen renders it as text — so when
+   the crown here became an <svg> instead of an emoji, every one of them
+   printed the tag literally, angle brackets and all. The crown is drawn
+   beside the court number at the places that render HTML and know whether
+   this is the top court. */
 function courtTag(i, n, lv){
   if(S.mode === 'levels') return LEVELS[lv];
   if(S.mode === 'mix') return 'Mixed';
   if(S.mode === 'gauntlet') return i === 0 ? 'Top table' : 'Matched';
   if(S.mode === 'mixed') return 'Mixed';
-  return (i === 0 ? icon('crown') + ' ' : '') + tierName(i, n);
+  return tierName(i, n);
 }
 function tierName(i, n){
   if(i === 0) return "King's Court";
@@ -4471,7 +4477,7 @@ function toggleTheme(){
    date, the big screen, and the story card. */
 const MODE_NAME = { gauntlet:'Gauntlet', mix:'Social mix', levels:'Skill-based',
                     kotc:'King of the Court', mixed:'Mixed doubles', tour:'Tournament',
-                    river:'Court Wars' };
+                    river:'Up & Down the River' };
 const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river'];
 
 /* ══════════════════════════════════════════════════════
@@ -6090,7 +6096,7 @@ function courtCard(c, i, N, next){
 
   return `<article class="court${king?' king':''}${c.win!==null?' settled':''}">
     <div class="court-head">
-      <span class="no">${ordinal(i)}</span>
+      <span class="no">${king ? icon('crown') + ' ' : ''}${ordinal(i)}</span>
       <span class="tier">${courtTag(i,N,lv)}</span>
       <span class="spacer"></span>
       <button class="x" onclick="courtMenu(${i})" aria-label="Manage ${ordinal(i)}">⋯</button>
@@ -13738,6 +13744,14 @@ const Clock = {
   secs: 480, def: 480, running: false, t: null,
   setDefault(s){ this.def = s; this.secs = s; this.paint(); },
   toggle(){ if(!S.timed) return; this.running ? this.pause() : this.start(); },
+  /* The clock travels in the snapshot, so starting, pausing or resetting it
+     has to be published — without this the big screen and every watching
+     phone carried on from whatever reading an unrelated save happened to
+     include, which is why the timer looked frozen or wrong out there.
+     Only on the three transitions, never on the tick: a watcher runs the
+     seconds itself from the reading and the moment it was taken, so pushing
+     every second would be a write a second for nothing. */
+  push(){ try{ if(S.live) Live.beat(); }catch(e){} },
   start(){
     if(!S.timed) return;
     if(this.secs <= 0) this.secs = this.def;
@@ -13745,6 +13759,7 @@ const Clock = {
     document.getElementById('clock-toggle').textContent = '❚❚';
     this.run();
     this.paint();
+    this.push();
   },
   run(){
     clearInterval(this.t);
@@ -13761,12 +13776,14 @@ const Clock = {
     this.running = false; clearInterval(this.t);
     document.getElementById('clock-toggle').textContent = '▶';
     this.paint();
+    this.push();
   },
   reset(){
     S.roundStart = Date.now();
     if(S.timed){ this.pause(); this.secs = this.def || S.mins*60; }
     else { this.running = false; this.run(); }
     this.paint();
+    this.push();
   },
   elapsed(){ return S.roundStart ? Math.max(0, Math.floor((Date.now()-S.roundStart)/1000)) : 0; },
   text(){
