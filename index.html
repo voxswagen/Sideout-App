@@ -10022,6 +10022,10 @@ function navIcon(kind){
             + '<path d="m18.1 5.9-1.6 1.6M7.5 16.5l-1.6 1.6M18.1 18.1l-1.6-1.6M7.5 7.5 5.9 5.9"/>',
     bell:     '<path d="M18 9.4a6 6 0 1 0-12 0c0 5.2-2 6.6-2 6.6h16s-2-1.4-2-6.6z"/>'
             + '<path d="M13.7 19.6a2 2 0 0 1-3.4 0"/>',
+    /* the outline mark, not the gradient logo: it is a button in our own
+       stroke weight rather than somebody else's badge dropped in */
+    instagram:'<rect x="3.6" y="3.6" width="16.8" height="16.8" rx="5"/>'
+            + '<circle cx="12" cy="12" r="4.1"/><circle cx="16.9" cy="7.1" r=".9"/>',
     key:      '<circle cx="8.2" cy="13.8" r="3.6"/>'
             + '<path d="M11.2 11.4 19 3.6M16.2 6.4l2.2 2.2M14 8.6l2.2 2.2"/>',
     lock:     '<rect x="5" y="10.4" width="14" height="9.4" rx="1.6"/>'
@@ -12086,7 +12090,7 @@ const Recap = {
 
   footHTML(){
     return `<div class="rc-foot">
-      <button class="btn btn-go" onclick="Recap.card()">${navIcon('camera')}Story card for Instagram</button>
+      <button class="btn btn-go" onclick="Recap.card()">${navIcon('instagram')}Story card for Instagram</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="Recap.share()">${
         navIcon('share')}Share the link</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="leaveRecap()">Go to Sideout Society</button>
@@ -12201,48 +12205,80 @@ const Recap = {
     x.fillText('WON  LOST', W - PAD - 42, y + 190);
     track(x, 0);
 
-    y += cH + 24;
+    /* the winner's medal sits on the panel, after their name */
+    x.font = nameSize + 'px "Bebas Neue"';
+    drawMedal(x, PAD + 68 + x.measureText(cn).width, y + 118, 26, 1);
 
-    const rest = rows.slice(1, 8);
-    const rH = 100, gap = 11;
+    y += cH + 22;
+
+    /* Ten on the card, so the chasing pack is nine. The row height is worked
+       out from the space actually left rather than fixed: at a fixed 100 the
+       footer was pushed past 1870 and straight through the wordmark at 1852,
+       which is what was ruining the layout. Reserving the foot first and
+       dividing what remains cannot overlap however many rows there are. */
+    const FOOT = 1664;
+    const rest = rows.slice(1, 10);
+    const gap = 10;
+    const rH = rest.length
+      ? Math.max(58, Math.min(96, Math.floor((FOOT - 34 - y - (rest.length - 1) * gap) / rest.length)))
+      : 0;
+
     rest.forEach((p, i) =>{
       const top = y + i * (rH + gap);
+      const mid = top + rH * .66;
       x.fillStyle = 'rgba(255,255,255,.055)';
-      rrect(x, PAD, top, W - PAD * 2, rH, 18); x.fill();
+      rrect(x, PAD, top, W - PAD * 2, rH, Math.min(18, rH * .22)); x.fill();
 
+      const place = i + 2;
       x.textAlign = 'left';
-      x.fillStyle = 'rgba(255,255,255,.42)'; x.font = '44px "Bebas Neue"';
-      x.fillText(String(i + 2), PAD + 34, top + 66);
+      x.fillStyle = 'rgba(255,255,255,.42)'; x.font = Math.round(rH * .44) + 'px "Bebas Neue"';
+      x.fillText(String(place), PAD + 34, mid);
 
       const n2 = String(p.name || '').toUpperCase();
-      const ns = fitFont(x, n2, '', 'Bebas Neue', 52, 460);
+      const ns = fitFont(x, n2, '', 'Bebas Neue', Math.round(rH * .52), 430);
       x.fillStyle = '#fff'; x.font = ns + 'px "Bebas Neue"';
-      x.fillText(n2, PAD + 108, top + 66);
+      x.fillText(n2, PAD + 104, mid);
+      let after = PAD + 104 + x.measureText(n2).width;
 
-      if(p.crowns){
-        x.font = ns + 'px "Bebas Neue"';
-        drawCrowns(x, p.crowns, PAD + 120 + x.measureText(n2).width, top + 50, 9, GOLD);
+      /* second and third get their medal here; first has one on the panel */
+      if(place <= 3){
+        const mr = Math.round(rH * .21);
+        drawMedal(x, after + mr + 12, mid - rH * .17, mr, place);
+        after += mr * 2 + 20;
       }
+      if(p.crowns) drawCrowns(x, p.crowns, after + 4, mid - rH * .17, Math.round(rH * .10), GOLD);
+
       x.textAlign = 'right';
-      x.fillStyle = BALL; x.font = '46px "Bebas Neue"';
-      x.fillText((p.wins || 0) + '–' + (p.losses || 0), W - PAD - 34, top + 66);
+      x.fillStyle = BALL; x.font = Math.round(rH * .46) + 'px "Bebas Neue"';
+      x.fillText((p.wins || 0) + '–' + (p.losses || 0), W - PAD - 34, mid);
     });
 
-    y += rest.length * (rH + gap) + 36;
-
-    const fy = Math.max(y, 1620);
+    const fy = FOOT;
     x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 1;
     x.beginPath(); x.moveTo(PAD, fy); x.lineTo(W - PAD, fy); x.stroke();
-    const stats = [['PLAYERS', d.players || rows.length],
-                   ['GAMES', (d.games || []).length],
-                   ['ON THE BOARD', rows.length]];
+
+    /* Third figure is where the person sharing this actually finished, which
+       is the thing they want on their story — 3/45 says more about their
+       night than the size of the field does. Whoever is filtered on the page
+       if anybody is, otherwise the signed-in member, and only if they are
+       genuinely on the board. */
+    const field = d.players || rows.length;
+    const mine = this.who || (Auth.me ? (Auth.me.alias || Auth.me.name) : '');
+    const at = mine
+      ? rows.findIndex(r => String(r.name || '').toLowerCase() === String(mine).toLowerCase())
+      : -1;
+    const stats = [['PLAYERS', String(field)],
+                   ['GAMES', String((d.games || []).length)],
+                   at >= 0 ? ['STANDING', (at + 1) + '/' + field]
+                           : ['ON THE BOARD', String(rows.length)]];
     x.textAlign = 'center';
     stats.forEach((st, i) =>{
       const cx = PAD + (W - PAD * 2) * (i * 2 + 1) / 6;
-      x.fillStyle = '#fff'; x.font = '64px "Bebas Neue"';
-      x.fillText(String(st[1]), cx, fy + 88);
+      const big = fitFont(x, st[1], '', 'Bebas Neue', 64, (W - PAD * 2) / 3 - 24);
+      x.fillStyle = '#fff'; x.font = big + 'px "Bebas Neue"';
+      x.fillText(st[1], cx, fy + 86);
       track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 22px "Barlow Condensed"';
-      x.fillText(st[0], cx, fy + 124);
+      x.fillText(st[0], cx, fy + 122);
       track(x, 0);
     });
 
@@ -13865,6 +13901,28 @@ function drawCrown(x, cx, cy, s, color){
   x.closePath(); x.fill();
   x.fillRect(cx-s, cy+s*0.66, s*2, s*0.34);
   x.restore();
+}
+/* Gold, silver, bronze as small struck discs with the place on them. Drawn
+   rather than typed: a medal emoji is three different pictures on three
+   different phones, and at this size they turn to mush anyway. */
+const MEDALS = [
+  { face:'#E8B23C', edge:'#8A5F12', ink:'#40290A' },
+  { face:'#C7CDD4', edge:'#7C858E', ink:'#33383D' },
+  { face:'#C08552', edge:'#7A4E28', ink:'#3A2413' }
+];
+function drawMedal(x, cx, cy, r, place){
+  const m = MEDALS[place - 1];
+  if(!m) return;
+  x.save();
+  x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2);
+  x.fillStyle = m.face; x.fill();
+  x.lineWidth = Math.max(1.5, r * .16); x.strokeStyle = m.edge; x.stroke();
+  x.fillStyle = m.ink;
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = '800 ' + Math.round(r * 1.15) + 'px "Barlow Condensed"';
+  x.fillText(String(place), cx, cy + r * .06);
+  x.restore();
+  x.textBaseline = 'alphabetic';
 }
 function drawCrowns(x, n, startX, cy, s, color){
   const cap = Math.min(n, 5);

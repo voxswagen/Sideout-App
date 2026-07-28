@@ -10,7 +10,7 @@
    handler deletes any cache that is not the current name, so a new
    name is what actually forces phones onto the new build — without
    it, an installed app can serve last week's stylesheet indefinitely. */
-const CACHE = 'sideout-v30';
+const CACHE = 'sideout-v31';
 const SHELL = ['/', '/index.html', '/manifest.json',
                '/icon-192.png', '/icon-512.png', '/icon-maskable.png',
                '/apple-touch-icon.png'];
