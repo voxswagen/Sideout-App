@@ -374,6 +374,14 @@ button.pr{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
 button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 /* the trailing controls sit against the right edge, so the rows
    line up down the list instead of drifting with name length */
+/* Everything at the end of a player row travels as one block, pinned right.
+   Only .lvl used to carry margin-left:auto, so the rating and the paid pill
+   stayed pressed against the name while the level chip shot off to the far
+   side on its own — and on a narrow row, with the name's second line
+   underneath it, the pill read as sitting below the status rather than
+   beside it. */
+.pr-end{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.pr-end .lvl{margin-left:0}
 .pr .lvl{margin-left:auto}
 .pr .x{flex:0 0 auto;width:26px;height:26px;display:grid;place-items:center}
 .pr .nm em.pairtag{color:var(--court);font-weight:700;text-transform:none;letter-spacing:.02em}
@@ -1934,8 +1942,10 @@ body.casting{overflow:hidden}
   </div>
   <button class="live-pill" id="live-pill" onclick="liveSheet()" title="Show the join code" hidden><i></i>Live</button>
   <button class="icon-btn" id="tv-btn" onclick="TV.open()" title="Show on the big screen" hidden><span class="lic" data-ic="tv"></span></button>
-  <button class="icon-btn" id="open-btn" onclick="openResume()" aria-label="Open a session"
-    title="Open a session already running"><span class="lic" data-ic="folder"></span></button>
+  <!-- The folder is gone from this bar. Picking up a session from another
+       device is a once-in-a-while thing and it still lives in the menu under
+       "Open a session"; it does not need a permanent seat above the courts,
+       where the only things worth having are to do with the night in hand. -->
   <button class="icon-btn" onclick="toggleTheme()" title="Light or dark"><span class="lic" data-ic="moon"></span></button>
   <button class="acct-btn" id="acct-btn" onclick="accountMenu()" aria-label="Your account" hidden></button>
 </div></header>
@@ -3268,7 +3278,7 @@ function blank(){
     cancelled:false, cancelNote:'',
     /* Court Wars: the fixture list each pool drew, how far through it each
        court is, and whether it has been all the way through once */
-    warPlan:null, warAt:null, warDone:null,
+    warPlan:null, warAt:null, warDone:null, warAsked:false,
     log:[], snap:null
   };
 }
@@ -5052,9 +5062,7 @@ function rosterRows(){
       <span class="nm"><span class="nmn">${esc(p.name)}${staffTag(p.mid)}</span>${(() => { const b = partnerOf(id);
         return b ? `<em class="when pairtag">${icon('link')} with ${esc(nm(b))}</em>`
                  : (when ? `<em class="when">joined ${when}</em>` : ''); })()}</span>
-      ${duprBadge(p.dupr, true)}
-      ${tag}
-      ${paidPill(id, p.paid)}
+      <span class="pr-end">${duprBadge(p.dupr, true)}${tag}${paidPill(id, p.paid)}</span>
       <button class="x" onclick="askRemovePlayer('${id}')" aria-label="Take ${esc(p.name)} off">✕</button>
     </div>`;
   }).join('');
@@ -5073,9 +5081,8 @@ function playingRows(){
         if(b) return `<em class="pairtag">${icon('link')} with ${esc(nm(b))}${where ? '<span class="dot"> \u00b7 </span>' + where : ''}</em>`;
         return (where || when)
           ? `<em>${where}${where && when ? '<span class="dot"> \u00b7 </span>' : ''}${when ? `<span class="ago">${when}</span>` : ''}</em>` : ''; })()}</span>
-      ${duprBadge(p.dupr, true)}
-      ${paidPill(id, p.paid)}
-      <span class="lvl ${p.level}"><i class="lv-l">${LEVELS[p.level]}</i><i class="lv-s">${LEVEL_SHORT[p.level]}</i></span>
+      <span class="pr-end">${duprBadge(p.dupr, true)}${paidPill(id, p.paid)}<span
+        class="lvl ${p.level}"><i class="lv-l">${LEVELS[p.level]}</i><i class="lv-s">${LEVEL_SHORT[p.level]}</i></span></span>
       <span class="x">⋯</span>
     </button>`;
   }).join('');
@@ -7377,15 +7384,55 @@ function warsRound(){
   (S.warAt || []).forEach((_, i) =>{ S.warAt[i] = (S.warAt[i] || 0) + 1; });
   S.round++;
   S.roundStart = Date.now();
+
+  /* Worked out before the courts are refilled, because filling redraws a
+     finished court's list and resets the very numbers worth reporting. */
+  const finished = [], midway = [];
+  (S.warPlan || []).forEach((list, i) =>{
+    const of = (list || []).length;
+    if((S.warAt[i] || 0) >= of) finished.push({ i, of });
+    else midway.push({ i, at: (S.warAt[i] || 0), of });
+  });
+
   Wars.fill();
-  if(Wars.everyPoolDone()){
-    warsReorder(true);
-    return;
-  }
+  if(Wars.everyPoolDone()){ warsReorder(true); return; }
+
   Clock.reset(); syncRoundEndUI();
   renderAll(); TV.paint(); save();
   if(S.live) Live.beat();
+
+  /* Pools are rarely the same size, so they rarely finish together — a court
+     of eight plays fourteen games while a court of six plays seven. When one
+     runs out and the others have not, that is a decision rather than
+     something to do quietly: hold the reorder until everybody has had their
+     full list, or move now and accept that some played fewer. Asked once per
+     cycle, so it does not nag every round after. */
+  if(finished.length && midway.length && !S.warAsked){
+    S.warAsked = true; save();
+    warsPartlyDoneSheet(finished, midway);
+    return;
+  }
   toast('Round ' + S.round + ' — next on the list.');
+}
+
+function warsPartlyDoneSheet(finished, midway){
+  const who = finished.length === 1
+    ? ordinal(finished[0].i) + ' has played everyone'
+    : finished.length + ' courts have played everyone';
+  const done = finished.map(f => ordinal(f.i) + ' · ' + f.of + ' games').join(', ');
+  const rest = midway.map(m => ordinal(m.i) + ' on ' + m.at + ' of ' + m.of).join(', ');
+  openSheet(`<h3>${esc(who)}</h3>
+    <p class="sub">${esc(done)} — everyone there has partnered everyone else.
+      ${esc(rest)}. Pools of different sizes do not finish together.</p>
+    <div class="warn-box">
+      <b>Reordering now means uneven games.</b>
+      <span>Whoever has not finished their list will have played fewer than the courts that
+        have, and the standings decide who moves. Carrying on lets every court finish first —
+        the ones already done start a fresh list rather than standing about.</span>
+    </div>
+    <button class="btn btn-go" onclick="closeSheet()">Keep playing</button>
+    <button class="btn btn-quiet" style="margin-top:8px"
+      onclick="closeSheet();warsReorder(false)">Reorder the courts now</button>`);
 }
 
 function warsReorder(auto){
@@ -7572,6 +7619,9 @@ const Wars = {
     S.warPlan = tiers.map(pool => this.plan(pool));
     S.warAt = tiers.map(()=> 0);
     S.warDone = tiers.map(()=> false);
+    /* a new cycle, so the "one court has finished" question can be asked
+       again the next time the pools fall out of step */
+    S.warAsked = false;
     S.tierStats = {};
     return tiers;
   }
