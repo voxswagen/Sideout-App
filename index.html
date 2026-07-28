@@ -3740,6 +3740,15 @@ const Auth = {
       const raw = localStorage.getItem(this.KEY);
       this.session = raw ? JSON.parse(raw) : null;
     }catch(e){ this.session = null; }
+    /* Last known member record, so the shell can greet you by name on the
+       first paint rather than after a round trip. whoami() overwrites it a
+       moment later with the real thing. */
+    if(this.session && !this.me){
+      try{ this.me = JSON.parse(localStorage.getItem('sideout_whoami') || 'null'); }catch(e){}
+    }
+    if(!this.session){
+      try{ localStorage.removeItem('sideout_whoami'); }catch(e){}
+    }
     return this.session;
   },
   store(sess){
@@ -3907,6 +3916,10 @@ const Auth = {
     try{
       const rows = await Live.rpc('sideout_whoami', { p_club: CONFIG.club || 'sideout' });
       this.me = (Array.isArray(rows) ? rows[0] : rows) || null;
+      /* Kept so the next cold start knows who you are before the network
+         answers. Only the shell reads it — anything that matters is checked
+         on the server, so a stale copy costs a repaint and nothing else. */
+      try{ localStorage.setItem('sideout_whoami', JSON.stringify(this.me)); }catch(e){}
     }catch(e){ this.me = null; }
     try{ syncNav(currentScreen()); }catch(e){}
     return this.me;
@@ -7529,7 +7542,8 @@ async function paintMe(){
       </div>
     </div>
     <div class="panel">
-      ${Auth.isOrganizer() ? `<button class="btn btn-quiet" onclick="accessSheet()">Who can manage</button>` : ''}
+      ${Auth.isOrganizer() ? `<button class="btn btn-quiet" onclick="accessSheet()">${
+        icon('roles')}Role Management</button>` : ''}
       <button class="btn btn-quiet" style="margin-top:${Auth.isOrganizer() ? '8px' : '0'}"
         onclick="AuthUI.confirmOut()">Sign out</button>
     </div>`;
@@ -11486,6 +11500,31 @@ const Push = {
     return true;
   },
 
+  askedKey: 'sideout_push_asked',
+  asked(){ try{ return localStorage.getItem(this.askedKey) === '1'; }catch(e){ return false; } },
+  setAsked(){ try{ localStorage.setItem(this.askedKey, '1'); }catch(e){} },
+
+  /* Offered the moment it obviously earns its keep: you have just put your
+     name down, and what you want to know is whether the thing fills up or
+     falls through. It cannot be turned on for you — a browser will not grant
+     permission without a tap, and an iPhone will not grant it at all until
+     the app is on the Home Screen — so this asks once and never nags again,
+     whatever the answer. */
+  offer(){
+    if(this.asked() || this.on || !this.supported()) return;
+    if(Notification.permission !== 'default') return;   /* already decided */
+    this.setAsked();
+    /* after the "you are on the list" toast, not over the top of it */
+    setTimeout(()=>{
+      openSheet(`<h3>Want to know if it changes?</h3>
+        <p class="sub">Sideout can tell you when somebody else joins, when a place opens up, and if
+          the session is called off — on your lock screen, even with the app shut.</p>
+        <button class="btn btn-go" onclick="closeSheet();Push.enable()">${icon('bell')}Yes, tell me</button>
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not now</button>
+        <p class="hint tight" style="margin-top:8px">You can change this any time on your profile.</p>`);
+    }, 1100);
+  },
+
   async toggle(){
     if(this.on) await this.disable(); else await this.enable();
     const row = document.getElementById('push-row');
@@ -11689,7 +11728,17 @@ const Recap = {
   data: null,
   who: null,
 
-  url(code){ return location.origin + '/recap/' + encodeURIComponent(code); },
+  /* The pretty form needs the redirects file, which only exists once this is
+     served by Netlify. Opened straight off the disk there is no origin at all
+     — location.origin is the string "null" — so a shared link would read
+     "null/recap/GDW5Y". Falling back to the query form keeps a local link
+     working; in production the first branch is always the one taken. */
+  url(code){
+    const origin = (location.origin && location.origin !== 'null') ? location.origin : '';
+    return origin
+      ? origin + '/recap/' + encodeURIComponent(code)
+      : location.href.split(/[?#]/)[0] + '?r=' + encodeURIComponent(code);
+  },
 
   async start(code){
     this.code = code;
@@ -12550,6 +12599,7 @@ const View = {
     this.pending = { name: m.name, photo: m.photo, id };
     Club.seen([id]);
     closeSheet(); this.paintJoin();
+    Push.offer();
     toast('You are on the list.');
   },
 
@@ -12685,6 +12735,7 @@ const View = {
     this.pending = { name, photo: this.newPhoto, id: rec.id };
     this.newPhoto = null; this.newName = ''; this.newDupr = ''; this.forceNew = false;
     closeSheet(); this.paintJoin();
+    Push.offer();
     toast('You are on the list.');
   },
 
@@ -13796,6 +13847,14 @@ function saveCard(){
   armPending();
   renderLadder();
   paintAccount();
+  /* Read the stored session before anything paints. Auth.boot() does this
+     too, but it is a promise, and the first gateScreens() used to run while
+     signedIn() was still false — so coming back from a session link flashed
+     the sign-in page at somebody who has been signed in for weeks. This is a
+     synchronous localStorage read; boot still checks whether the token is
+     any good and repaints if it is not. */
+  try{ Auth.load(); }catch(e){}
+
   if(wantsOrganize) startOrganizing(); else gateScreens();
   Auth.boot().then(()=>{
     paintAccount();
