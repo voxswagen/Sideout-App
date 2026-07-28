@@ -1135,6 +1135,13 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
 .rc-res.w{color:var(--grass)}
 .rc-res.l{color:var(--ink-3)}
 .rc-with{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+/* Sharing lives on the row, not only at the foot of the night it opens.
+   Sending somebody last Tuesday should not mean opening last Tuesday and
+   scrolling past everything that happened in it. */
+.row-share{flex:0 0 auto;width:32px;height:32px;display:grid;place-items:center;
+  border-radius:50%;color:var(--ink-3);font-size:14px;cursor:pointer;
+  transition:background .15s,color .15s}
+.row-share:hover{background:var(--kitchen);color:var(--court)}
 .rc-tap{cursor:pointer;transition:background .15s,border-color .15s}
 .rc-tap:hover{border-color:var(--edge-2)}
 .lad-row.sel{background:var(--kitchen);border-color:var(--court)}
@@ -7615,6 +7622,9 @@ async function paintRecord(){
           <em>${when ? esc(longDate(when)) : ''} · ${n.pos} of ${n.field}</em></span>
         <span class="lad-w">${n.wins}<i>won</i></span>
         <span class="lad-r">${r}%<i>${n.games} game${n.games === 1 ? '' : 's'}</i></span>
+        <button class="row-share" title="Share this night" aria-label="Share this night"
+          onclick="event.stopPropagation();Recap.share('${esc(n.code)}','${
+            esc((n.title || 'Open play').replace(/'/g, ''))}')">${icon('share')}</button>
       </div>`;
     }).join('')}</div>
   </div>`;
@@ -11640,11 +11650,16 @@ const Notices = {
     const btn = document.getElementById('bell-btn');
     const dot = document.getElementById('bell-n');
     if(!btn || !dot) return;
-    /* Home only. Running a night is a job with both hands full, and a badge
+    /* Home only: running a night is a job with both hands full, and a badge
        counting arrivals over the top of the courts is the last thing an
-       organizer needs mid-session. It waits until they are back on Home.
-       With nothing joined it stays out of the bar entirely. */
-    btn.hidden = !this.visible().length || currentScreen() !== 'home';
+       organizer needs mid-session.
+
+       It used to hide itself when there was nothing to say, which sounded
+       tidy and was not — people went looking for the bell, found no bell,
+       and concluded it was broken. A control that disappears cannot be
+       learned. It sits there whenever you are signed in; the badge is what
+       comes and goes, and an empty one says so plainly. */
+    btn.hidden = !Auth.signedIn() || currentScreen() !== 'home';
     const n = this.unread();
     dot.hidden = !n;
     dot.textContent = n > 9 ? '9+' : String(n);
@@ -11727,6 +11742,7 @@ const Recap = {
   code: null,
   data: null,
   who: null,
+  all: false,        /* whether the whole night is showing or just the end */
 
   /* The pretty form needs the redirects file, which only exists once this is
      served by Netlify. Opened straight off the disk there is no origin at all
@@ -11808,6 +11824,8 @@ const Recap = {
     const row = board[i];
     if(!row || !row.name) return;
     this.who = this.who === row.name ? null : row.name;
+    /* a different person is a different night to read: back to their last few */
+    this.all = false;
     this.body();
     if(this.who){
       const el = document.getElementById('rc-games');
@@ -11815,7 +11833,7 @@ const Recap = {
     }
   },
 
-  clear(){ this.who = null; this.body(); },
+  clear(){ this.who = null; this.all = false; this.body(); },
 
   boardHTML(board){
     if(!board.length) return '';
@@ -11853,9 +11871,32 @@ const Recap = {
      top to bottom it is the night in the order it happened, which is how
      anybody who was there remembers it. The order comes from the RPC —
      state.log is stored newest first and must not be trusted as it lies. */
+  /* The whole night is a lot to land on somebody — 53 games on one screen is
+     a wall. The most recent handful is what people look for first ("what
+     happened at the end?"), so that is what shows, with the rest a tap away.
+     Chronological order is kept inside whatever is shown, because a round
+     that reads backwards is confusing however few of them there are. */
+  LATEST: 8,
+  slice(list){
+    if(this.all || list.length <= this.LATEST) return { rows: list, hidden: 0 };
+    return { rows: list.slice(-this.LATEST), hidden: list.length - this.LATEST };
+  },
+  moreHTML(hidden, total){
+    if(!hidden) return '';
+    return `<button class="btn btn-quiet" style="margin-top:10px" onclick="Recap.showAll()">
+      Show all ${total} games</button>`;
+  },
+  showAll(){
+    this.all = true;
+    this.body();
+    const el = document.getElementById('rc-games');
+    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
   allHTML(games){
+    const cut = this.slice(games);
     let last = null;
-    const rows = games.map(g =>{
+    const rows = cut.rows.map(g =>{
       const head = g.r !== last ? `<p class="rc-rd">Round ${esc(g.r)}</p>` : '';
       last = g.r;
       const win  = (g.win  || []).join(' & ');
@@ -11866,7 +11907,10 @@ const Recap = {
           class="rc-beat">beat</span><span class="rc-l">${esc(lose)}</span></span>
       </div>`;
     }).join('');
-    return `<section class="rc-sec" id="rc-games"><h2 class="rc-h">Every game</h2>${rows}</section>`;
+    return `<section class="rc-sec" id="rc-games">
+      <h2 class="rc-h">${cut.hidden ? 'How it finished up' : 'Every game'}</h2>
+      ${cut.hidden ? `<p class="hint tight">The last ${cut.rows.length} of ${games.length}.</p>` : ''}
+      ${rows}${this.moreHTML(cut.hidden, games.length)}</section>`;
   },
 
   /* One person's night. Once you know who you are reading about, naming both
@@ -11884,10 +11928,16 @@ const Recap = {
       </section>`;
     }
 
-    let won = 0, crowns = 0, last = null;
-    const rows = mine.map(g =>{
+    /* Counted over the whole night before anything is hidden — the strip says
+       how they did, not how they did in the part that happens to be on
+       screen. */
+    let won = 0, crowns = 0;
+    mine.forEach(g =>{ if(has(g.win)){ won++; if(g.king) crowns++; } });
+
+    const cut = this.slice(mine);
+    let last = null;
+    const rows = cut.rows.map(g =>{
       const win = has(g.win);
-      if(win){ won++; if(g.king) crowns++; }
       const with_ = (win ? g.win : g.lose).filter(n => n !== me);
       const them  = (win ? g.lose : g.win) || [];
       const head  = g.r !== last ? `<p class="rc-rd">Round ${esc(g.r)}</p>` : '';
@@ -11902,7 +11952,9 @@ const Recap = {
     }).join('');
 
     return `<section class="rc-sec" id="rc-games">
-      ${this.pickedHTML(mine.length, won, crowns)}${rows}</section>`;
+      ${this.pickedHTML(mine.length, won, crowns)}
+      ${cut.hidden ? `<p class="hint tight">Their last ${cut.rows.length} of ${mine.length}.</p>` : ''}
+      ${rows}${this.moreHTML(cut.hidden, mine.length)}</section>`;
   },
 
   pickedHTML(played, won, crowns){
