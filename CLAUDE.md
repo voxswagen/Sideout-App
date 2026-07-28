@@ -78,6 +78,25 @@ where somebody attaches an existing record to their account. Anything
 reading that table needs an explicit kind filter — treating "not a leave"
 as a join announced claims as new players arriving.
 
+**A format has to be registered in five places, and missing one half-works.**
+`MODES`, `MODE_NAME`, the card on Setup (`id="mode-X"`), the switcher button on
+Manage (`id="fmt-X"`), and a branch wherever the mode is dealt — `seed()`,
+`nextRound()`, `nextLineups()`, `refreshPlan()` and `applyFormat()`. Court Wars
+was added without `MODE_NAME`, so every screen showing the format printed the
+word "undefined"; and without the Manage button, so it could be started but
+never switched to mid-session. Anything in `SPECIAL_MODES` needs its own
+seeding and round handling too.
+
+**Nothing that goes into the snapshot may contain markup.** `courtTag()` is the
+example: it is published as a court's tag and rendered as *text* by watchers
+and by the big screen, so when the crown in it became an `<svg>` instead of an
+emoji, all of them printed the tag literally. The snapshot is data. Icons
+belong at the render sites that emit HTML.
+
+**The clock only reaches watchers when something publishes it.** `Clock.start`,
+`pause` and `reset` call `push()` for that reason. Do not push on the tick — a
+watcher runs the seconds itself from the reading and the moment it was taken.
+
 **`state.log` is stored newest first.** Each finished game is unshifted onto
 the front, so reading it in order runs the night backwards — round 13 down to
 round 1. Anything showing the night to a person has to sort it. `sideout_recap`
