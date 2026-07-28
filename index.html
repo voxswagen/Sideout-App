@@ -12256,10 +12256,17 @@ const Recap = {
        if anybody is, otherwise the signed-in member, and only if they are
        genuinely on the board. */
     const field = d.players || rows.length;
-    const mine = this.who || (Auth.me ? (Auth.me.alias || Auth.me.name) : '');
-    const at = mine
-      ? rows.findIndex(r => String(r.name || '').toLowerCase() === String(mine).toLowerCase())
-      : -1;
+    /* Whoever is filtered on the page first, then the account — and both the
+       alias and the real name, because a night is recorded under whichever
+       the club calls you and the two are not always the same. */
+    const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const candidates = [this.who, Auth.me && Auth.me.alias, Auth.me && Auth.me.name]
+      .filter(Boolean).map(norm);
+    let at = -1;
+    for(const cand of candidates){
+      at = rows.findIndex(r => norm(r.name) === cand);
+      if(at >= 0) break;
+    }
     const stats = [['PLAYERS', String(field)],
                    ['GAMES', String((d.games || []).length)],
                    at >= 0 ? ['STANDING', (at + 1) + '/' + field]
@@ -14261,6 +14268,13 @@ function shareCanvas(c, name, title){
   setMode(S.mode);
   setNewLevel('int');
   const params = new URLSearchParams(location.search);
+  /* Before any of the doors below, because two of them return early. The
+     watch screen and the recap both want to know who is looking — the recap
+     puts your own finishing place on the story card, and it was falling back
+     to a bare count because this ran after it had already left. It is a
+     synchronous read of what is already on the device; the network check
+     still happens later in Auth.boot(). */
+  try{ Auth.load(); }catch(e){}
   /* accept the British spelling too, so older links keep working */
   const wantsOrganize = params.has('organize') || params.has('organise')
     || /^#?\/?organi[sz]e$/i.test(location.hash || '');
@@ -14284,14 +14298,10 @@ function shareCanvas(c, name, title){
   armPending();
   renderLadder();
   paintAccount();
-  /* Read the stored session before anything paints. Auth.boot() does this
-     too, but it is a promise, and the first gateScreens() used to run while
-     signedIn() was still false — so coming back from a session link flashed
-     the sign-in page at somebody who has been signed in for weeks. This is a
-     synchronous localStorage read; boot still checks whether the token is
+  /* The session was read above, before the doors that return early. It is
+     what stops the first gateScreens() flashing the sign-in page at somebody
+     who has been signed in for weeks; boot still checks whether the token is
      any good and repaints if it is not. */
-  try{ Auth.load(); }catch(e){}
-
   if(wantsOrganize) startOrganizing(); else gateScreens();
   Auth.boot().then(()=>{
     paintAccount();
