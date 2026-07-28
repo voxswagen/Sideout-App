@@ -151,6 +151,21 @@ button{cursor:pointer;border:none;background:none;padding:0}
   background:var(--ball);color:#12331A;border:1.5px solid var(--court-deep)}
 /* One row per thing that happened. The name leads, because that is what you
    are scanning for. */
+/* Anchored under the bell. Fixed rather than absolute so it does not care
+   what the page is doing underneath it, and positioned from the bell's own
+   rectangle at open time so it lands right whatever the safe area does on
+   an installed phone. */
+.np{position:fixed;z-index:46;right:10px;width:min(370px, calc(100vw - 20px));
+  max-height:min(70vh, 560px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--card);border:1px solid var(--edge-2);border-radius:var(--r);
+  box-shadow:var(--sh-2);padding:14px 16px 16px;
+  opacity:0;transform:translateY(-8px) scale(.985);transform-origin:top right;
+  transition:opacity .16s ease,transform .16s ease}
+.np.on{opacity:1;transform:none}
+.np h3{margin:0 0 2px;font-family:'Bebas Neue',sans-serif;font-size:21px;
+  letter-spacing:.03em;color:var(--ink)}
+.np .sub{margin:6px 0 0}
+@media(prefers-reduced-motion:reduce){ .np{transition:none} }
 .nt-list{margin-top:2px}
 .nt{display:flex;align-items:baseline;gap:9px;padding:10px 0;border-top:1px solid var(--edge)}
 .nt:first-of-type{border-top:0}
@@ -1915,6 +1930,10 @@ textarea:focus{border-color:var(--court)}
     <span class="lic" data-ic="bell"></span><i class="bell-n" id="bell-n" hidden></i></button>
   <button class="ab-face" id="ab-face" onclick="go('me')" aria-label="Your profile"></button>
 </header>
+<!-- Hangs off the bell rather than rising from the bottom of the screen. A
+     bottom sheet is for a decision; this is a glance, and it should come from
+     the thing you tapped. -->
+<div class="np" id="np" role="dialog" aria-label="Notices" hidden></div>
 <div class="scrim" id="scrim" onclick="Drawer.close()" hidden></div>
 <aside class="drawer" id="drawer" hidden aria-label="Menu">
   <div class="dr-head" id="dr-head"></div>
@@ -8332,9 +8351,9 @@ function showOnly(name){
   syncDocks();
   /* After the classes are switched, not before. currentScreen() reads them,
      so calling this at the top of the function asked "where am I?" and got
-     the screen being left — the bell was permanently one move behind, hiding
-     on arrival at Home and appearing everywhere else. */
-  try{ Notices.paint(); }catch(e){}
+     the screen being left. Closing too: a panel hanging off a bar that is
+     about to be swapped out has nothing left to point at. */
+  try{ Notices.close(); Notices.paint(); }catch(e){}
   window.scrollTo({ top: 0 });
 }
 function currentScreen(){
@@ -11709,16 +11728,16 @@ const Notices = {
     const btn = document.getElementById('bell-btn');
     const dot = document.getElementById('bell-n');
     if(!btn || !dot) return;
-    /* Home only: running a night is a job with both hands full, and a badge
-       counting arrivals over the top of the courts is the last thing an
-       organizer needs mid-session.
+    /* Signed in is the only condition. Staying out of the way while a night
+       is being organized or run is already handled a level up: the bar this
+       lives on is hidden on setup and on the four session screens, so the
+       bell inherits that without a second rule to keep in step with it.
 
        It used to hide itself when there was nothing to say, which sounded
        tidy and was not — people went looking for the bell, found no bell,
        and concluded it was broken. A control that disappears cannot be
-       learned. It sits there whenever you are signed in; the badge is what
-       comes and goes, and an empty one says so plainly. */
-    btn.hidden = !Auth.signedIn() || currentScreen() !== 'home';
+       learned. The badge is what comes and goes; an empty bell says so. */
+    btn.hidden = !Auth.signedIn();
     const n = this.unread();
     dot.hidden = !n;
     dot.textContent = n > 9 ? '9+' : String(n);
@@ -11741,24 +11760,63 @@ const Notices = {
       <span class="nt-t">${esc(timeAgo(when, true))}</span></div>`;
   },
 
-  open(more){
-    if(!more) this.shown = 5;
+  shownPanel: false,
+
+  /* Tapping the bell again closes it, the way every dropdown behaves. */
+  open(){
+    if(this.shownPanel){ this.close(); return; }
+    this.shown = 5;
+    this.render();
+    const el = document.getElementById('np');
+    const b  = document.getElementById('bell-btn');
+    if(!el || !b) return;
+    /* Measured rather than assumed: the bar is sticky, and on an installed
+       phone its height depends on the safe area. */
+    const r = b.getBoundingClientRect();
+    el.style.top = Math.round(r.bottom + 8) + 'px';
+    el.hidden = false;
+    requestAnimationFrame(()=> el.classList.add('on'));
+    this.shownPanel = true;
+    /* Bound late so the tap that opened this does not immediately close it. */
+    setTimeout(()=>{ document.addEventListener('click', Notices.away, true); }, 0);
+  },
+
+  close(){
+    const el = document.getElementById('np');
+    this.shownPanel = false;
+    document.removeEventListener('click', Notices.away, true);
+    if(!el) return;
+    el.classList.remove('on');
+    setTimeout(()=>{ if(!Notices.shownPanel) el.hidden = true; }, 170);
+  },
+
+  /* Anywhere outside it, including the bell — which toggles on its own. */
+  away(ev){
+    const el = document.getElementById('np');
+    const b  = document.getElementById('bell-btn');
+    if(!el) return;
+    if(el.contains(ev.target) || (b && b.contains(ev.target))) return;
+    Notices.close();
+  },
+
+  render(){
+    const el = document.getElementById('np');
+    if(!el) return;
     const rows = this.visible();
     /* Read the stamps before marking, or every line would draw as already
-       seen the moment the sheet opens and the highlight would never show. */
+       seen the moment the panel opens and nothing would ever look new. */
     const was = this.stamps();
     const page = rows.slice(0, this.shown);
     const left = rows.length - page.length;
 
-    openSheet(`<h3>On your sessions</h3>
+    el.innerHTML = `<h3>On your sessions</h3>
       ${rows.length
         ? `<div class="nt-list">${page.map(n => this.line(n, was)).join('')}</div>
            ${left ? `<button class="btn btn-quiet" style="margin-top:10px"
              onclick="Notices.showMore()">Show ${Math.min(left, 10)} more${
                left > 10 ? ` of ${left}` : ''}</button>` : ''}`
         : `<p class="sub">Nothing yet. When somebody joins a session you are on, or drops out of
-             one, it shows up here. Each one clears itself a day after you have read it.</p>`}
-      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
+             one, it shows up here. Each one clears itself a day after you have read it.</p>`}`;
 
     /* Only what is actually on screen counts as seen. Anything still behind
        Show more keeps its highlight until it has been looked at. */
@@ -11768,7 +11826,7 @@ const Notices = {
 
   showMore(){
     this.shown += 10;
-    this.open(true);
+    this.render();
   },
 
   start(){
@@ -14202,7 +14260,7 @@ function shareCanvas(c, name, title){
   if(had && S.active){ go('play'); toast('Picked up where you left off.'); }
 
   document.addEventListener('keydown', e=>{
-    if(e.key === 'Escape'){ closeSheet(); TV.close(); }
+    if(e.key === 'Escape'){ closeSheet(); TV.close(); try{ Notices.close(); }catch(err){} }
   });
   setInterval(()=>{ if(S.active) TV.paint(); }, 5000);
 })();
