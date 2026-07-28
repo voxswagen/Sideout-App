@@ -35,7 +35,12 @@ const CONFIG = {
 
   /* Which club's roster this copy of the app uses. Change it and
      you get a separate set of members with the same database. */
-  club: 'sideout'
+  club: 'sideout',
+
+  /* The public half of the push signing key. Not a secret — a browser needs
+     it to tie its subscription to us, and it is useless without the private
+     half, which lives on the push function and nowhere else. */
+  vapidPublicKey: 'BFLFcGbriaC9_UTKF5Cey1cf8a9_omVw-6m9in-TObs_EydhJ29gbAtkzmlFB-abL_Wp50nBuRS1WaCMaudRa94'
 };
 </script>
 
@@ -2695,9 +2700,13 @@ const Live = {
      authorization, so no host PIN is needed — the server hands back
      the PIN it already has and hosting proceeds as normal. */
   async withdraw(code){
-    return this.rpc('sideout_withdraw', {
+    const out = await this.rpc('sideout_withdraw', {
       p_club: CONFIG.club || 'sideout', p_code: code
     });
+    /* after the write, never before: nobody should be told somebody left
+       until they actually have */
+    try{ Push.announce(code, 'leave'); }catch(e){}
+    return out;
   },
 
   async remove(code){
@@ -2779,6 +2788,9 @@ const Live = {
           p_name: rec.name, p_member: rec.member || null,
           p_dupr: rec.dupr == null ? null : rec.dupr });
       }catch(e){}
+      /* Everybody already on the list hears about it. A claim is not a join
+         and must not ring anybody's phone. */
+      try{ Push.announce(code, 'join'); }catch(e){}
     }
   },
   async takeJoiners(code){
@@ -7494,6 +7506,7 @@ async function paintMe(){
         <span class="rank-txt"><b>Where you stand</b>
           <span>${rankWord(place, total)}</span></span>
       </div>` : ''}
+      <div style="margin-top:10px">${Push.rowHTML()}</div>
       <button class="btn btn-quiet" style="margin-top:10px" onclick="editProfile()">Edit your details</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="passwordSheet()">Change your password</button>
     </div>
@@ -7518,6 +7531,12 @@ async function paintMe(){
     </div>`;
   drawQR('my-qr', myIdURL(me.id), 190);
   paintRecord();
+  /* the toggle is drawn before we know whether this phone is subscribed, so
+     it corrects itself once the browser has answered */
+  Push.refresh().then(()=>{
+    const row = document.getElementById('push-row');
+    if(row) row.outerHTML = Push.rowHTML();
+  }).catch(()=>{});
 }
 
 /* ── YOUR RECORD ─────────────────────────────────────
@@ -8214,6 +8233,8 @@ function leaveToHome(){
 function showOnly(name){
   navigated = true;
   paintAcctBtn();
+  /* the bell belongs to Home, so it has to be re-decided on every move */
+  try{ Notices.paint(); }catch(e){}
   SCREENS.forEach(n=>{
     const el = document.getElementById('screen-' + n);
     if(el) el.classList.toggle('on', n === name);
@@ -11352,6 +11373,154 @@ function doClearBracket(){
 }
 
 /* ═══════════════════════════════════════════════════
+   PUSH — the half that reaches a phone that is not open
+   ═══════════════════════════════════════════════════
+   The bell only works for somebody looking at the app. This is what puts a
+   line on a lock screen.
+
+   Worth knowing before debugging why nothing arrives on an iPhone: Apple
+   only allows web push once the app has been added to the Home Screen. A
+   page open in Safari gets nothing, no matter how the subscription was
+   made, and there is no way around it from here. Android has no such rule.
+
+   Permission has to be asked for from a tap — browsers refuse a prompt that
+   nobody asked for — which is why this is a button in the profile rather
+   than something that happens on load.                                   */
+const Push = {
+  on: false,
+
+  supported(){
+    return 'serviceWorker' in navigator && 'PushManager' in window
+      && 'Notification' in window && location.protocol === 'https:';
+  },
+
+  /* Safari on iOS reports standalone through a non-standard flag. */
+  installed(){
+    return window.matchMedia('(display-mode: standalone)').matches
+      || navigator.standalone === true;
+  },
+
+  isApple(){ return /iPad|iPhone|iPod/.test(navigator.userAgent || ''); },
+
+  keyBytes(k){
+    const pad = '='.repeat((4 - k.length % 4) % 4);
+    const raw = atob((k + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    const out = new Uint8Array(raw.length);
+    for(let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  },
+
+  async reg(){
+    if(!this.supported()) return null;
+    try{ return await navigator.serviceWorker.ready; }catch(e){ return null; }
+  },
+
+  async current(){
+    const r = await this.reg();
+    if(!r) return null;
+    try{ return await r.pushManager.getSubscription(); }catch(e){ return null; }
+  },
+
+  async refresh(){
+    const s = await this.current();
+    this.on = !!s;
+    return this.on;
+  },
+
+  async enable(){
+    if(!this.supported()){
+      toast(this.isApple() && !this.installed()
+        ? 'Add Sideout to your Home Screen first — iPhones only allow this from there.'
+        : 'This browser cannot do notifications.');
+      return false;
+    }
+    let perm = Notification.permission;
+    if(perm === 'default'){
+      try{ perm = await Notification.requestPermission(); }catch(e){ perm = 'denied'; }
+    }
+    if(perm !== 'granted'){
+      toast(perm === 'denied'
+        ? 'Notifications are blocked for this site in your browser settings.'
+        : 'Notifications were not turned on.');
+      return false;
+    }
+    const r = await this.reg();
+    if(!r) return false;
+    let sub = null;
+    try{
+      sub = await r.pushManager.getSubscription()
+         || await r.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: this.keyBytes(CONFIG.vapidPublicKey)
+            });
+    }catch(e){ toast('Could not turn notifications on.'); return false; }
+
+    const j = sub.toJSON ? sub.toJSON() : sub;
+    try{
+      await Live.rpc('sideout_push_subscribe', {
+        p_club: CONFIG.club || 'sideout',
+        p_endpoint: j.endpoint,
+        p_p256dh: (j.keys || {}).p256dh,
+        p_auth: (j.keys || {}).auth
+      });
+    }catch(e){ toast('Could not save that on the server.'); return false; }
+
+    this.on = true;
+    toast('Notifications on for this phone.');
+    return true;
+  },
+
+  async disable(){
+    const sub = await this.current();
+    if(sub){
+      const j = sub.toJSON ? sub.toJSON() : sub;
+      try{ await Live.rpc('sideout_push_unsubscribe', { p_endpoint: j.endpoint }); }catch(e){}
+      try{ await sub.unsubscribe(); }catch(e){}
+    }
+    this.on = false;
+    toast('Notifications off for this phone.');
+    return true;
+  },
+
+  async toggle(){
+    if(this.on) await this.disable(); else await this.enable();
+    const row = document.getElementById('push-row');
+    if(row) row.outerHTML = this.rowHTML();
+  },
+
+  rowHTML(){
+    const can = this.supported();
+    const needsInstall = this.isApple() && !this.installed();
+    return `<div id="push-row">
+      <button class="btn btn-quiet" onclick="Push.toggle()"${can ? '' : ' disabled'}>
+        ${icon('bell')}${this.on ? 'Turn notifications off' : 'Turn notifications on'}</button>
+      <p class="hint tight" style="margin-top:6px">${
+        needsInstall
+          ? 'Add Sideout to your Home Screen first — iPhones only allow notifications from there.'
+          : (can
+             ? 'Tells you when somebody joins or drops out of a session you are on, even when the app is shut.'
+             : 'This browser cannot show notifications.')}</p>
+    </div>`;
+  },
+
+  /* Told after the fact by whoever did the thing. The function checks the
+     database before it sends anything, so a device cannot announce something
+     that did not happen. Failure here is silent on purpose: the join itself
+     already worked, and nobody should see an error about a notification. */
+  async announce(code, kind){
+    if(!Live.ready() || !Auth.signedIn() || !code) return;
+    try{
+      const h = await Auth.headers();
+      await fetch(Live.base() + '/functions/v1/push', {
+        method: 'POST',
+        headers: Object.assign({ apikey: Live.key(), 'Content-Type': 'application/json' }, h || {}),
+        body: JSON.stringify({ club: CONFIG.club || 'sideout', code: code, kind: kind })
+      });
+    }catch(e){}
+  }
+};
+
+/* ═══════════════════════════════════════════════════
    NOTICES — what has happened on the sessions you are in
    ═══════════════════════════════════════════════════
    In-app only, and worth being honest about the limit: there is no push or
@@ -11365,9 +11534,24 @@ const Notices = {
   key: 'sideout_notices_seen',
   list: [],
   t: null,
+  shown: 5,
+  DAY: 86400000,
 
-  seen(){ try{ return Number(localStorage.getItem(this.key)) || 0; }catch(e){ return 0; } },
-  setSeen(ms){ try{ localStorage.setItem(this.key, String(ms)); }catch(e){} },
+  /* Each notice is stamped with the moment you first saw it, and disappears a
+     day after that — rather than a day after it happened. Somebody who does
+     not open the app for three days should still find out that Tuesday was
+     called off; somebody who read it this morning should not still be looking
+     at it tomorrow. The two are only the same for people who check often. */
+  stamps(){
+    try{
+      const raw = JSON.parse(localStorage.getItem(this.key) || '{}');
+      return (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+    }catch(e){ return {}; }
+  },
+  saveStamps(m){ try{ localStorage.setItem(this.key, JSON.stringify(m)); }catch(e){} },
+
+  /* Stable enough to survive a repoll: the same event always keys the same. */
+  idOf(n){ return `${n.code}|${n.at}|${n.kind}|${n.who || ''}`; },
 
   async load(){
     if(!Auth.signedIn() || !Live.ready()) return;
@@ -11380,26 +11564,52 @@ const Notices = {
     this.paint();
   },
 
+  /* What is still worth showing: anything unseen, plus anything seen within
+     the last day. Old stamps are dropped on the way past so the map does not
+     grow forever. */
+  visible(){
+    const m = this.stamps();
+    const now = Date.now();
+    let pruned = false;
+    Object.keys(m).forEach(k =>{ if(now - m[k] > this.DAY * 3){ delete m[k]; pruned = true; } });
+    if(pruned) this.saveStamps(m);
+    return this.list.filter(n =>{
+      const seenAt = m[this.idOf(n)];
+      return !seenAt || (now - seenAt) < this.DAY;
+    });
+  },
+
   unread(){
-    const s = this.seen();
-    return this.list.filter(n => Date.parse(n.at) > s).length;
+    const m = this.stamps();
+    return this.visible().filter(n => !m[this.idOf(n)]).length;
+  },
+
+  /* Stamped on opening rather than on closing: you have seen them by then,
+     and closing is not something anybody should have to remember. */
+  markSeen(rows){
+    const m = this.stamps();
+    const now = Date.now();
+    rows.forEach(n =>{ const k = this.idOf(n); if(!m[k]) m[k] = now; });
+    this.saveStamps(m);
   },
 
   paint(){
     const btn = document.getElementById('bell-btn');
     const dot = document.getElementById('bell-n');
     if(!btn || !dot) return;
-    /* With nothing joined there is nothing this could ever say, so it stays
-       out of the bar rather than sitting there empty. */
-    btn.hidden = !this.list.length;
+    /* Home only. Running a night is a job with both hands full, and a badge
+       counting arrivals over the top of the courts is the last thing an
+       organizer needs mid-session. It waits until they are back on Home.
+       With nothing joined it stays out of the bar entirely. */
+    btn.hidden = !this.visible().length || currentScreen() !== 'home';
     const n = this.unread();
     dot.hidden = !n;
     dot.textContent = n > 9 ? '9+' : String(n);
   },
 
-  line(n){
+  line(n, seenMap){
     const when = Date.parse(n.at);
-    const fresh = when > this.seen();
+    const fresh = !seenMap[this.idOf(n)];
     const where = n.title || n.code;
     if(n.kind === 'cancelled'){
       return `<div class="nt nt-off${fresh ? ' new' : ''}">
@@ -11414,18 +11624,34 @@ const Notices = {
       <span class="nt-t">${esc(timeAgo(when, true))}</span></div>`;
   },
 
-  open(){
-    const rows = this.list;
+  open(more){
+    if(!more) this.shown = 5;
+    const rows = this.visible();
+    /* Read the stamps before marking, or every line would draw as already
+       seen the moment the sheet opens and the highlight would never show. */
+    const was = this.stamps();
+    const page = rows.slice(0, this.shown);
+    const left = rows.length - page.length;
+
     openSheet(`<h3>On your sessions</h3>
       ${rows.length
-        ? `<div class="nt-list">${rows.map(n => this.line(n)).join('')}</div>`
+        ? `<div class="nt-list">${page.map(n => this.line(n, was)).join('')}</div>
+           ${left ? `<button class="btn btn-quiet" style="margin-top:10px"
+             onclick="Notices.showMore()">Show ${Math.min(left, 10)} more${
+               left > 10 ? ` of ${left}` : ''}</button>` : ''}`
         : `<p class="sub">Nothing yet. When somebody joins a session you are on, or drops out of
-             one, it shows up here.</p>`}
-      <button class="btn btn-quiet" style="margin-top:12px" onclick="closeSheet()">Close</button>`);
-    /* Marked read on opening rather than on closing — you have seen them by
-       then, and closing is not something anyone should have to remember. */
-    if(rows.length) this.setSeen(Date.parse(rows[0].at));
+             one, it shows up here. Each one clears itself a day after you have read it.</p>`}
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
+
+    /* Only what is actually on screen counts as seen. Anything still behind
+       Show more keeps its highlight until it has been looked at. */
+    this.markSeen(page);
     this.paint();
+  },
+
+  showMore(){
+    this.shown += 10;
+    this.open(true);
   },
 
   start(){
@@ -12830,6 +13056,11 @@ async function doCancelSession(){
     toast('Could not reach the server — nothing was called off.');
     return;
   }
+
+  /* Sent before the session is put down, while the code is still to hand.
+     This is the one notice that genuinely matters off-screen: everybody else
+     is on their way to a court. */
+  try{ Push.announce(S.liveCode, 'cancel'); }catch(e){}
 
   closeSheet();
   /* Put the session down on this device without touching the row: the

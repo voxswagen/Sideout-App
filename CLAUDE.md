@@ -29,7 +29,7 @@ project do not quietly disagree.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v22`. Forgetting this means testers see last week's app and
+Currently `sideout-v23`. Forgetting this means testers see last week's app and
 report bugs that are already fixed.
 
 **Comment voice.** Comments in this codebase explain *why*, in plain prose,
@@ -89,6 +89,18 @@ games on the same court, and one night legitimately has five games in round 1.
 ratings, the waiting list and the venue notes, and runs to most of a megabyte
 once a cover photo is on it. Anything public reads a purpose-built RPC that
 assembles only the fields it needs — see `sideout_recap`.
+
+**Push on an iPhone needs the app on the Home Screen.** Apple only allows web
+push from an installed PWA — a page open in Safari gets nothing, however the
+subscription was made, and no amount of code changes that. So "notifications
+do not work on my iPhone" is almost always "it has not been installed". The
+toggle says so rather than failing silently. Android has no such rule.
+
+**Push is sent by the device that did the thing**, not by a database trigger,
+so there is no service credential sitting inside Postgres. The `push` Edge
+Function checks the database that the join, leave or cancellation actually
+happened before it sends anything, so a client cannot use it to send whatever
+it likes. Its private signing key lives only in that function's secrets.
 
 **`Live.adopt()` replaces `S` wholesale** via `Object.assign(blank(), state,
 {live, liveCode, pin})`. Anything set on `S` before an adopt is lost. Set
