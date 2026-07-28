@@ -18,9 +18,9 @@ read-only — DDL against production works — so read `list_tables` before
 changing shape, and remember there is real club data behind it: 55 members and
 the result rows the whole ladder is derived from.
 
-`supabase-unarchive.sql` is a copy of what is deployed, not a to-do. Anything
-applied to the database should be written back into a file like it, so the repo
-and the project do not quietly disagree.
+The `supabase-*.sql` files are copies of what is deployed, not to-dos. Anything
+applied to the database should be written back into one, so the repo and the
+project do not quietly disagree.
 
 ---
 
@@ -29,7 +29,7 @@ and the project do not quietly disagree.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v21`. Forgetting this means testers see last week's app and
+Currently `sideout-v22`. Forgetting this means testers see last week's app and
 report bugs that are already fixed.
 
 **Comment voice.** Comments in this codebase explain *why*, in plain prose,
@@ -59,10 +59,24 @@ only ever holds people who actually got a game. Anyone who joined and never
 got on court is not in it. Never treat `results` as the roster — read the
 saved session state for that.
 
-**`Club.rate()` writes absolute ratings, not deltas.** Internal ratings moved
-by a session cannot be reversed, which is why the session Reset warns that
-ratings are not put back. Making it reversible needs a schema change: store
-each player's pre-session rating alongside the result row.
+**`Club.rate()` writes absolute ratings, not deltas** — so a rating cannot be
+worked backwards from the number it became. This used to make Reset
+unrecoverable. It no longer is: `results.rating_before` holds each player's
+pre-session rating, captured by `sideout_archive` because the client calls
+`Club.archive()` *before* `Club.rate()`, so at that moment the stored rating
+is still the old one. `sideout_unarchive` puts them back.
+
+**`results` rows are put aside, not deleted.** Reset sets `removed_at` and
+`sideout_restore` clears it. Everything derived from `results` therefore has
+to filter `removed_at is null` — ladder, points, takings, past, recap and
+the player record all do. Miss it in something new and a reset night stays
+on the ladder while appearing to have been reset, which is worse than the
+old hard delete.
+
+**`joiners.kind` is not just join and leave.** There are `claim` rows too,
+where somebody attaches an existing record to their account. Anything
+reading that table needs an explicit kind filter — treating "not a leave"
+as a join announced claims as new players arriving.
 
 **`state.log` is stored newest first.** Each finished game is unshifted onto
 the front, so reading it in order runs the night backwards — round 13 down to
@@ -96,8 +110,9 @@ tables matter:
   just flips true. This is why an ended session can be reopened with its full
   roster intact.
 - `results` — one row per player per session. The all-time club ladder is
-  derived from it on every read (`sideout_ladder`), so removing a night from
-  the ladder is just deleting its rows. Nothing is stored twice.
+  derived from it on every read (`sideout_ladder`), so taking a night off the
+  ladder is just stamping `removed_at` on its rows. Nothing is stored twice,
+  and nothing is destroyed.
 
 Organizer-only RPCs check the role from the JWT and raise on failure; the
 client string-matches `/organizer/i` on the error to show the right message.

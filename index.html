@@ -137,6 +137,25 @@ button{cursor:pointer;border:none;background:none;padding:0}
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;flex:0 0 auto;
   transition:background .15s}
 .icon-btn:hover{background:rgba(255,255,255,.24)}
+/* The count rides on the corner of the bell rather than beside it, so the
+   bar does not reflow every time somebody joins. */
+.bell{position:relative;overflow:visible}
+.bell-n{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 4px;
+  display:grid;place-items:center;border-radius:99px;font-style:normal;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;letter-spacing:.02em;
+  background:var(--ball);color:#12331A;border:1.5px solid var(--court-deep)}
+/* One row per thing that happened. The name leads, because that is what you
+   are scanning for. */
+.nt-list{margin-top:2px}
+.nt{display:flex;align-items:baseline;gap:9px;padding:10px 0;border-top:1px solid var(--edge)}
+.nt:first-of-type{border-top:0}
+.nt-w{flex:1;min-width:0}
+.nt-w b{font-weight:600}
+.nt-w em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.nt-t{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.nt.new .nt-w b{color:var(--court)}
+.nt-off b{color:var(--fault)}
 
 /* Installed to the home screen there is no browser chrome, so this
    bar starts at pixel zero — straight under the clock and the island,
@@ -1845,6 +1864,11 @@ textarea:focus{border-color:var(--court)}
   <button class="icon-btn" id="open-btn" onclick="openResume()" aria-label="Open a session"
     title="Open a session already running"><span class="lic" data-ic="folder"></span></button>
   <button class="icon-btn" onclick="toggleTheme()" title="Light or dark"><span class="lic" data-ic="moon"></span></button>
+  <!-- only for somebody who is on a list: with nothing joined there is
+       nothing it could ever say, and an empty bell is just clutter -->
+  <button class="icon-btn bell" id="bell-btn" onclick="Notices.open()"
+    title="What has happened on your sessions" aria-label="Notices" hidden>
+    <span class="lic" data-ic="bell"></span><i class="bell-n" id="bell-n" hidden></i></button>
   <button class="acct-btn" id="acct-btn" onclick="accountMenu()" aria-label="Your account" hidden></button>
 </div></header>
 
@@ -7464,14 +7488,7 @@ async function paintMe(){
         DUPR ID <b>${esc(me.dupr_id)}</b></p>` : ''}
       ${me.birth_month && me.birth_day ? `<p class="sub" style="text-align:center;margin:0">
         Birthday <b>${esc(Birthday.text(me.birth_month, me.birth_day))}</b></p>` : ''}
-      ${false ? `<div class="pstats">
-        ${stat(rec.nights, rec.nights === 1 ? 'session' : 'sessions')}
-        ${stat(rec.games, 'games')}
-        ${stat(rec.wins, 'won')}
-        ${stat(rate + '%', 'win rate')}
-        ${stat((diff >= 0 ? '+' : '') + diff, 'points')}
-        ${rec.crowns ? stat(rec.crowns, rec.crowns === 1 ? 'crown' : 'crowns') : ''}
-      </div>` : `<p class="conn">No games yet. Your record starts at your first session.</p>`}
+      <div id="me-stats"></div>
       ${place ? `<div class="rank-card">
         <span class="rank-big">${place}<small>/${total}</small></span>
         <span class="rank-txt"><b>Where you stand</b>
@@ -7480,6 +7497,7 @@ async function paintMe(){
       <button class="btn btn-quiet" style="margin-top:10px" onclick="editProfile()">Edit your details</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="passwordSheet()">Change your password</button>
     </div>
+    <div id="me-nights"></div>
     ${mySessionsHTML()}
     <div class="panel" hidden>
     </div>
@@ -7499,7 +7517,72 @@ async function paintMe(){
         onclick="AuthUI.confirmOut()">Sign out</button>
     </div>`;
   drawQR('my-qr', myIdURL(me.id), 190);
+  paintRecord();
 }
+
+/* ── YOUR RECORD ─────────────────────────────────────
+   Filled in after the profile is already on screen, because a page about
+   you should not wait on a second round trip to show your own face.
+
+   Everything here comes from `results`, which is the only durable record:
+   the game logs live on the session row and are cleaned up after a week.
+   That is why there are no partner or nemesis figures — who you played
+   with only exists in the log, and the log does not last long enough to
+   build a season out of.                                              */
+async function paintRecord(){
+  const strip = document.getElementById('me-stats');
+  const list  = document.getElementById('me-nights');
+  if(strip) strip.innerHTML =
+    `<div class="ld-block" style="padding:18px 12px"><span class="ld-ball"></span><p>Reading your record…</p></div>`;
+
+  let d = null;
+  try{
+    d = await Live.rpc('sideout_player', { p_club: CONFIG.club || 'sideout', p_member: null });
+  }catch(e){
+    if(strip) strip.innerHTML = `<p class="conn warn">Could not read your record just now.</p>`;
+    return;
+  }
+
+  const t = (d && d.totals) || null;
+  if(!t || !t.nights){
+    if(strip) strip.innerHTML =
+      `<p class="conn">No games yet. Your record starts at your first session.</p>`;
+    if(list) list.innerHTML = '';
+    return;
+  }
+
+  const rate = t.games ? Math.round(t.wins / t.games * 100) : 0;
+  const stat = (n, l) => `<div class="ps"><b>${n}</b><i>${l}</i></div>`;
+  if(strip) strip.innerHTML = `<div class="pstats">
+    ${stat(t.nights, t.nights === 1 ? 'night' : 'nights')}
+    ${stat(t.games, 'games')}
+    ${stat(t.wins, 'won')}
+    ${stat(rate + '%', 'win rate')}
+    ${t.wins_on_the_night ? stat(t.wins_on_the_night, t.wins_on_the_night === 1 ? 'night won' : 'nights won') : ''}
+    ${t.crowns ? stat(t.crowns, t.crowns === 1 ? 'crown' : 'crowns') : ''}
+  </div>`;
+
+  const nights = (d.nights || []);
+  if(!list) return;
+  list.innerHTML = `<div class="panel">
+    <h2>Night by night</h2>
+    <p class="hint tight" style="margin-bottom:10px">Where you finished each time, out of everybody
+      who got a game.</p>
+    <div class="lad">${nights.map(n =>{
+      const when = n.played_at ? new Date(n.played_at).getTime() : null;
+      const r = n.games ? Math.round(n.wins / n.games * 100) : 0;
+      return `<div class="lad-row rc-tap" onclick="location.href='?r=${encodeURIComponent(n.code)}'">
+        <span class="lad-pos">${n.pos}</span>
+        <span class="lad-n"><span class="nmn">${esc(n.title || 'Open play')}${
+          n.crowns ? ' ' + icon('crown') + ' ' + n.crowns : ''}</span>
+          <em>${when ? esc(longDate(when)) : ''} · ${n.pos} of ${n.field}</em></span>
+        <span class="lad-w">${n.wins}<i>won</i></span>
+        <span class="lad-r">${r}%<i>${n.games} game${n.games === 1 ? '' : 's'}</i></span>
+      </div>`;
+    }).join('')}</div>
+  </div>`;
+}
+
 /* Kept because other things link to it. */
 function profileSheet(){ closeSheet(); go('me'); }
 
@@ -9810,6 +9893,8 @@ function navIcon(kind){
     gear:     '<circle cx="12" cy="12" r="3"/>'
             + '<path d="M12 3.4v2.2M12 18.4v2.2M20.6 12h-2.2M5.6 12H3.4"/>'
             + '<path d="m18.1 5.9-1.6 1.6M7.5 16.5l-1.6 1.6M18.1 18.1l-1.6-1.6M7.5 7.5 5.9 5.9"/>',
+    bell:     '<path d="M18 9.4a6 6 0 1 0-12 0c0 5.2-2 6.6-2 6.6h16s-2-1.4-2-6.6z"/>'
+            + '<path d="M13.7 19.6a2 2 0 0 1-3.4 0"/>',
     key:      '<circle cx="8.2" cy="13.8" r="3.6"/>'
             + '<path d="M11.2 11.4 19 3.6M16.2 6.4l2.2 2.2M14 8.6l2.2 2.2"/>',
     lock:     '<rect x="5" y="10.4" width="14" height="9.4" rx="1.6"/>'
@@ -11265,6 +11350,92 @@ function doClearBracket(){
   closeSheet(); renderBracket(); TV.paint(); go('stats'); save();
   toast('Playoff cleared.');
 }
+
+/* ═══════════════════════════════════════════════════
+   NOTICES — what has happened on the sessions you are in
+   ═══════════════════════════════════════════════════
+   In-app only, and worth being honest about the limit: there is no push or
+   email channel yet, so this answers "what changed since I last looked" for
+   somebody who opens the app. It cannot reach anybody who does not.
+
+   sideout_notices returns other people's comings and goings on sessions you
+   are on the list for and have not left, plus a session being called off —
+   the one thing still worth knowing after a session has ended.          */
+const Notices = {
+  key: 'sideout_notices_seen',
+  list: [],
+  t: null,
+
+  seen(){ try{ return Number(localStorage.getItem(this.key)) || 0; }catch(e){ return 0; } },
+  setSeen(ms){ try{ localStorage.setItem(this.key, String(ms)); }catch(e){} },
+
+  async load(){
+    if(!Auth.signedIn() || !Live.ready()) return;
+    let rows = [];
+    try{
+      rows = await Live.rpc('sideout_notices',
+        { p_club: CONFIG.club || 'sideout', p_since: null });
+    }catch(e){ return; }          /* a bell that cannot load is not worth a toast */
+    this.list = Array.isArray(rows) ? rows : [];
+    this.paint();
+  },
+
+  unread(){
+    const s = this.seen();
+    return this.list.filter(n => Date.parse(n.at) > s).length;
+  },
+
+  paint(){
+    const btn = document.getElementById('bell-btn');
+    const dot = document.getElementById('bell-n');
+    if(!btn || !dot) return;
+    /* With nothing joined there is nothing this could ever say, so it stays
+       out of the bar rather than sitting there empty. */
+    btn.hidden = !this.list.length;
+    const n = this.unread();
+    dot.hidden = !n;
+    dot.textContent = n > 9 ? '9+' : String(n);
+  },
+
+  line(n){
+    const when = Date.parse(n.at);
+    const fresh = when > this.seen();
+    const where = n.title || n.code;
+    if(n.kind === 'cancelled'){
+      return `<div class="nt nt-off${fresh ? ' new' : ''}">
+        <span class="nt-w"><b>${esc(where)} was called off</b>
+          <em>${n.who ? esc(n.who) : 'No reason given'}</em></span>
+        <span class="nt-t">${esc(timeAgo(when, true))}</span></div>`;
+    }
+    return `<div class="nt${fresh ? ' new' : ''}">
+      <span class="nt-w"><b>${esc(n.who || 'Somebody')}</b> ${
+        n.kind === 'left' ? 'dropped out of' : 'joined'} ${esc(where)}
+        <em>${esc(n.code)}</em></span>
+      <span class="nt-t">${esc(timeAgo(when, true))}</span></div>`;
+  },
+
+  open(){
+    const rows = this.list;
+    openSheet(`<h3>On your sessions</h3>
+      ${rows.length
+        ? `<div class="nt-list">${rows.map(n => this.line(n)).join('')}</div>`
+        : `<p class="sub">Nothing yet. When somebody joins a session you are on, or drops out of
+             one, it shows up here.</p>`}
+      <button class="btn btn-quiet" style="margin-top:12px" onclick="closeSheet()">Close</button>`);
+    /* Marked read on opening rather than on closing — you have seen them by
+       then, and closing is not something anyone should have to remember. */
+    if(rows.length) this.setSeen(Date.parse(rows[0].at));
+    this.paint();
+  },
+
+  start(){
+    this.load();
+    clearInterval(this.t);
+    /* A minute is quick enough for a roster filling up in the hour before a
+       session, and nowhere near often enough to be a drain on a phone. */
+    this.t = setInterval(()=> this.load(), 60000);
+  }
+};
 
 /* ═══════════════════════════════════════════════════
    THE RECAP — a finished night, as a page you can send
@@ -13395,6 +13566,9 @@ function saveCard(){
     paintAccount();
     if(wantsOrganize) startOrganizing(); else gateScreens();
     renderAll();
+    /* after Auth, because it needs to know who you are before it can know
+       which sessions are yours */
+    try{ Notices.start(); }catch(e){}
   }).catch(()=>{});
   if(scanned && Live.ready()){
     history.replaceState(null, '', location.pathname);

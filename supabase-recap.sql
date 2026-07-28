@@ -34,6 +34,7 @@ as $$
            count(*)::int as players
       from public.results r
      where r.club = coalesce(p_club, 'sideout') and r.code = p_code
+       and r.removed_at is null
   ),
   board as (
     select coalesce(jsonb_agg(jsonb_build_object(
@@ -49,6 +50,7 @@ as $$
                       lower(r.name)), '[]'::jsonb) as rows
       from public.results r
      where r.club = coalesce(p_club, 'sideout') and r.code = p_code
+       and r.removed_at is null
   ),
   -- The log lives on the session, which outlives the night but can be
   -- deleted on its own. An empty list here is normal, not an error.
@@ -73,6 +75,7 @@ as $$
       left join public.session_covers cv on cv.code = r.code and cv.club = r.club
       left join public.sessions s        on s.code  = r.code and s.club  = r.club
      where r.club = coalesce(p_club, 'sideout') and r.code = p_code
+       and r.removed_at is null
   )
   select case when (select players from head) = 0 then null else
     jsonb_build_object(

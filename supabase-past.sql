@@ -43,6 +43,8 @@ as $$
     left join public.sessions s
       on s.code = r.code and s.club = r.club
    where r.club = coalesce(p_club, 'sideout')
+     -- a night that was reset is put aside, not deleted; it must not show
+     and r.removed_at is null
    group by r.code
    order by 3 desc
    limit 60;
