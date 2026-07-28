@@ -7362,11 +7362,16 @@ function tierChip(points){
 /* Four is enough to recognise the last few nights; the rest is a
    scroll nobody asked for on a screen they opened to check something
    else. */
-const Profile = { allPast: false };
+/* `allPast` went with the "You have played" panel — the night by night list
+   shows everything without needing a toggle. */
 
+/* Only what is coming up. "You have played" used to sit under this, but it
+   listed every past night the club had run whether or not you were on it —
+   so a first-timer was shown a history that was not theirs. The night by
+   night panel is the honest version: it is built from your own result rows,
+   with where you finished on each. */
 function mySessionsHTML(){
   const up = (Feed.up || []).filter(r => r.mine);
-  const past = (Feed.past || []);
   const row = (r, done) =>{
     const when = done ? Feed.ms(r.played_at) : Feed.ms(r.starts_at);
     return `<button class="ms-row${done ? ' done' : ''}"
@@ -7380,14 +7385,6 @@ function mySessionsHTML(){
       <h2>You are going to</h2>
       ${up.length ? up.map(r => row(r, false)).join('')
         : '<p class="conn">Nothing booked. Anything listed shows on Home.</p>'}
-    </div>
-    <div class="panel">
-      <h2>You have played</h2>
-      ${past.length ? past.slice(0, Profile.allPast ? 60 : 4).map(r => row(r, true)).join('')
-        + (past.length > 4 ? `<button class="linky ms-more"
-            onclick="Profile.allPast = !Profile.allPast; paintMe()">${Profile.allPast
-              ? 'Show fewer' : 'View all ' + past.length + ' sessions'}</button>` : '')
-        : '<p class="conn">Your first finished session will show here.</p>'}
     </div>`;
 }
 function rankWord(place, total){
@@ -7460,6 +7457,13 @@ async function paintMe(){
       <button class="btn btn-quiet" style="margin-top:10px" onclick="AuthUI.confirmOut()">Sign out</button></div>`;
     return;
   }
+  /* The sessions panel reads the feed cache, and nothing here filled it —
+     open the profile before Home has fetched and it would claim you had
+     nothing booked when you had. */
+  if(Feed.up === null || Feed.past === null){
+    try{ await Promise.race([Feed.load(), new Promise(r => setTimeout(r, 6000))]); }catch(e){}
+  }
+
   let pts = { points: 0, nights: 0 };
   try{
     await Promise.race([Points.load(true), new Promise(r => setTimeout(r, 6000))]);
