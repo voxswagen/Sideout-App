@@ -1827,6 +1827,9 @@ body.casting{overflow:hidden}
 .seg button{flex:1;padding:10px 4px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
   background:var(--card-2);color:var(--ink-2);font-family:'Barlow Condensed',sans-serif;font-weight:800;
   font-size:12px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
+/* The format names are words rather than abbreviations now, so a couple of
+   them need two lines. Balanced rather than left with one word stranded. */
+.seg.fmt button{line-height:1.15;padding:9px 6px;text-wrap:balance}
 .seg button[aria-pressed="true"],
 .seg button.on{border-color:var(--court);background:var(--kitchen);color:var(--court-deep);
   box-shadow:inset 0 0 0 1px var(--court)}
@@ -2317,15 +2320,21 @@ body.casting{overflow:hidden}
     <label class="label" style="display:block;margin-bottom:6px">Format</label>
     <!-- Every entry in MODES belongs here. Court Wars was added to the app
          without being added to this list, so it could be started but never
-         switched to once a night was under way. -->
+         switched to once a night was under way.
+
+         These say the same thing as the cards on Setup, word for word. They
+         used to be shortened to fit — Mix and Mixed sat next to each other
+         meaning "social mix" and "mixed doubles", which is two formats a
+         letter apart, and King of the Court answered to "Ladder" here and
+         nowhere else. A format should have one name. -->
     <div class="seg fmt" style="margin-bottom:14px">
       <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')"><span class="lic" data-ic="swords"></span> Gauntlet</button>
-      <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Mix</button>
-      <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill</button>
-      <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> Ladder</button>
-      <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down</button>
+      <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Social Mix</button>
+      <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill-based</button>
+      <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> King of the Court</button>
+      <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down the River</button>
       <button id="fmt-wars"     onclick="switchFormat('wars')"><span class="lic" data-ic="trophy"></span> Court Wars</button>
-      <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed</button>
+      <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed Doubles</button>
       <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
     </div>
     <div id="live-level-courts" hidden style="margin-bottom:14px"></div>
