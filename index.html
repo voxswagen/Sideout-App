@@ -5158,9 +5158,33 @@ function renderLadder(){
 /* ═══════════════════════════════════════════════════
    SESSION START + SEEDING
    ═══════════════════════════════════════════════════ */
-function startSession(){
+/* Starting a night that was never put online works perfectly well — it just
+   works only here. Everything the club sees of a session comes from the
+   published snapshot: the card on Home, the link people join through, the
+   board on a television, the notices. None of that exists for a session that
+   was never shared, and the organizer usually has not thought about it until
+   somebody asks why they cannot see it. Said once, before the first round,
+   with the fix one tap away. */
+function startSession(anyway){
   const ids = activeIds();
   if(ids.length < 4){ toast('You need at least four players.'); return; }
+
+  if(!anyway && !S.live && Live.ready()){
+    openSheet(`<h3>Start without putting it online?</h3>
+      <p class="sub">This night will run on this phone and nowhere else.</p>
+      <div class="warn-box">
+        <b>Nobody else will see it.</b>
+        <span>It will not appear on the club's home page, there is no link for anyone to join or
+          follow the courts from, the big screen has nothing to show, and nobody gets a notice
+          about it. Scores and the ladder still work — but only from here.</span>
+      </div>
+      <button class="btn btn-go" onclick="closeSheet();goLiveThenStart()">Put it online first</button>
+      <button class="btn btn-quiet" style="margin-top:8px"
+        onclick="closeSheet();startSession(true)">Start anyway — just us here</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not yet</button>`);
+    return;
+  }
+
   const max = Math.floor(ids.length / 4);
   const n = Math.min(S.nCourts, max);
   if(n < S.nCourts) toast('Running ' + n + ' court' + (n>1?'s':'') + ' — that is what the numbers allow.');
@@ -5176,6 +5200,19 @@ function startSession(){
   renderAll(); go('play'); save();
   toast(S.mode==='kotc' ? 'Round 1 — climb the ladder.' : 'Round 1 — have fun out there.');
 }
+/* Going live can fail — the court wifi is what it is — and when it does the
+   organizer still has people waiting to play. So it starts either way, and
+   says which of the two happened rather than swallowing it. */
+async function goLiveThenStart(){
+  try{
+    await Live.goLive();
+    toast('Online — the link is live. Starting.');
+  }catch(e){
+    toast('Could not put it online, so it is running here for now.');
+  }
+  startSession(true);
+}
+
 function seed(ids, n){
   /* Court Wars deals per court from its own pools, so it seeds itself
      and leaves every other format's planner untouched. */
@@ -10841,7 +10878,11 @@ function startTournament(){
   if(!Tour.build()){ toast('Could not build the fixtures.'); return; }
   T.stage = 'pools';
   S.mode = 'tour';
-  if(!S.active) startSession();
+  /* Skips the offline warning deliberately: this is the end of the pool
+     setup, and the closeSheet() on the next line would shut the warning
+     before it could be read — leaving the fixtures drawn and the session
+     never started. */
+  if(!S.active) startSession(true);
   closeSheet(); renderAll(); renderTour(); save(); if(S.live) Live.beat();
   go('play');
   toast(T.fixtures.length + ' pool games drawn.');
