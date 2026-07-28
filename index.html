@@ -4864,6 +4864,12 @@ function togglePaid(id){
   if(!p) return;
   p.paid = !p.paid;
   save();
+  /* The pill is on two lists — the roster on Setup and the playing list on
+     Manage — and this only ever redrew the second. Tapping it on the roster
+     changed the record and saved it, but the pill you had just pressed sat
+     there still saying Owes until something else happened to repaint, which
+     looked exactly like the tap had not registered. */
+  renderRoster();
   renderPlayers();
   if(S.live) Live.beat();
 }

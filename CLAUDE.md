@@ -29,7 +29,7 @@ project do not quietly disagree.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v26`. Forgetting this means testers see last week's app and
+Currently `sideout-v27`. Forgetting this means testers see last week's app and
 report bugs that are already fixed.
 
 **Comment voice.** Comments in this codebase explain *why*, in plain prose,
