@@ -2163,6 +2163,10 @@ body.casting{overflow:hidden}
           <span class="glyph" data-ic="swords"></span>
           <span><b>Up &amp; Down the River</b><span>Every court is a rank and Court 1 is the top. The whole field is re-ranked at the end of every round, so a good round moves you up and a bad one moves you down. Works with any number of players.</span></span>
         </button>
+        <button class="mode" id="mode-wars" aria-pressed="false" onclick="setMode('wars')">
+          <span class="glyph" data-ic="trophy"></span>
+          <span><b>Court Wars</b><span>A pool on each court that plays itself out: everyone partners everyone once, same games, same rest. Then the bottom of each court swaps with the top of the one below.</span></span>
+        </button>
         <button class="mode" id="mode-tour" aria-pressed="false" onclick="setMode('tour')">
           <span class="glyph" data-ic="trophy"></span>
           <span><b>Tournament</b><span>Pools and a round robin, then a knockout bracket. Pick this before you start — the pools are drawn first.</span></span>
@@ -2297,10 +2301,15 @@ body.casting{overflow:hidden}
       <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill</button>
       <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> Ladder</button>
       <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down</button>
+      <button id="fmt-wars"     onclick="switchFormat('wars')"><span class="lic" data-ic="trophy"></span> Court Wars</button>
       <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed</button>
       <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
     </div>
     <div id="live-level-courts" hidden style="margin-bottom:14px"></div>
+    <!-- Court Wars reorders itself once every pool has played through; this
+         is for when a round has simply gone on long enough. -->
+    <button class="btn btn-quiet" id="wars-reorder" hidden style="margin-bottom:14px"
+      onclick="warsReorderSheet()">Reorder the courts now</button>
     <label class="label" style="display:block;margin-bottom:6px">Courts in play</label>
     <div class="stepper">
       <button onclick="changeCourtsLive(-1)" aria-label="One fewer court">−</button>
@@ -3244,6 +3253,9 @@ function blank(){
     /* called off is its own state: ended, but with nothing banked and a
        reason the watchers can read */
     cancelled:false, cancelNote:'',
+    /* Court Wars: the fixture list each pool drew, how far through it each
+       court is, and whether it has been all the way through once */
+    warPlan:null, warAt:null, warDone:null,
     log:[], snap:null
   };
 }
@@ -4412,6 +4424,12 @@ function courtTag(i, n, lv){
   if(S.mode === 'mix') return 'Mixed';
   if(S.mode === 'gauntlet') return i === 0 ? 'Top table' : 'Matched';
   if(S.mode === 'mixed') return 'Mixed';
+  /* how far this pool is through its own fixture list, which is the thing
+     players keep asking: how many more before we move */
+  if(S.mode === 'wars' && S.warPlan){
+    const p = Wars.progress(i);
+    return tierName(i, n) + (p.of ? ' · ' + Math.min(p.at + 1, p.of) + '/' + p.of : '');
+  }
   return tierName(i, n);
 }
 function tierName(i, n){
@@ -4477,8 +4495,8 @@ function toggleTheme(){
    date, the big screen, and the story card. */
 const MODE_NAME = { gauntlet:'Gauntlet', mix:'Social mix', levels:'Skill-based',
                     kotc:'King of the Court', mixed:'Mixed doubles', tour:'Tournament',
-                    river:'Up & Down the River' };
-const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river'];
+                    river:'Up & Down the River', wars:'Court Wars' };
+const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river','wars'];
 
 /* ══════════════════════════════════════════════════════
    TOURNAMENT
@@ -4688,7 +4706,7 @@ const Tour = {
     return out;
   }
 };
-const SPECIAL_MODES = ['kotc','mixed','tour','river'];
+const SPECIAL_MODES = ['kotc','mixed','tour','river','wars'];
 function toggleSpecial(force){
   const el = document.getElementById('special');
   if(!el) return;
@@ -5223,6 +5241,7 @@ function seed(ids, n){
   /* Court Wars deals per court from its own pools, so it seeds itself
      and leaves every other format's planner untouched. */
   if(S.mode === 'river'){ seedClimb(ids, n); return; }
+  if(S.mode === 'wars'){ warsSeed(ids, n); return; }
   if(S.mode === 'mixed'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMixed(false))); return; }
   if(S.mode === 'gauntlet'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planGauntlet(false))); return; }
   if(S.mode === 'levels'){
@@ -5297,6 +5316,7 @@ function nextRound(){
      rebuilt from the standings, then every court deals from its own
      pool. Taken before the shared planner so nothing else changes. */
   if(S.mode === 'river'){ climbRound(); return; }
+  if(S.mode === 'wars'){ warsRound(); return; }
   const plan = honourPairs(applyRest((S.mode === 'kotc') ? planKOTC() : (S.next || planRound())));
   if(plan){
     if(plan.crowned) plan.crowned.forEach(id => { if(P(id)) P(id).crowns++; });
@@ -5341,7 +5361,7 @@ function planRound(){
 function refreshPlan(){
   /* river deals per tier at the end of the round, so there is no shared plan
      to build — the same reason kotc is excluded. */
-  if(!S.active || S.mode === 'kotc' || S.mode === 'river'){ S.next = null; return; }
+  if(!S.active || ['kotc','river','wars'].indexOf(S.mode) >= 0){ S.next = null; return; }
   if(!S.next || S.planRound !== S.round){ S.next = planRound(); S.planRound = S.round; }
 }
 
@@ -5688,6 +5708,8 @@ function renderAll(){
   const llc = document.getElementById('live-level-courts');
   llc.hidden = !(S.active && S.mode === 'levels');
   if(!llc.hidden) llc.innerHTML = '<label class="label" style="display:block;margin-bottom:6px">What each court is for</label>' + levelCourtPicker('live');
+  const wr = document.getElementById('wars-reorder');
+  if(wr) wr.hidden = !(S.active && S.mode === 'wars');
   document.getElementById('courts-val').textContent = S.nCourts;
   syncRoundEndUI();
 }
@@ -7281,6 +7303,75 @@ function climbRound(){
     (held ? ' \u00b7 ' + held + ' holding tier' : '') + '.');
 }
 
+/* ── COURT WARS: the round, and the reorder ───────────── */
+function warsSeed(ids, n){
+  S.courts = new Array(n).fill(0).map(()=>({ teams: [[], []], win: null }));
+  Wars.start(ids, n);
+  Wars.fill();
+  S.queue = [];
+}
+
+/* The next game on each court's own list, which unlike Up & Down the River
+   is genuinely knowable: the schedule was drawn when the pool was made. */
+function warsNext(){
+  if(!S.warPlan) return S.courts.map(()=> null);
+  return S.courts.map((c, i) =>{
+    const list = S.warPlan[i] || [];
+    const g = list[(S.warAt[i] || 0) + 1];
+    return g ? [g[0].slice(), g[1].slice()] : null;
+  });
+}
+
+/* Every court steps to its next fixture. Once all of them have been through
+   their whole list the courts reorder on their own — that is the point of
+   the format — and the organizer can force it early from Manage. */
+function warsRound(){
+  (S.warAt || []).forEach((_, i) =>{ S.warAt[i] = (S.warAt[i] || 0) + 1; });
+  S.round++;
+  S.roundStart = Date.now();
+  Wars.fill();
+  if(Wars.everyPoolDone()){
+    warsReorder(true);
+    return;
+  }
+  Clock.reset(); syncRoundEndUI();
+  renderAll(); TV.paint(); save();
+  if(S.live) Live.beat();
+  toast('Round ' + S.round + ' — next on the list.');
+}
+
+function warsReorder(auto){
+  const before = (S.tiers || []).map(t => t.slice());
+  const tiers = Wars.reorder();
+  S.courts = new Array(tiers.length).fill(0).map(()=>({ teams: [[], []], win: null }));
+  Wars.fill();
+  Clock.reset(); syncRoundEndUI();
+  renderAll(); TV.paint(); save();
+  if(S.live) Live.beat();
+
+  let moved = 0;
+  tiers.forEach((t, i) => t.forEach(id =>{ if((before[i] || []).indexOf(id) < 0) moved++; }));
+  toast(auto
+    ? 'Every court played itself out — ' + moved + ' changed courts.'
+    : 'Courts reordered — ' + moved + ' moved.');
+}
+
+/* The organizer's own call, for when a round has gone on long enough. */
+function warsReorderSheet(){
+  if(S.mode !== 'wars' || !S.tiers){ toast('Only in Court Wars.'); return; }
+  const parts = S.tiers.map((t, i) => ordinal(i) + ' ' + Wars.progress(i).at + '/' + Wars.progress(i).of);
+  openSheet(`<h3>Reorder the courts now?</h3>
+    <p class="sub">Each court is part way through its list — ${esc(parts.join(' · '))}. Reordering
+      early uses the results so far, and every court starts a fresh list.</p>
+    <div class="warn-box">
+      <b>Nobody loses their record.</b>
+      <span>Wins, crowns and the ladder all carry on. It is only which court each player is on
+        that changes.</span>
+    </div>
+    <button class="btn btn-go" onclick="closeSheet();warsReorder(false)">Reorder now</button>
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep playing</button>`);
+}
+
 function seedClimb(ids, n){
   S.tiers = Climb.start(ids.slice(), n);
   S.tierStats = {};
@@ -7303,6 +7394,142 @@ function fillClimb(){
 }
 
 /* ── COURT WARS ─────────────────────────────────────────
+   A pool per court that plays itself out properly before anybody moves.
+   Everyone partners everyone once, which also spreads the opponents around,
+   and gives every player the same number of games and the same rest. When
+   the pools have played through, the bottom of each court swaps with the top
+   of the one below — promotion and relegation rather than re-ranking the
+   whole room, so a court keeps its character from round to round.
+
+   How many swap scales with the pool: a fixed two would barely stir ten
+   players and would be half the court in a pool of four.
+
+   Not to be confused with Up & Down the River above, which re-ranks the
+   entire field every single round. This one lets a court settle first.   */
+const Wars = {
+  /* max(1, a quarter) each way: 4 -> 1, 8 -> 2, 10 -> 3, 16 -> 4 */
+  moves(n){ return Math.max(1, Math.round(n / 4)); },
+
+  /* The circle method: rotate everyone but the first and read pairs off the
+     ends. Gives rounds of disjoint pairs covering every partnership once. */
+  rounds(ids){
+    const a = ids.slice();
+    if(a.length % 2) a.push(null);          /* a bye keeps the circle even */
+    const n = a.length, out = [];
+    for(let r = 0; r < n - 1; r++){
+      const pairs = [];
+      for(let i = 0; i < n / 2; i++){
+        const x = a[i], y = a[n - 1 - i];
+        if(x && y) pairs.push([x, y]);
+      }
+      out.push(pairs);
+      a.splice(1, 0, a.pop());
+    }
+    return out;
+  },
+
+  /* Two pairs make a game. A round with an odd pair left over carries it,
+     and the carried ones are matched with each other at the end. With some
+     pool sizes one partnership cannot be scheduled at all — six, seven and
+     ten have an odd number of partnerships — and that is arithmetic rather
+     than a bug. */
+  plan(ids){
+    const games = [], spare = [];
+    for(const pairs of this.rounds(shuffle(ids.slice()))){
+      let i = 0;
+      for(; i + 1 < pairs.length; i += 2) games.push([pairs[i], pairs[i + 1]]);
+      if(i < pairs.length) spare.push(pairs[i]);
+    }
+    const used = new Array(spare.length).fill(false);
+    for(let i = 0; i < spare.length; i++){
+      if(used[i]) continue;
+      for(let j = i + 1; j < spare.length; j++){
+        if(used[j]) continue;
+        if(new Set([...spare[i], ...spare[j]]).size === 4){
+          games.push([spare[i], spare[j]]); used[i] = used[j] = true; break;
+        }
+      }
+    }
+    return games;
+  },
+
+  /* Rank inside a pool: wins, then points difference, then games played —
+     somebody who sat out through no fault of their own should not be
+     relegated for it. */
+  rank(ids){
+    return ids.slice().sort((a, b) =>{
+      const p = P(a) || {}, q = P(b) || {};
+      if((q.w || 0) !== (p.w || 0)) return (q.w || 0) - (p.w || 0);
+      const dp = (p.pf || 0) - (p.pa || 0), dq = (q.pf || 0) - (q.pa || 0);
+      if(dq !== dp) return dq - dp;
+      return (q.g || 0) - (p.g || 0);
+    });
+  },
+
+  start(ids, n){
+    S.tiers = Climb.spread(shuffle(ids.slice()), n);
+    S.warPlan = S.tiers.map(pool => this.plan(pool));
+    S.warAt = S.tiers.map(()=> 0);
+    S.warDone = S.tiers.map(()=> false);
+    S.tierStats = {};
+  },
+
+  /* Deal every court whatever its schedule says is next. A court that has
+     played its whole list starts it again on a fresh draw rather than
+     standing empty while the others finish — but it is marked done, and the
+     courts only reorder once every pool has been through. */
+  fill(){
+    if(!S.tiers || !S.warPlan) return;
+    S.courts.forEach((c, i) =>{
+      const pool = S.tiers[i] || [];
+      if(pool.length < 4){ c.teams = [[], []]; return; }
+      let list = S.warPlan[i] || [];
+      if(S.warAt[i] >= list.length){
+        S.warDone[i] = true;
+        list = S.warPlan[i] = this.plan(pool);
+        S.warAt[i] = 0;
+      }
+      const g = list[S.warAt[i]];
+      c.teams = g ? [g[0].slice(), g[1].slice()] : [[], []];
+      c.win = null;
+    });
+  },
+
+  /* Where each court is up to, for the screen. */
+  progress(i){
+    const list = (S.warPlan || [])[i] || [];
+    return { at: Math.min((S.warAt || [])[i] || 0, list.length), of: list.length };
+  },
+
+  everyPoolDone(){
+    return (S.warDone || []).length > 0 && (S.warDone || []).every(Boolean);
+  },
+
+  /* Promotion and relegation between neighbours: the bottom few of a court
+     change places with the top few of the court below. Swapping rather than
+     moving keeps every pool the size it was. */
+  reorder(){
+    const tiers = (S.tiers || []).map(pool => this.rank(pool));
+    for(let i = 0; i < tiers.length - 1; i++){
+      const up = tiers[i], down = tiers[i + 1];
+      const k = Math.max(1, Math.min(this.moves(up.length), this.moves(down.length),
+                                     Math.floor(up.length / 2), Math.floor(down.length / 2)));
+      if(k < 1) continue;
+      const relegated = up.splice(up.length - k, k);
+      const promoted  = down.splice(0, k);
+      up.push(...promoted);
+      down.unshift(...relegated);
+    }
+    S.tiers = tiers;
+    S.warPlan = tiers.map(pool => this.plan(pool));
+    S.warAt = tiers.map(()=> 0);
+    S.warDone = tiers.map(()=> false);
+    S.tierStats = {};
+    return tiers;
+  }
+};
+
+/* ── UP & DOWN THE RIVER ─────────────────────────────────
    Courts are ranks, not fixed foursomes. Court 1 is the top tier and
    the last court is the bottom; each holds a pool of players who
    rotate through games among themselves. After every round everybody
@@ -11045,6 +11272,16 @@ function applyFormat(m){
     S.courts = new Array(n).fill(0).map(()=>({ teams: [[], []], win: null }));
     fillClimb();
   }
+  /* seeded on the night's form so far, then each pool draws its own list */
+  else if(m === 'wars'){
+    S.courts = new Array(n).fill(0).map(()=>({ teams: [[], []], win: null }));
+    S.tiers = Climb.spread(Wars.rank(activeIds()), n);
+    S.warPlan = S.tiers.map(pool => Wars.plan(pool));
+    S.warAt = S.tiers.map(()=> 0);
+    S.warDone = S.tiers.map(()=> false);
+    S.tierStats = {};
+    Wars.fill();
+  }
   else if(m === 'mixed'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMixed(false))); }
   else if(m === 'gauntlet'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planGauntlet(false))); }
   else { S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMix(false))); }
@@ -13885,6 +14122,7 @@ function nextLineups(){
      on results that have not been tapped in yet. Better to show nothing than
      a guess that keeps changing its mind. */
   if(S.mode === 'river') return S.courts.map(()=> null);
+  if(S.mode === 'wars') return warsNext();
   if(rolling()) return S.courts.map((c,i)=> c.win === null ? null : (refillPlan(i) || {}).teams || null);
   if(S.mode === 'kotc'){
     const full = honourPairs(planKOTC());
