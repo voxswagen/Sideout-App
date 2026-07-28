@@ -2322,6 +2322,14 @@ body.casting{overflow:hidden}
 <section class="screen" id="screen-play">
   <div id="tour-run" hidden></div>
   <div id="courts"></div>
+  <!-- Court Wars and Up & Down the River split everyone into pools. Who is
+       in yours matters more than which court it is, and an organizer gets
+       asked to change it. -->
+  <div class="panel" id="pools-panel" hidden>
+    <h2>The pools</h2>
+    <p class="hint tight" id="pools-note"></p>
+    <div class="pools" id="pools-body"></div>
+  </div>
   <div class="panel" id="queue-panel" hidden>
     <h2>Waiting to come on <span class="label" id="queue-count"></span></h2>
     <p class="hint tight" id="queue-hint">The first two names step onto the bottom court next round.</p>
@@ -5798,6 +5806,7 @@ function renderAll(){
   if(!llc.hidden) llc.innerHTML = '<label class="label" style="display:block;margin-bottom:6px">What each court is for</label>' + levelCourtPicker('live');
   const wr = document.getElementById('wars-reorder');
   if(wr) wr.hidden = !(S.active && S.mode === 'wars');
+  renderPools();
   document.getElementById('courts-val').textContent = S.nCourts;
   syncRoundEndUI();
 }
@@ -5833,6 +5842,7 @@ function renderCourts(){
     return `<span class="chip${!pooled && k < 2 ? ' up-next' : ''}">${esc(nm(id))}<em>${esc(tag)}</em></span>`;
   }).join('');
 
+  renderPools();
   paintDock();
   Auto.maybeStart();
 }
@@ -7459,6 +7469,94 @@ function warsRound(){
   toast('Round ' + S.round + ' — next on the list.');
 }
 
+/* ── who is in which pool, and moving them ──────────────
+   The court tag says which court somebody is on; it does not say who they
+   are playing with all evening, which is the thing an organizer is actually
+   asked about — "can I be with my partner", "these two should not be on the
+   same court", "she has come with a beginner". This shows each pool and lets
+   people be moved between them.
+
+   Moving somebody redraws that court's fixture list, because the list is
+   built from exactly the people in the pool: leaving it alone would mean
+   games scheduled for a player who is no longer there. Both affected courts
+   start their list again, and only those two are re-dealt — the others may
+   be part way through a game nobody has reported yet.               */
+function renderPools(){
+  const box = document.getElementById('pools-panel');
+  if(!box) return;
+  const pooled = S.active && (S.mode === 'wars' || S.mode === 'river') && S.tiers;
+  box.hidden = !pooled;
+  if(!pooled) return;
+
+  const on = new Set(onCourtIds());
+  const body = S.tiers.map((pool, i) =>{
+    const p = S.mode === 'wars' ? Wars.progress(i) : null;
+    const names = (pool || []).map(id =>{
+      if(!P(id)) return '';
+      const here = on.has(id);
+      return `<button class="pool-p${here ? ' on' : ''}"
+        onclick="poolPlayerSheet('${id}')" title="${here ? 'On court now' : 'Resting'}">
+        <span>${esc(nm(id))}</span><i>${here ? 'on court' : (P(id).w || 0) + 'W'}</i></button>`;
+    }).join('');
+    return `<div class="pool">
+      <h4>${ordinal(i)}${p && p.of ? ` <span>${Math.min(p.at + 1, p.of)}/${p.of}</span>` : ''}</h4>
+      ${names || '<p class="hint tight">Nobody here yet.</p>'}
+    </div>`;
+  }).join('');
+
+  document.getElementById('pools-body').innerHTML = body;
+  const note = document.getElementById('pools-note');
+  if(note) note.textContent = S.mode === 'wars'
+    ? 'Tap anybody to move them. Their new court draws a fresh list.'
+    : 'Up & Down the River rebuilds these every round from the standings, so a move here only lasts the round.';
+}
+
+function poolPlayerSheet(id){
+  const p = P(id);
+  if(!p || !S.tiers) return;
+  const from = poolOf(id);
+  if(from == null) return;
+  const others = S.tiers.map((_, i) => i).filter(i => i !== from);
+  openSheet(`<h3>${esc(nm(id))}</h3>
+    <p class="sub">On ${esc(ordinal(from))}${S.mode === 'wars'
+      ? ` — ${(S.tiers[from] || []).length} in that pool` : ''}. ${p.w || 0} won, ${p.l || 0} lost.</p>
+    ${S.mode === 'wars' ? `<div class="warn-box">
+      <b>Moving somebody redraws two lists.</b>
+      <span>The fixture list is built from exactly who is in the pool, so the court they leave and
+        the court they join both start theirs again. Nobody loses a win or a crown.</span>
+    </div>` : ''}
+    ${others.map(i => `<button class="btn btn-quiet" style="margin-top:8px"
+      onclick="closeSheet();warsMove('${id}',${i})">Move to ${esc(ordinal(i))}</button>`).join('')}
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Leave them</button>`);
+}
+
+function warsMove(id, to){
+  if(!S.tiers || !P(id)) return;
+  const from = poolOf(id);
+  if(from == null || from === to) return;
+
+  S.tiers[from] = (S.tiers[from] || []).filter(x => x !== id);
+  S.tiers[to] = (S.tiers[to] || []).concat([id]);
+
+  if(S.mode === 'wars'){
+    [from, to].forEach(i =>{
+      S.warPlan[i] = Wars.plan(S.tiers[i]);
+      S.warAt[i] = 0;
+      S.warDone[i] = false;
+      Wars.fillCourt(i);
+    });
+    /* the pools have changed shape, so the finished-early question is worth
+       asking again when they next fall out of step */
+    S.warAsked = false;
+  } else {
+    fillClimb();
+  }
+
+  renderAll(); TV.paint(); save();
+  if(S.live) Live.beat();
+  toast(nm(id) + ' moved to ' + ordinal(to) + '.');
+}
+
 function warsPartlyDoneSheet(finished, midway){
   const who = finished.length === 1
     ? ordinal(finished[0].i) + ' has played everyone'
@@ -7669,6 +7767,26 @@ const Wars = {
       c.teams = g ? [g[0].slice(), g[1].slice()] : [[], []];
       c.win = null;
     });
+  },
+
+  /* One court, without disturbing the others. Wars.fill() rewrites every
+     court, which is right at a round boundary and wrong when somebody is
+     moved mid-round — the other courts may be part way through a game
+     nobody has tapped a winner on yet. */
+  fillCourt(i){
+    const c = S.courts[i];
+    const pool = (S.tiers || [])[i] || [];
+    if(!c) return;
+    if(pool.length < 4){ c.teams = [[], []]; c.win = null; return; }
+    let list = (S.warPlan || [])[i] || [];
+    if((S.warAt[i] || 0) >= list.length){
+      S.warDone[i] = true;
+      list = S.warPlan[i] = this.plan(pool);
+      S.warAt[i] = 0;
+    }
+    const g = list[S.warAt[i]];
+    c.teams = g ? [g[0].slice(), g[1].slice()] : [[], []];
+    c.win = null;
   },
 
   /* Where each court is up to, for the screen. */
