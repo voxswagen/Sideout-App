@@ -96,6 +96,14 @@ subscription was made, and no amount of code changes that. So "notifications
 do not work on my iPhone" is almost always "it has not been installed". The
 toggle says so rather than failing silently. Android has no such rule.
 
+**Reminders are the exception to that**, because nobody does anything to
+trigger them. `pg_cron` calls the `remind` Edge Function every ten minutes;
+`sideout_reminders_due` returns what falls in the windows (20–28 hours out,
+40–80 minutes out) and `sideout_reminder_claim` writes the row *before*
+anything is sent — only the caller that won the insert sends, so a retry or
+an overlapping run cannot double-send. Both are revoked from `anon` and
+`authenticated`: the sender uses the service role.
+
 **Push is sent by the device that did the thing**, not by a database trigger,
 so there is no service credential sitting inside Postgres. The `push` Edge
 Function checks the database that the join, leave or cancellation actually
