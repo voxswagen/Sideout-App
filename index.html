@@ -7545,7 +7545,44 @@ const Wars = {
         }
       }
     }
-    return games;
+    return this.order(games);
+  },
+
+  /* Equal games is not equal rest, and only one of those is felt. The games
+     above are drawn a round at a time and the odd ones left over are tacked
+     on the end, which left the people in them waiting a long while and then
+     playing several on the trot — in a pool of ten, somebody sat out seven
+     games between their own when a fair turn is two and a half.
+
+     This reorders the same games so the next one up is always the one whose
+     players have been sitting longest. It only changes the order, never the
+     set, so every partnership is still played exactly once. A pool of ten
+     goes from a seven-game wait to three, and from seventeen back-to-back
+     games to one. Pools of four and five cannot be helped: with only one
+     court there is nobody else to put on. */
+  order(games){
+    const last = new Map();
+    const left = games.slice();
+    const out = [];
+    while(left.length){
+      let best = 0, bestMin = -1, bestSum = -1;
+      for(let i = 0; i < left.length; i++){
+        const four = [...left[i][0], ...left[i][1]];
+        let min = Infinity, sum = 0;
+        for(const p of four){
+          const since = out.length - (last.has(p) ? last.get(p) : -1);
+          if(since < min) min = since;
+          sum += since;
+        }
+        if(min > bestMin || (min === bestMin && sum > bestSum)){
+          best = i; bestMin = min; bestSum = sum;
+        }
+      }
+      const g = left.splice(best, 1)[0];
+      [...g[0], ...g[1]].forEach(p => last.set(p, out.length));
+      out.push(g);
+    }
+    return out;
   },
 
   /* Rank inside a pool: wins, then points difference, then games played —
