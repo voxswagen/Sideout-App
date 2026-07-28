@@ -372,6 +372,11 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),
    rows came out ragged. Make them fill the column like the others. */
 button.pr{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
 button.pr:hover{border-color:var(--edge-2);background:var(--card)}
+/* The playing row behaves like a button without being one — it has to hold
+   the paid pill, and a button inside a button is thrown out by the parser. */
+.pr-tap{cursor:pointer;text-align:left}
+.pr-tap:hover{border-color:var(--edge-2);background:var(--card)}
+.pr-tap:focus-visible{outline:2px solid var(--court);outline-offset:2px}
 /* the trailing controls sit against the right edge, so the rows
    line up down the list instead of drifting with name length */
 /* Everything at the end of a player row travels as one block, pinned right.
@@ -5124,7 +5129,16 @@ function playingRows(){
     const p = P(id);
     const where = on.includes(id) ? 'on court' : (S.active ? 'waiting' : '');
     const when = timeAgo(p.at, true);
-    return `<button class="pr" style="text-align:left" onclick="playerSheet('${id}')">
+    /* A div, not a button. This row carries the paid pill, which is itself a
+       button, and a button cannot contain another one — the parser closes the
+       outer one the moment it meets the inner, so everything after it became
+       a sibling of the row instead of part of it. That is why the pill, the
+       level chip and the ⋯ were stacking underneath: they had fallen out of
+       the flex container entirely, and no amount of CSS on .pr could reach
+       them. The roster on Setup was always a div, which is why it never had
+       this. */
+    return `<div class="pr pr-tap" role="button" tabindex="0" onclick="playerSheet('${id}')"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();playerSheet('${id}')}">
       ${avatar(p.name, pPhoto(p), 'sm')}
       <span class="nm"><span class="nmn">${esc(p.name)}</span>${(() => { const b = partnerOf(id);
         if(b) return `<em class="pairtag">${icon('link')} with ${esc(nm(b))}${where ? '<span class="dot"> \u00b7 </span>' + where : ''}</em>`;
@@ -5133,7 +5147,7 @@ function playingRows(){
       <span class="pr-end">${duprBadge(p.dupr, true)}${paidPill(id, p.paid)}<span
         class="lvl ${p.level}"><i class="lv-l">${LEVELS[p.level]}</i><i class="lv-s">${LEVEL_SHORT[p.level]}</i></span></span>
       <span class="x">⋯</span>
-    </button>`;
+    </div>`;
   }).join('');
   return rows || noHits('is playing');
 }
