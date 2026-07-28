@@ -125,8 +125,15 @@ button{cursor:pointer;border:none;background:none;padding:0}
 /* ═════════ SHELL ═════════ */
 .wrap{max-width:560px;margin:0 auto;padding:0 14px}
 
+/* The header and the tabs stick as one. Each was sticky at top:0 on its own,
+   so the second to arrive slid under the first and the two overlapped as the
+   page moved — the tabs disappearing behind the header, and whatever the
+   header was showing appearing to sit on top of the content. Sticking the
+   pair means they hold their own heights and the content passes cleanly
+   beneath both. */
+.topstack{position:sticky;top:0;z-index:40}
 .top{
-  position:sticky;top:0;z-index:40;
+  z-index:40;
   background:linear-gradient(180deg,var(--court-deep),#0B2C4A);
   color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
   display:flex;justify-content:center;
@@ -935,8 +942,9 @@ input.bad{border-color:var(--fault)!important}
 .btn-ghost:hover{background:rgba(255,255,255,.2)}
 /* While a session is on, the tabs are the whole navigation — three
    places, always in the same order, no menu to open. */
+/* No sticky of its own: .topstack carries both. */
 .stabs{display:flex;justify-content:center;gap:2px;background:var(--card);
-  border-bottom:1px solid var(--edge);position:sticky;top:0;z-index:30}
+  border-bottom:1px solid var(--edge)}
 .stab{flex:0 1 150px;padding:14px 8px 12px;background:none;border:0;cursor:pointer;
   font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;
   letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);
@@ -1912,6 +1920,10 @@ body.casting{overflow:hidden}
 </head>
 <body>
 
+<!-- The session header and its tabs are one sticky unit. Stuck separately
+     they both claimed top:0 and rode over each other on the way up the
+     page. -->
+<div class="topstack">
 <header class="top"><div class="top-in">
   <button class="icon-btn back-btn" id="back-btn" onclick="leaveToHome()"
     aria-label="Back to your home page" title="Back to your home page">←</button>
@@ -1934,6 +1946,7 @@ body.casting{overflow:hidden}
   <button class="stab" id="stab-stats"   onclick="go('stats')">Stats</button>
   <button class="stab" id="stab-playoff" onclick="go('playoff')" hidden>Playoff</button>
 </nav>
+</div><!-- /topstack -->
 
 <header class="appbar" id="appbar" hidden>
   <button class="burger" id="burger" onclick="Drawer.open()" aria-label="Menu" aria-expanded="false">
