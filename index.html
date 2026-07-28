@@ -2295,7 +2295,7 @@ body.casting{overflow:hidden}
   <div id="courts"></div>
   <div class="panel" id="queue-panel" hidden>
     <h2>Waiting to come on <span class="label" id="queue-count"></span></h2>
-    <p class="hint tight">The first two names step onto the bottom court next round.</p>
+    <p class="hint tight" id="queue-hint">The first two names step onto the bottom court next round.</p>
     <div class="queue" id="queue"></div>
   </div>
 </section>
@@ -2944,7 +2944,7 @@ const Live = {
         score: (c.sc && c.sc.w !== null) ? [c.sc.w, c.sc.l] : null
       })),
       next: nextLineups().map(n => n ? n.map(t => t.filter(Boolean).map(id => nm(id))) : null),
-      queue: S.queue.filter(id => P(id) && !P(id).out).map(id => nm(id)),
+      queue: waitingIds().map(id => nm(id)),
       roster: (()=>{ const on = new Set(onCourtIds());
         return S.order.filter(id => P(id)).map(id =>{ const p = P(id);
           /* the member id travels, the photo never does — watchers
@@ -4425,6 +4425,30 @@ function toast(msg){
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function activeIds(){ return S.order.filter(id => P(id) && !P(id).out); }
 function onCourtIds(){ return S.courts.flatMap(c => c.teams.flat()).filter(Boolean); }
+
+/* Who is not on a court at this moment.
+   The pool formats have no shared queue: everybody belongs to a court and
+   takes their turn inside it, so S.queue is empty by design — which is why
+   the big screen was announcing "Nobody waiting" to a room with half its
+   players sitting down. They answer with whoever is resting in each pool,
+   read in court order. Every other format still answers with the queue. */
+function waitingIds(){
+  if((S.mode === 'wars' || S.mode === 'river') && S.tiers){
+    const on = new Set(onCourtIds());
+    const out = [];
+    S.tiers.forEach(pool => (pool || []).forEach(id =>{
+      if(P(id) && !P(id).out && !on.has(id)) out.push(id);
+    }));
+    return out;
+  }
+  return S.queue.filter(id => P(id) && !P(id).out);
+}
+/* Which court somebody's pool belongs to, or null outside the pool formats. */
+function poolOf(id){
+  if(!S.tiers) return null;
+  const i = S.tiers.findIndex(t => (t || []).indexOf(id) >= 0);
+  return i < 0 ? null : i;
+}
 function ordinal(i){ return 'Court ' + (i+1); }
 /* Plain words, no markup. This goes into the published snapshot as the
    court's tag, and a watcher or the big screen renders it as text — so when
@@ -5739,13 +5763,24 @@ function renderCourts(){
   const upNext = nextLineups();
   box.innerHTML = S.courts.map((c,i) => courtCard(c,i,N,upNext[i])).join('');
 
-  // queue
-  const q = S.queue.filter(id => P(id) && !P(id).out);
+  // who is sitting down — the queue, or the resting half of each pool
+  const pooled = (S.mode === 'wars' || S.mode === 'river') && S.tiers;
+  const q = waitingIds();
   const qp = document.getElementById('queue-panel');
   qp.hidden = q.length === 0;
   document.getElementById('queue-count').textContent = q.length + ' waiting';
-  document.getElementById('queue').innerHTML = q.map((id,k)=>
-    `<span class="chip${k<2?' up-next':''}">${esc(nm(id))}<em>${P(id).g}g</em></span>`).join('');
+  const hint = document.getElementById('queue-hint');
+  if(hint) hint.textContent = pooled
+    ? 'Resting between their own court’s games. Nobody here is waiting for a place — they have one.'
+    : 'The first two names step onto the bottom court next round.';
+  /* In a pool format the useful thing is which court somebody belongs to,
+     not how many games they have had — they are not queueing for a place,
+     they are between games on a court that is already theirs. */
+  document.getElementById('queue').innerHTML = q.map((id,k)=>{
+    const c = pooled ? poolOf(id) : null;
+    const tag = c == null ? `${P(id).g}g` : ordinal(c);
+    return `<span class="chip${!pooled && k < 2 ? ' up-next' : ''}">${esc(nm(id))}<em>${esc(tag)}</em></span>`;
+  }).join('');
 
   paintDock();
   Auto.maybeStart();
@@ -14248,7 +14283,7 @@ const TV = {
         ${nextRow}
       </div>`;
     }).join('');
-    const q = S.queue.filter(id => P(id) && !P(id).out).map(nm);
+    const q = waitingIds().map(nm);
     paintTVJoin();
     document.getElementById('tv-queue').textContent = q.length ? q.join('  ·  ') : 'Nobody waiting';
   }
