@@ -1828,8 +1828,24 @@ body.casting{overflow:hidden}
   background:var(--card-2);color:var(--ink-2);font-family:'Barlow Condensed',sans-serif;font-weight:800;
   font-size:12px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
 /* The format names are words rather than abbreviations now, so a couple of
-   them need two lines. Balanced rather than left with one word stranded. */
-.seg.fmt button{line-height:1.15;padding:9px 6px;text-wrap:balance}
+   them need two lines. Balanced rather than left with one word stranded, and
+   every button the same height whether it wraps or not — a grid of tiles at
+   three different heights reads as a mistake. */
+.seg.fmt button{line-height:1.15;padding:9px 6px;text-wrap:balance;
+  min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px}
+/* What we are playing, and the way in to changing it. */
+.fmt-now{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
+  padding:11px 13px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
+  background:var(--card-2);color:var(--ink);transition:border-color .15s}
+.fmt-now:hover{border-color:var(--court)}
+.fmt-now .lbl{flex:1;min-width:0}
+.fmt-now b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:15px;letter-spacing:.07em;text-transform:uppercase}
+.fmt-now .lbl span{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
+.fmt-now .chev{color:var(--ink-3);font-size:15px;transition:transform .22s}
+.fmt-now[aria-expanded="true"]{border-color:var(--court)}
+.fmt-now[aria-expanded="true"] .chev{transform:rotate(180deg)}
+#fmt-list{margin-top:10px}
 .seg button[aria-pressed="true"],
 .seg button.on{border-color:var(--court);background:var(--kitchen);color:var(--court-deep);
   box-shadow:inset 0 0 0 1px var(--court)}
@@ -2318,6 +2334,16 @@ body.casting{overflow:hidden}
   <div class="panel">
     <h2>Session settings</h2>
     <label class="label" style="display:block;margin-bottom:6px">Format</label>
+    <!-- Shut until asked. Eight live buttons under a thumb, on the screen an
+         organizer opens mid-round, is a misclick waiting to happen — and a
+         misclick here redraws every court. Collapsed it cannot be hit at all,
+         and it answers "what are we playing?" without opening anything. -->
+    <button class="fmt-now" id="fmt-now" onclick="toggleFormats()" aria-expanded="false"
+      aria-controls="fmt-list">
+      <span class="lbl"><b id="fmt-now-name">Gauntlet</b><span>Tap to change the format</span></span>
+      <span class="chev">▾</span>
+    </button>
+    <div id="fmt-list" hidden>
     <!-- Every entry in MODES belongs here. Court Wars was added to the app
          without being added to this list, so it could be started but never
          switched to once a night was under way.
@@ -2327,15 +2353,21 @@ body.casting{overflow:hidden}
          meaning "social mix" and "mixed doubles", which is two formats a
          letter apart, and King of the Court answered to "Ladder" here and
          nowhere else. A format should have one name. -->
-    <div class="seg fmt" style="margin-bottom:14px">
-      <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')"><span class="lic" data-ic="swords"></span> Gauntlet</button>
-      <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Social Mix</button>
-      <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill-based</button>
-      <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> King of the Court</button>
-      <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down the River</button>
-      <button id="fmt-wars"     onclick="switchFormat('wars')"><span class="lic" data-ic="trophy"></span> Court Wars</button>
-      <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed Doubles</button>
-      <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
+      <!-- Grouped the way Setup groups them: the three anybody can run on a
+           normal night, then the ones with rules of their own. -->
+      <div class="seg fmt">
+        <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')"><span class="lic" data-ic="swords"></span> Gauntlet</button>
+        <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Social Mix</button>
+        <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill-based</button>
+      </div>
+      <label class="label" style="display:block;margin:12px 0 6px">Special formats</label>
+      <div class="seg fmt">
+        <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> King of the Court</button>
+        <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed Doubles</button>
+        <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down the River</button>
+        <button id="fmt-wars"     onclick="switchFormat('wars')"><span class="lic" data-ic="trophy"></span> Court Wars</button>
+        <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
+      </div>
     </div>
     <div id="live-level-courts" hidden style="margin-bottom:14px"></div>
     <!-- Court Wars reorders itself once every pool has played through; this
@@ -5758,6 +5790,9 @@ function renderAll(){
     const f = document.getElementById('fmt-'+k);
     if(f) f.setAttribute('aria-pressed', String(k===S.mode));
   });
+  /* the collapsed row has to say what it is collapsed over */
+  const fn = document.getElementById('fmt-now-name');
+  if(fn) fn.textContent = MODE_NAME[S.mode] || 'Gauntlet';
   const llc = document.getElementById('live-level-courts');
   llc.hidden = !(S.active && S.mode === 'levels');
   if(!llc.hidden) llc.innerHTML = '<label class="label" style="display:block;margin-bottom:6px">What each court is for</label>' + levelCourtPicker('live');
@@ -11384,7 +11419,19 @@ function tourToBracket(){
   toast('Bracket drawn \u2014 ' + teams.length + ' through.');
 }
 
+/* Open on request, shut again once something has been chosen — leaving it
+   hanging open is how the next scroll turns into another misclick. */
+function toggleFormats(open){
+  const btn = document.getElementById('fmt-now');
+  const list = document.getElementById('fmt-list');
+  if(!btn || !list) return;
+  const show = open === undefined ? list.hidden : !!open;
+  list.hidden = !show;
+  btn.setAttribute('aria-expanded', String(show));
+}
+
 function switchFormat(m){
+  toggleFormats(false);
   if(m === S.mode) return;
   if(!S.active){ setMode(m); return; }
   const pending = S.courts.some(c => c.win !== null);
