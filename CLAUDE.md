@@ -9,16 +9,18 @@ no framework. Edit the file directly.
 
 ---
 
-## Outstanding — do this first
+## Working against Supabase directly
 
-**`sideout_unarchive` may not exist yet in Supabase.** The Reset button on
-ended-session cards calls it and will fail until the SQL is run. The full
-function is at the bottom of this file under "Pending SQL".
+The project is reachable through the Supabase MCP server, configured in
+`.mcp.json` and scoped to this project ref alone. The token lives in a
+`SUPABASE_ACCESS_TOKEN` user environment variable, not in the repo. It is not
+read-only — DDL against production works — so read `list_tables` before
+changing shape, and remember there is real club data behind it: 55 members and
+the result rows the whole ladder is derived from.
 
-Its organizer guard is a *guess*. Before running it, open
-`sideout_session_delete` in the SQL editor and copy that function's guard
-verbatim into the marked block, so there is one definition of "may organize"
-rather than two that can drift.
+`supabase-unarchive.sql` is a copy of what is deployed, not a to-do. Anything
+applied to the database should be written back into a file like it, so the repo
+and the project do not quietly disagree.
 
 ---
 
@@ -27,7 +29,7 @@ rather than two that can drift.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v20`. Forgetting this means testers see last week's app and
+Currently `sideout-v21`. Forgetting this means testers see last week's app and
 report bugs that are already fixed.
 
 **Comment voice.** Comments in this codebase explain *why*, in plain prose,
@@ -61,6 +63,18 @@ saved session state for that.
 by a session cannot be reversed, which is why the session Reset warns that
 ratings are not put back. Making it reversible needs a schema change: store
 each player's pre-session rating alongside the result row.
+
+**`state.log` is stored newest first.** Each finished game is unshifted onto
+the front, so reading it in order runs the night backwards — round 13 down to
+round 1. Anything showing the night to a person has to sort it. `sideout_recap`
+does this in SQL (round, then court, then as recorded) so the client never has
+to think about it. Rounds are also not unique per court: a round can hold two
+games on the same court, and one night legitimately has five games in round 1.
+
+**`state` is not safe to hand out.** It carries the host `pin`, internal
+ratings, the waiting list and the venue notes, and runs to most of a megabyte
+once a cover photo is on it. Anything public reads a purpose-built RPC that
+assembles only the fields it needs — see `sideout_recap`.
 
 **`Live.adopt()` replaces `S` wholesale** via `Object.assign(blank(), state,
 {live, liveCode, pin})`. Anything set on `S` before an adopt is lost. Set
@@ -106,62 +120,3 @@ scan for others.
 Pushback is welcome and wanted. If an approach here is wrong, say so rather
 than implementing it. Corrections tend to be short and specific — apply them
 narrowly rather than rewriting surrounding code.
-
----
-
-## Pending SQL
-
-Run once in the Supabase SQL editor. Replace the organizer guard first — see
-"Outstanding" above.
-
-```sql
--- ═══════════════════════════════════════════════════════════════
--- sideout_unarchive — take one night back off the club ladder
--- ═══════════════════════════════════════════════════════════════
--- The ladder is derived from `results` every time it is read, so
--- deleting the rows for one session code is the whole job. Nothing
--- else has to be recalculated.
-
-create or replace function public.sideout_unarchive(
-  p_club text,
-  p_code text
-)
-returns integer
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_deleted integer;
-begin
-  if p_code is null or length(trim(p_code)) = 0 then
-    raise exception 'A session code is required.';
-  end if;
-
-  -- ── organizer guard ──────────────────────────────────────────
-  -- Replace this block with the same check sideout_session_delete
-  -- uses. It is here so the function is never callable by an
-  -- ordinary member holding the publishable key.
-  if not exists (
-    select 1
-    from public.members m
-    where m.club = p_club
-      and m.user_id = auth.uid()
-      and m.role in ('owner', 'organizer')
-  ) then
-    raise exception 'Only an owner or organizer of this club can reset a session.';
-  end if;
-  -- ─────────────────────────────────────────────────────────────
-
-  delete from public.results r
-   where r.club = p_club
-     and r.code = p_code;
-
-  get diagnostics v_deleted = row_count;
-  return v_deleted;
-end;
-$$;
-
-revoke all on function public.sideout_unarchive(text, text) from public;
-grant execute on function public.sideout_unarchive(text, text) to anon, authenticated;
-```

@@ -233,6 +233,9 @@ button{cursor:pointer;border:none;background:none;padding:0}
    Anything reversible stays quiet — red everywhere is red nowhere. */
 .btn-risk{background:transparent;border:1.5px solid var(--fault);color:var(--fault)}
 .btn-risk:hover{background:rgba(198,60,60,.08)}
+/* Held shut until the confirmation is typed. Faded rather than hidden, so
+   what you are working towards stays on screen the whole time. */
+.btn-risk[disabled]{opacity:.4;pointer-events:none}
 .btn-danger{background:var(--fault);border:1.5px solid var(--fault);color:#fff;
   box-shadow:0 4px 14px rgba(176,42,42,.3)}
 .btn-danger:hover{filter:brightness(1.06)}
@@ -455,6 +458,18 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
   font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#fff;
   border:2px solid rgba(255,255,255,.8);border-radius:5px;padding:4px 9px;
   transform:rotate(-6deg);opacity:.92}
+/* The organizer's menu, on the corner of the card rather than as another
+   button in the body. Anything that changes a night — rather than opens it —
+   belongs behind a deliberate tap, not on the surface of a feed people
+   scroll quickly with a thumb. */
+.sx-more{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;
+  display:grid;place-items:center;border-radius:50%;cursor:pointer;line-height:1;
+  color:#fff;font-size:17px;letter-spacing:.06em;
+  background:rgba(7,19,32,.42);border:1px solid rgba(255,255,255,.3);
+  transition:background .15s}
+.sx-more:hover{background:rgba(7,19,32,.66)}
+/* the stamp steps aside for it rather than sitting underneath */
+.sx-top:has(.sx-more) .sx-stamp{right:50px}
 .sx-body{padding:13px 14px 14px}
 .sx-line{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--ink-2);
   margin-bottom:7px;line-height:1.4}
@@ -490,6 +505,18 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .dr-quiet{display:flex;align-items:center;gap:9px}
 .dr-i{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:currentColor;
   stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+/* The same icons sized off the type around them rather than fixed, which is
+   what lets one piece of markup serve a 30px empty state and a 17px menu row.
+   Stroke weight is scaled down a touch because at 30px 1.9 looks heavy. */
+.ic{width:1em;height:1em;flex:0 0 auto;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+  display:inline-block;vertical-align:-.13em}
+.empty .ic{display:block;margin:0 auto}
+/* Where an icon stands in for a label rather than beside one. */
+.lic{display:inline-flex;align-items:center;line-height:0}
+/* A round icon button sets 15px for type; the drawing wants a little more or
+   it floats in the middle of the circle. */
+.icon-btn .ic{width:18px;height:18px}
 .sx-seg button{padding:10px 4px;font-size:12.5px}
 .bd-row{display:grid;grid-template-columns:1.6fr 1fr;gap:8px}
 .bd-strip{border:1px solid var(--edge);border-radius:var(--r);background:var(--card);
@@ -1051,6 +1078,42 @@ body.watching > *:not(#viewer):not(#toast):not(#veil):not(#screen-auth){display:
 body.authing > *:not(#screen-auth):not(#toast):not(#veil){display:none !important}
 #viewer{position:fixed;inset:0;z-index:60;overflow-y:auto;background:var(--paper);
   -webkit-overflow-scrolling:touch}
+/* ── the recap ─────────────────────────────────────
+   A finished night as a page, for somebody who may not have the app and
+   may not be a member. It borrows the watch screen's furniture on
+   purpose — same header, same body width — so a link shared into a group
+   chat still arrives looking like the club rather than like a report. */
+body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
+#recap{position:fixed;inset:0;z-index:60;overflow-y:auto;background:var(--paper);
+  -webkit-overflow-scrolling:touch}
+/* The cover goes behind the title, tinted far enough back that white type
+   survives whatever anybody happened to photograph. */
+#rc-top.shot{background-size:cover;background-position:center;
+  box-shadow:inset 0 0 0 999px rgba(7,19,32,.62)}
+.rc-sec{margin-top:20px}
+.rc-h{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);margin:0 0 9px}
+.rc-rd{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--court);margin:15px 0 2px}
+.rc-g{display:grid;grid-template-columns:26px 1fr;gap:9px;align-items:baseline;
+  padding:8px 0;border-top:1px solid var(--edge)}
+.rc-c{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.08em;color:var(--ink-3)}
+.rc-w{color:var(--ink);font-weight:600}
+.rc-l{color:var(--ink-3)}
+.rc-beat{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 7px}
+.rc-foot{margin-top:24px}
+/* One person's night: the result leads, because when you already know who
+   you are reading about that is the only word you are looking for. */
+.rc-res{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;margin-right:7px}
+.rc-res.w{color:var(--grass)}
+.rc-res.l{color:var(--ink-3)}
+.rc-with{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.rc-tap{cursor:pointer;transition:background .15s,border-color .15s}
+.rc-tap:hover{border-color:var(--edge-2)}
+.lad-row.sel{background:var(--kitchen);border-color:var(--court)}
 .vw-home{flex:0 0 auto;width:34px;height:34px;margin-right:2px;border-radius:50%;
   display:grid;place-items:center;font-size:18px;line-height:1;color:#fff;cursor:pointer;
   background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
@@ -1235,6 +1298,35 @@ body.authing > *:not(#screen-auth):not(#toast):not(#veil){display:none !importan
 .ld-ring{width:14px;height:14px;flex:0 0 auto;border-radius:50%;
   border:2px solid var(--edge-2);border-top-color:var(--court);
   animation:pullSpin .7s linear infinite}
+/* Inside a disabled button the ring's own edge colour is the same grey as the
+   fill it sits on, so it borrows the button's text colour instead. */
+.btn[disabled] .ld-ring{border-color:color-mix(in srgb, currentColor 28%, transparent);
+  border-top-color:currentColor}
+/* A pickleball, for the moments with room for one: a page or a section that
+   has not arrived yet. The small inline ring stays as it is — at 14px the
+   holes close up and it reads as a smudge rather than a ball. */
+.ld-ball{width:38px;height:38px;flex:0 0 auto;border-radius:50%;
+  background-color:var(--ball);
+  background-image:
+    radial-gradient(circle at 31% 25%, rgba(11,27,43,.34) 0 3px, transparent 3.4px),
+    radial-gradient(circle at 63% 21%, rgba(11,27,43,.34) 0 3px, transparent 3.4px),
+    radial-gradient(circle at 79% 47%, rgba(11,27,43,.34) 0 3px, transparent 3.4px),
+    radial-gradient(circle at 50% 46%, rgba(11,27,43,.34) 0 3px, transparent 3.4px),
+    radial-gradient(circle at 22% 55%, rgba(11,27,43,.34) 0 3px, transparent 3.4px),
+    radial-gradient(circle at 43% 76%, rgba(11,27,43,.34) 0 3px, transparent 3.4px),
+    radial-gradient(circle at 72% 73%, rgba(11,27,43,.34) 0 3px, transparent 3.4px);
+  box-shadow:inset -3px -4px 9px rgba(11,27,43,.22), var(--sh-1);
+  animation:pullSpin 1.05s linear infinite}
+.ld-block{display:flex;flex-direction:column;align-items:center;gap:13px;
+  padding:34px 16px;text-align:center}
+.ld-block p{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+/* Somebody who has asked for less movement still needs to know it is working,
+   so it breathes instead of spinning. */
+@media(prefers-reduced-motion:reduce){
+  .ld-ball,.ld-ring{animation:ldFade 1.5s ease-in-out infinite}
+}
+@keyframes ldFade{0%,100%{opacity:.35}50%{opacity:1}}
 .conn.bad{background:var(--fault-soft);border-color:var(--fault);color:var(--fault)}
 .conn.warn{background:var(--crown-soft);border-color:var(--crown-line);color:var(--crown)}
 .live-code{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:.22em;text-align:center;
@@ -1452,7 +1544,10 @@ textarea:focus{border-color:var(--court)}
   text-align:center;line-height:1}
 .lb-row.podium .rk{color:var(--crown)}
 .lb-row .nm{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-row .crowns{font-size:12px;letter-spacing:-1px}
+/* Was a row of overlapping crown emoji, hence the negative tracking. It is
+   one crown and a count now, which stays readable past five. */
+.lb-row .crowns{display:inline-flex;align-items:center;gap:3px;font-size:12px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--crown)}
 .lb-row .rec{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13.5px;
   letter-spacing:.06em;color:var(--ink-2);flex:0 0 auto}
 .lb-row .rec b{color:var(--grass)}
@@ -1746,10 +1841,10 @@ textarea:focus{border-color:var(--court)}
     <span id="brand-sub">King of the Court</span>
   </div>
   <button class="live-pill" id="live-pill" onclick="liveSheet()" title="Show the join code" hidden><i></i>Live</button>
-  <button class="icon-btn" id="tv-btn" onclick="TV.open()" title="Show on the big screen" hidden>📺</button>
+  <button class="icon-btn" id="tv-btn" onclick="TV.open()" title="Show on the big screen" hidden><span class="lic" data-ic="tv"></span></button>
   <button class="icon-btn" id="open-btn" onclick="openResume()" aria-label="Open a session"
-    title="Open a session already running">🗂️</button>
-  <button class="icon-btn" onclick="toggleTheme()" title="Light or dark">🌙</button>
+    title="Open a session already running"><span class="lic" data-ic="folder"></span></button>
+  <button class="icon-btn" onclick="toggleTheme()" title="Light or dark"><span class="lic" data-ic="moon"></span></button>
   <button class="acct-btn" id="acct-btn" onclick="accountMenu()" aria-label="Your account" hidden></button>
 </div></header>
 
@@ -1826,11 +1921,14 @@ textarea:focus{border-color:var(--court)}
     <div id="audit-box"></div>
   </section>
 
-  <section id="screen-home" class="screen">
+  <!-- Home carries `on` because one section has to, and whichever one does is
+       what shows for the instant before the script runs. An empty Home is a
+       far better guess than the session editor. -->
+  <section id="screen-home" class="screen on">
     <div id="home-box"></div>
   </section>
 
-<section class="screen on" id="screen-setup">
+<section class="screen" id="screen-setup">
 
   <div class="panel">
     <h2>This session</h2>
@@ -1944,15 +2042,15 @@ textarea:focus{border-color:var(--court)}
     <h2>Format</h2>
     <div class="modes">
       <button class="mode" id="mode-gauntlet" aria-pressed="true" onclick="setMode('gauntlet')">
-        <span class="glyph">⚔️</span>
+        <span class="glyph" data-ic="swords"></span>
         <span><b>Gauntlet</b><span>Matched on your record each round. Any number of players, latecomers welcome.</span></span>
       </button>
       <button class="mode" id="mode-mix" aria-pressed="false" onclick="setMode('mix')">
-        <span class="glyph">🔀</span>
+        <span class="glyph" data-ic="shuffle"></span>
         <span><b>Social mix</b><span>Fresh partners and courts every round. Everyone gets even court time.</span></span>
       </button>
       <button class="mode" id="mode-levels" aria-pressed="false" onclick="setMode('levels')">
-        <span class="glyph">🎚️</span>
+        <span class="glyph" data-ic="sliders"></span>
         <span><b>Skill-based</b><span>Each court is locked to one standard. Advanced play advanced, and nobody moves.</span></span>
       </button>
     </div>
@@ -1964,19 +2062,19 @@ textarea:focus{border-color:var(--court)}
       </button>
       <div class="special-body" id="special-body">
         <button class="mode" id="mode-kotc" aria-pressed="false" onclick="setMode('kotc')">
-          <span class="glyph">👑</span>
+          <span class="glyph" data-ic="crown"></span>
           <span><b>King of the Court</b><span>Win and climb a court. Lose and drop one. Court 1 is the crown.</span></span>
         </button>
         <button class="mode" id="mode-mixed" aria-pressed="false" onclick="setMode('mixed')">
-          <span class="glyph">⚥</span>
+          <span class="glyph" data-ic="mixed"></span>
           <span><b>Mixed doubles</b><span>Every team is one man and one woman, rotated so you partner everybody.</span></span>
         </button>
         <button class="mode" id="mode-river" aria-pressed="false" onclick="setMode('river')">
-          <span class="glyph">⚔️</span>
+          <span class="glyph" data-ic="swords"></span>
           <span><b>Court Wars</b><span>Every court is a rank and Court 1 is the throne. Win and you take a court off somebody, lose and you give one up. Works with any number of players.</span></span>
         </button>
         <button class="mode" id="mode-tour" aria-pressed="false" onclick="setMode('tour')">
-          <span class="glyph">🏆</span>
+          <span class="glyph" data-ic="trophy"></span>
           <span><b>Tournament</b><span>Pools and a round robin, then a knockout bracket. Pick this before you start — the pools are drawn first.</span></span>
         </button>
       </div>
@@ -2001,7 +2099,7 @@ textarea:focus{border-color:var(--court)}
     <label class="label" style="display:block;margin-bottom:6px">A round ends</label>
     <div class="seg" style="margin-bottom:10px">
       <button id="end-timed"   onclick="setTimed(true)">⏱ On the clock</button>
-      <button id="end-scored"  onclick="setTimed(false)">🏓 When the game's done</button>
+      <button id="end-scored"  onclick="setTimed(false)"><span class="lic" data-ic="paddle"></span> When the game's done</button>
     </div>
     <div id="timed-box">
       <div class="stepper">
@@ -2101,12 +2199,12 @@ textarea:focus{border-color:var(--court)}
     <h2>Session settings</h2>
     <label class="label" style="display:block;margin-bottom:6px">Format</label>
     <div class="seg five" style="margin-bottom:14px">
-      <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')">⚔️ Gauntlet</button>
-      <button id="fmt-mix"      onclick="switchFormat('mix')">🔀 Mix</button>
-      <button id="fmt-levels"   onclick="switchFormat('levels')">🎚️ Skill</button>
-      <button id="fmt-kotc"     onclick="switchFormat('kotc')">👑 Ladder</button>
-      <button id="fmt-mixed"    onclick="switchFormat('mixed')">⚥ Mixed</button>
-      <button id="fmt-tour"     onclick="switchFormat('tour')">🏆 Tournament</button>
+      <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')"><span class="lic" data-ic="swords"></span> Gauntlet</button>
+      <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Mix</button>
+      <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill</button>
+      <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> Ladder</button>
+      <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed</button>
+      <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
     </div>
     <div id="live-level-courts" hidden style="margin-bottom:14px"></div>
     <label class="label" style="display:block;margin-bottom:6px">Courts in play</label>
@@ -2121,7 +2219,7 @@ textarea:focus{border-color:var(--court)}
     <label class="label" style="display:block;margin-bottom:6px">A round ends</label>
     <div class="seg" style="margin-bottom:10px">
       <button id="end-timed-live"  onclick="setTimed(true)">⏱ On the clock</button>
-      <button id="end-scored-live" onclick="setTimed(false)">🏓 When the game's done</button>
+      <button id="end-scored-live" onclick="setTimed(false)"><span class="lic" data-ic="paddle"></span> When the game's done</button>
     </div>
     <div id="timed-box-live">
       <div class="stepper">
@@ -2191,7 +2289,7 @@ textarea:focus{border-color:var(--court)}
     <div class="roster" id="active-list"></div>
     <div id="take-line"></div>
     <button class="linky" id="dupr-export" style="margin-top:12px" onclick="exportDUPR()" hidden>
-      📤 Send tonight’s games to DUPR</button>
+      <span class="lic" data-ic="upload"></span> Send tonight’s games to DUPR</button>
 
 
     <button class="linky" id="club-link" style="margin-top:10px" onclick="clubSheet()" hidden>
@@ -2255,8 +2353,8 @@ textarea:focus{border-color:var(--court)}
     </div>
     <label class="label" style="display:block;margin-bottom:6px">Team make-up</label>
     <div class="seg" style="margin-bottom:10px">
-      <button id="po-even"   aria-pressed="true"  onclick="setPairing('even')">⚖️ Even teams</button>
-      <button id="po-seeded" aria-pressed="false" onclick="setPairing('seeded')">🎯 Seeded teams</button>
+      <button id="po-even"   aria-pressed="true"  onclick="setPairing('even')"><span class="lic" data-ic="scales"></span> Even teams</button>
+      <button id="po-seeded" aria-pressed="false" onclick="setPairing('seeded')"><span class="lic" data-ic="target"></span> Seeded teams</button>
     </div>
     <p class="hint tight" id="po-note"></p>
     <button class="btn btn-go" onclick="makeBracket()">Draw the bracket</button>
@@ -2266,8 +2364,8 @@ textarea:focus{border-color:var(--court)}
     <h2>Share</h2>
     <p class="hint tight">9:16 cards built for stories. The session card comes out transparent — drop it straight over a photo.</p>
     <div class="seg" style="margin-bottom:12px">
-      <button id="card-standings" aria-pressed="true" onclick="setCardKind('standings')">🏆 Standings</button>
-      <button id="card-session"   aria-pressed="false" onclick="setCardKind('session')">📊 Session</button>
+      <button id="card-standings" aria-pressed="true" onclick="setCardKind('standings')"><span class="lic" data-ic="trophy"></span> Standings</button>
+      <button id="card-session"   aria-pressed="false" onclick="setCardKind('session')"><span class="lic" data-ic="standings"></span> Session</button>
     </div>
     <div id="card-preview" hidden></div>
     <button class="btn btn-go" onclick="makeCard()">Create story card</button>
@@ -2276,6 +2374,10 @@ textarea:focus{border-color:var(--court)}
   </div>
 
   <button class="btn btn-risk" onclick="confirmReset()">End the session</button>
+  <!-- only worth offering while people are actually watching; renderLive()
+       shows it when the session is live -->
+  <button class="btn btn-quiet" id="cancel-btn" hidden style="margin-top:8px"
+    onclick="cancelSession()">Call it off</button>
 </section>
 
 </div><!-- /wrap -->
@@ -2368,6 +2470,21 @@ textarea:focus{border-color:var(--court)}
     <div id="vw-staff"></div>
     <div id="vw-live"></div>
   </main>
+</div>
+
+<!-- ══════════════ THE RECAP ══════════════ -->
+<div id="recap" hidden>
+  <header class="vw-top" id="rc-top">
+    <div class="vw-bar">
+      <button class="vw-home" onclick="leaveRecap()"
+        aria-label="Go to Sideout Society" title="Go to Sideout Society">←</button>
+      <img class="badge" id="rc-badge" alt="">
+      <img class="vw-mark" id="rc-mark" alt="Sideout Society">
+    </div>
+    <h1 class="vw-title" id="rc-title"> </h1>
+    <p class="vw-meta" id="rc-sub">Reading the night…</p>
+  </header>
+  <main class="vw-body" id="rc-body"></main>
 </div>
 
 <!-- ══════════════ DOCKS ══════════════ -->
@@ -2699,6 +2816,9 @@ const Live = {
           return { n:p.name, s: p.left ? 'left' : (p.out ? 'out' : (on.has(id) ? 'on' : 'wait')),
                    g:p.g, d:p.dupr, m:p.mid }; }); })(),
       ended: !!S.ended, endedAt: S.endedAt || null,
+      /* travels with the snapshot so a watcher learns it on its next poll,
+         about three seconds after the organizer taps it */
+      cancelled: !!S.cancelled, cancelNote: (S.cancelNote || '').trim() || null,
       table: S.order.filter(id => P(id) && P(id).g > 0)
         .sort((a,b)=>{ const p=P(a),q=P(b);
           if(q.crowns!==p.crowns) return q.crowns-p.crowns;
@@ -3007,6 +3127,9 @@ function blank(){
     nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', cap:0, waiting:[], repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
     next:null, planRound:-1,
     round:0, games:0, active:false, started:null,
+    /* called off is its own state: ended, but with nothing banked and a
+       reason the watchers can read */
+    cancelled:false, cancelNote:'',
     log:[], snap:null
   };
 }
@@ -3192,7 +3315,7 @@ function paintVenue(){
   if(!p){ box.hidden = true; box.innerHTML = ''; return; }
   box.hidden = false;
   box.innerHTML = `<a class="venue-chip" href="${esc(p.url)}" target="_blank" rel="noopener">
-      <span class="venue-pin">📍</span><span class="venue-n">${esc(p.name)}</span></a>
+      <span class="venue-pin">${icon('pin')}</span><span class="venue-n">${esc(p.name)}</span></a>
     <p class="hint tight" style="margin-top:6px">${p.typed
       ? 'Shown on the link, and tapping it opens Maps.'
       : (p.resolved ? 'Read from the link. Edit the text above if you want it to read differently.'
@@ -4153,7 +4276,7 @@ function courtTag(i, n, lv){
   if(S.mode === 'mix') return 'Mixed';
   if(S.mode === 'gauntlet') return i === 0 ? 'Top table' : 'Matched';
   if(S.mode === 'mixed') return 'Mixed';
-  return (i === 0 ? '👑 ' : '') + tierName(i, n);
+  return (i === 0 ? icon('crown') + ' ' : '') + tierName(i, n);
 }
 function tierName(i, n){
   if(i === 0) return "King's Court";
@@ -4164,8 +4287,16 @@ function tierName(i, n){
 /* ═══════════════════════════════════════════════════
    NAVIGATION
    ═══════════════════════════════════════════════════ */
+/* Whether anybody has actually navigated yet, as opposed to the app simply
+   having markup on screen. One section has to carry `on` in the HTML or the
+   page is blank before the script runs, and that section is Setup — which
+   gateScreens() would otherwise read as "the organizer is already editing a
+   session" and leave them stranded in the editor on every refresh. */
+let navigated = false;
+
 function go(name){
   AuthUI.shown = false;
+  navigated = true;
   /* the two anyone can reach */
   if(name === 'home'){
     showOnly('home'); paintHome();
@@ -4706,7 +4837,7 @@ function loadDemo(){
 }
 
 function noHits(what){
-  return `<div class="empty"><span class="glyph">🔍</span>Nobody called “${esc(S.rosterQ)}” ${what}.</div>`;
+  return `<div class="empty"><span class="glyph">${icon('search')}</span>Nobody called “${esc(S.rosterQ)}” ${what}.</div>`;
 }
 function rosterRows(){
   const base = (S.rosterSort && S.rosterSort !== 'added')
@@ -4718,7 +4849,7 @@ function rosterRows(){
     return `<div class="pr">
       ${avatar(p.name, pPhoto(p), 'sm')}
       <span class="nm"><span class="nmn">${esc(p.name)}${staffTag(p.mid)}</span>${(() => { const b = partnerOf(id);
-        return b ? `<em class="when pairtag">🔗 with ${esc(nm(b))}</em>`
+        return b ? `<em class="when pairtag">${icon('link')} with ${esc(nm(b))}</em>`
                  : (when ? `<em class="when">joined ${when}</em>` : ''); })()}</span>
       ${duprBadge(p.dupr, true)}
       ${tag}
@@ -4738,7 +4869,7 @@ function playingRows(){
     return `<button class="pr" style="text-align:left" onclick="playerSheet('${id}')">
       ${avatar(p.name, pPhoto(p), 'sm')}
       <span class="nm"><span class="nmn">${esc(p.name)}</span>${(() => { const b = partnerOf(id);
-        if(b) return `<em class="pairtag">🔗 with ${esc(nm(b))}${where ? '<span class="dot"> \u00b7 </span>' + where : ''}</em>`;
+        if(b) return `<em class="pairtag">${icon('link')} with ${esc(nm(b))}${where ? '<span class="dot"> \u00b7 </span>' + where : ''}</em>`;
         return (where || when)
           ? `<em>${where}${where && when ? '<span class="dot"> \u00b7 </span>' : ''}${when ? `<span class="ago">${when}</span>` : ''}</em>` : ''; })()}</span>
       ${duprBadge(p.dupr, true)}
@@ -4759,7 +4890,7 @@ function renderRoster(){
   const cls = document.getElementById('club-link-setup');
   if(cls) cls.hidden = !Live.ready();
   if(!ids.length){
-    box.innerHTML = '<div class="empty"><span class="glyph">🎾</span>No one on the list yet. Add four players and you can start.</div>';
+    box.innerHTML = `<div class="empty"><span class="glyph">${icon('paddle')}</span>No one on the list yet. Add four players and you can start.</div>`;
   } else {
     box.innerHTML = rosterTools() + `<div data-rows="roster">${rosterRows()}</div>`;
   }
@@ -4878,7 +5009,7 @@ function renderLadder(){
                     : 'Winners stay on. Losers go to the back of the queue.';
     else if(i === n-1) d = 'Winners climb to Court ' + i + '. Losers go to the back of the queue.';
     else d = 'Winners climb to Court ' + i + '. Losers drop to Court ' + (i+2) + '.';
-    html += `<div class="rung${top?' top':''}"><span class="n">${top?'👑 1':(i+1)}</span><span class="d">${d}</span></div>`;
+    html += `<div class="rung${top?' top':''}"><span class="n">${top ? icon('crown') + ' 1' : (i+1)}</span><span class="d">${d}</span></div>`;
   }
   html += '</div>';
   box.innerHTML = html;
@@ -4903,7 +5034,7 @@ function startSession(){
   seed(ids, n);
   Clock.setDefault(S.mins*60); Clock.reset(); syncRoundEndUI();
   renderAll(); go('play'); save();
-  toast(S.mode==='kotc' ? 'Round 1 — climb the ladder. 👑' : 'Round 1 — have fun out there.');
+  toast(S.mode==='kotc' ? 'Round 1 — climb the ladder.' : 'Round 1 — have fun out there.');
 }
 function seed(ids, n){
   /* Court Wars deals per court from its own pools, so it seeds itself
@@ -5380,7 +5511,7 @@ function renderCourts(){
   refreshPlan();
   const box = document.getElementById('courts');
   if(!S.active){
-    box.innerHTML = '<div class="empty"><span class="glyph">🏓</span>Nothing on court yet.<br>Add your players in Setup and start the session.</div>';
+    box.innerHTML = `<div class="empty"><span class="glyph">${icon('paddle')}</span>Nothing on court yet.<br>Add your players in Setup and start the session.</div>`;
     document.getElementById('queue-panel').hidden = true;
     return;
   }
@@ -5768,7 +5899,7 @@ function courtCard(c, i, N, next){
   } else if(S.mode === 'levels'){
     foot = `<span>Banked · new pairing on ${ordinal(i).toLowerCase()} next round</span>`;
   } else if(S.mode === 'kotc'){
-    const up = king ? `<span class="hold">👑 Winners hold the crown</span>`
+    const up = king ? `<span class="hold">${icon('crown')} Winners hold the crown</span>`
                     : `<span class="go-up">↑ Winners to ${ordinal(i-1)}</span>`;
     const down = (i === N-1)
       ? `<span class="go-down">↓ Losers to the queue</span>`
@@ -5882,11 +6013,11 @@ function courtMenu(i){
   openSheet(`<h3>${ordinal(i)}</h3>
     <p class="sub">${four.map(id => esc(nm(id))).join(' · ') || 'Empty'}</p>
     <button class="pick" onclick="shuffleCourt(${i})">
-      <span class="glyph">🔀</span><span><b>Shuffle the sides</b><span>Same four players, new pairings</span></span></button>
+      <span class="glyph">${icon('shuffle')}</span><span><b>Shuffle the sides</b><span>Same four players, new pairings</span></span></button>
     <button class="pick" onclick="swapPickOut(${i})">
-      <span class="glyph">🔁</span><span><b>Swap a player</b><span>Trade with the queue or another court</span></span></button>
+      <span class="glyph">${icon('swap')}</span><span><b>Swap a player</b><span>Trade with the queue or another court</span></span></button>
     <button class="pick" onclick="benchFromCourt(${i})">
-      <span class="glyph">🪑</span><span><b>Take someone off</b><span>Send them to the front of the queue</span></span></button>
+      <span class="glyph">${icon('chair')}</span><span><b>Take someone off</b><span>Send them to the front of the queue</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
 }
 function shuffleCourt(i){
@@ -5917,7 +6048,7 @@ function swapPickOut(i){
   openSheet(`<h3>Swap a player</h3>
     <p class="sub">Who is coming off ${ordinal(i).toLowerCase()}?</p>
     ${four.map(id => `<button class="pick" onclick="swapPickIn('${id}')">
-      <span class="glyph">👤</span><span><b>${esc(nm(id))}</b><span>${P(id).w}W · ${P(id).l}L · ${P(id).g} games</span></span></button>`).join('')}
+      <span class="glyph">${icon('profile')}</span><span><b>${esc(nm(id))}</b><span>${P(id).w}W · ${P(id).l}L · ${P(id).g} games</span></span></button>`).join('')}
     <button class="btn btn-quiet" style="margin-top:8px" onclick="courtMenu(${i})">Back</button>`);
 }
 function swapPickIn(outId){
@@ -5934,7 +6065,7 @@ function swapPickIn(outId){
       <span class="glyph">⏳</span><span><b>${esc(nm(id))}</b><span>${P(id).g} games</span></span></button>`).join('')}
     ${elsewhere.length ? '<div class="label" style="margin:12px 0 6px">On another court</div>' : ''}
     ${elsewhere.map(([id,ci]) => `<button class="pick" onclick="doSwap('${outId}','${id}')">
-      <span class="glyph">🔁</span><span><b>${esc(nm(id))}</b><span>${ordinal(ci)}</span></span></button>`).join('')}
+      <span class="glyph">${icon('swap')}</span><span><b>${esc(nm(id))}</b><span>${ordinal(ci)}</span></span></button>`).join('')}
     ${(!waiting.length && !elsewhere.length) ? '<p class="hint">Nobody available to swap with.</p>' : ''}
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
 }
@@ -5953,7 +6084,7 @@ function benchFromCourt(i){
   openSheet(`<h3>Take someone off</h3>
     <p class="sub">They go to the front of the queue and come back next round.</p>
     ${four.map(id => `<button class="pick" onclick="pullOff(${i},'${id}')">
-      <span class="glyph">👤</span><span><b>${esc(nm(id))}</b><span>${P(id).g} games</span></span></button>`).join('')}
+      <span class="glyph">${icon('profile')}</span><span><b>${esc(nm(id))}</b><span>${P(id).g} games</span></span></button>`).join('')}
     <button class="btn btn-quiet" style="margin-top:8px" onclick="courtMenu(${i})">Back</button>`);
 }
 function pullOff(i, id){
@@ -6057,7 +6188,7 @@ function commitImport(){
 function playerSheet(id){
   const p = P(id);
   openSheet(`<h3>${esc(p.name)}</h3>
-    <p class="sub">${p.w}W · ${p.l}L · ${p.g} games${p.crowns?` · ${p.crowns} 👑`:''}</p>
+    <p class="sub">${p.w}W · ${p.l}L · ${p.g} games${p.crowns?` · ${icon('crown')} ${p.crowns}`:''}</p>
     <div class="field"><span class="label">Skill level</span>${levelSeg(id, p.level, true)}</div>
     <div class="field"><span class="label">Mixed doubles</span>${sexSeg(id, p.sex, true)}</div>
     <div class="field"><span class="label">DUPR rating</span>
@@ -6071,17 +6202,17 @@ function playerSheet(id){
     ${(() => { const b = partnerOf(id);
       return b
         ? `<button class="pick" onclick="clearPair('${id}', true); closeSheet()">
-             <span class="glyph">🔗</span><span><b>Always with ${esc(nm(b))}</b>
+             <span class="glyph">${icon('link')}</span><span><b>Always with ${esc(nm(b))}</b>
              <span>Tap to break the pair up</span></span></button>`
         : `<button class="pick" onclick="pairSheet('${id}')">
-             <span class="glyph">🔗</span><span><b>Always play with…</b>
+             <span class="glyph">${icon('link')}</span><span><b>Always play with…</b>
              <span>Lock in a partner for the whole session</span></span></button>`; })()}
     <button class="pick" onclick="renamePrompt('${id}')">
-      <span class="glyph">✏️</span><span><b>Rename</b><span>Fix a typo</span></span></button>
+      <span class="glyph">${icon('pencil')}</span><span><b>Rename</b><span>Fix a typo</span></span></button>
     <button class="pick" onclick="sitOut('${id}')">
-      <span class="glyph">🪑</span><span><b>Sit out</b><span>Keeps their record, takes them off the rotation</span></span></button>
+      <span class="glyph">${icon('chair')}</span><span><b>Sit out</b><span>Keeps their record, takes them off the rotation</span></span></button>
     <button class="pick" onclick="closeSheet();askRemovePlayer('${id}')">
-      <span class="glyph">🚪</span><span><b>Remove</b><span>Gone for good</span></span></button>
+      <span class="glyph">${icon('leave')}</span><span><b>Remove</b><span>Gone for good</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
 }
 /* Picking a partner is picking a person, so show faces and let
@@ -6167,7 +6298,7 @@ function memberSheet(id){
   const recLine = rec
     ? `<p class="conn">${rec.nights} session${rec.nights === 1 ? '' : 's'} \u00b7 ${rec.games} games \u00b7
         ${rec.wins} won (${rec.games ? Math.round(rec.wins/rec.games*100) : 0}%)${
-        rec.crowns ? ' \u00b7 \u{1F451} ' + rec.crowns : ''}</p>`
+        rec.crowns ? ' \u00b7 ' + icon('crown') + ' ' + rec.crowns : ''}</p>`
     : '';
   openSheet(`<h3>${esc(m.name)}</h3>
     <div class="mem-big">${avatar(m.name, m.photo, 'xl')}
@@ -6183,25 +6314,25 @@ function memberSheet(id){
     <button class="btn btn-go" onclick="saveMember2('${id}')">Save changes</button>
     ${twins.length ? twins.map(t => `
       <button class="pick" style="margin-top:8px" onclick="mergeSheet('${id}','${t.id}')">
-        <span class="glyph">🔗</span><span><b>Merge with the other ${esc(t.name)}</b>
+        <span class="glyph">${icon('link')}</span><span><b>Merge with the other ${esc(t.name)}</b>
         <span>One record, keeping the photo and rating between them</span></span></button>`).join('') : ''}
     ${Auth.on() && Auth.isOwner() ? (()=>{
       const off = !!m.official;
       return `<button class="pick" style="margin-top:8px" onclick="setOfficial('${id}',${!off})">
-        <span class="glyph">\u{1F39F}</span><span><b>${off ? 'Official member' : 'Make an official member'}</b>
+        <span class="glyph">${icon('check')}</span><span><b>${off ? 'Official member' : 'Make an official member'}</b>
         <span>${off ? 'Tap to go back to a drop-in. Official members unlock tiers.'
                     : 'Unlocks tiers and badges for them'}</span></span></button>`;
     })() : ''}
     ${Auth.on() && Auth.isOrganizer() && !(m.role === 'owner' && !Auth.isOwner()) ? (()=>{
       const now = (Club.roles && Club.roles[id]) || m.role || 'player';
       return `<button class="pick" style="margin-top:8px" onclick="roleSheet('${id}')">
-        <span class="glyph">\u{1F511}</span><span><b>Access</b>
+        <span class="glyph">${icon('key')}</span><span><b>Access</b>
         <span>${now === 'owner' ? 'Owner \u2014 can set up sessions and change roles'
               : (now === 'organizer' ? 'Organizer \u2014 can set up and run sessions'
               : 'Player \u2014 no access to setup')}</span></span></button>`;
     })() : ''}
     <button class="pick" style="margin-top:8px" onclick="confirmDeleteMember('${id}')">
-      <span class="glyph">🗑</span><span><b>Delete from the club</b>
+      <span class="glyph">${icon('trash')}</span><span><b>Delete from the club</b>
       <span>Permanent \u2014 their photo and rating go with them</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="clubSheet()">Back</button>`);
 }
@@ -6282,7 +6413,7 @@ async function clubLadder(force){
       <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
     return;
   }
-  openSheet(`<h3>Season Leaderboards</h3><p class="conn load"><span class="ld-ring"></span>Reading the club record\u2026</p>`);
+  openSheet(`<h3>Season Leaderboards</h3><div class="ld-block"><span class="ld-ball"></span><p>Reading the club record\u2026</p></div>`);
   let rows = [];
   try{ rows = await Club.ladder(force); }
   catch(e){
@@ -6309,7 +6440,7 @@ async function clubLadder(force){
         i < 3 ? `<i class="lad-mdl">${medal(i + 1)}</i>` : ''}</span>
       <span class="lad-n"><span class="nmn">${esc(r.name)}${you ? ' <b class="you-tag">You</b>' : ''}</span>
         <em>${r.nights} session${r.nights === 1 ? '' : 's'} \u00b7 ${r.games} game${r.games === 1 ? '' : 's'}${
-          r.crowns ? ' \u00b7 \u{1F451} ' + r.crowns : ''}</em></span>
+          r.crowns ? ' \u00b7 ' + icon('crown') + ' ' + r.crowns : ''}</em></span>
       <span class="lad-w">${r.wins}<i>won</i></span>
       <span class="lad-r">${rate}%<i>${diff >= 0 ? '+' : ''}${diff}</i></span>
     </div>`;
@@ -6688,7 +6819,13 @@ const AuthUI = {
 
     this.busy = true;
     const btn = document.getElementById('au-go');
-    if(btn){ btn.disabled = true; btn.textContent = up ? 'Creating\u2026' : 'Signing in\u2026'; }
+    /* The ring rather than the ball: it sits on one line inside the button,
+       and a signing-in button that only changes its wording looks like a
+       button that did not take. */
+    if(btn){
+      btn.disabled = true;
+      btn.innerHTML = `<span class="ld-ring"></span>${up ? 'Creating\u2026' : 'Signing in\u2026'}`;
+    }
     try{
       if(up) await Auth.signUp(email, pass, name, alias, phone);
       else await Auth.signIn(email, pass);
@@ -7230,7 +7367,7 @@ function rankWord(place, total){
 function tierCardHTML(points, nights, unlocked){
   if(!unlocked){
     return `<div class="panel tier locked">
-      <div class="tier-lock">\u{1F512}</div>
+      <div class="tier-lock">${icon('lock')}</div>
       <h2>Tiers</h2>
       <p class="hint tight">Reach a tier and the club has something for you — ask whoever runs it
         what is on offer this season. Earn a point for every session you play, more for finishing near the top,
@@ -7992,6 +8129,7 @@ function leaveToHome(){
 }
 
 function showOnly(name){
+  navigated = true;
   paintAcctBtn();
   SCREENS.forEach(n=>{
     const el = document.getElementById('screen-' + n);
@@ -8036,7 +8174,7 @@ function gateScreens(){
   if(canOrganize()){
     /* an organizer mid-session belongs on the running screens; the
        rest of the time Home is the sensible front page */
-    const inApp = ['setup','play','players','stats','playoff','home','me'].indexOf(now) >= 0;
+    const inApp = navigated && ['setup','play','players','stats','playoff','home','me'].indexOf(now) >= 0;
     if(inApp && now) showOnly(now);
     else if(S.active) go('play');
     else go('home');
@@ -8260,10 +8398,11 @@ const Feed = {
             left !== null && left > 0 ? ' \u00b7 ' + left + ' place' + (left === 1 ? '' : 's') + ' left' : ''}${
             r.waiting ? ' \u00b7 ' + r.waiting + ' waiting' : ''}</span></div>
         ${r.mine
-          ? `<button class="btn btn-go sx-cta" onclick="${go}">You are in \u2014 view it</button>
+          ? `<button class="btn btn-go sx-cta" onclick="${go}">${navIcon('eye')}${
+              r.live ? 'Watch it live' : 'View session'}</button>
              <button class="btn btn-quiet sx-cta sx-drop"
                onclick="withdrawFrom('${esc(r.code)}', '${esc((r.title || 'Open play').replace(/'/g, ''))}')">
-               Withdraw</button>`
+               ${navIcon('leave')}Leave session</button>`
           : `<button class="btn ${full ? 'btn-quiet' : 'btn-go'} sx-cta" onclick="${go}">
                ${r.live ? 'Watch it live' : (full ? 'Join the waiting list' : 'Join session')}</button>`}
         <button class="btn btn-quiet sx-cta sx-copy"
@@ -8280,6 +8419,17 @@ const Feed = {
       </div>
     </article>`;
   },
+  /* No Reset button on the card. It used to sit right here, on a feed
+     people scroll quickly with a thumb, and organizers kept catching it by
+     accident — which deletes a night's results for good. Tapping the card
+     opens the night, and Reset lives in there behind a deliberate second
+     tap. Nothing is lost: the sheet has always had its own.
+
+     What is owed shows here instead, because that is the thing an organizer
+     wants at a glance without opening anything. sideout_past hands back a
+     null for anyone who is not one, so the absence of a number is itself the
+     permission check — there is no second rule here to drift out of step
+     with the first. A club's debts are not for the whole feed to read. */
   pastCard(r){
     const t = this.ms(r.played_at);
     return `<article class="sx over" onclick="pastSession('${esc(r.code || '')}')">
@@ -8292,18 +8442,20 @@ const Feed = {
           <line x1="96" y1="60" x2="224" y2="60"/>
         </svg>`}
         <span class="sx-stamp">Session ended</span>
+        ${canOrganize() ? `<button class="sx-more" aria-label="More for this night"
+          title="More for this night"
+          onclick="event.stopPropagation();pastCardMenu('${esc(r.code || '')}','${
+            esc((r.title || 'Open play').replace(/'/g, ''))}',${r.cover ? 1 : 0})">⋯</button>` : ''}
         <h3>${esc(r.title || 'Open play')}</h3>
       </div>
       <div class="sx-body">
         <div class="sx-line"><span class="sx-ico">\u25F7</span><span>${t ? esc(longDate(t)) : ''}</span></div>
         <div class="sx-line"><span class="sx-ico">\u25CF</span>
           <span>${r.players} played \u00b7 ${r.games} game${r.games === 1 ? '' : 's'}</span></div>
-        ${canOrganize() ? `<div class="sx-admin">
-          <button class="btn btn-quiet sx-undo"
-            onclick="event.stopPropagation();resetPastSession('${esc(r.code || '')}','${
-              esc((r.title || 'Open play').replace(/'/g, ''))}',${r.players || 0})">
-            \u21BA Reset</button>
-        </div>` : ''}
+        ${r.owing == null ? '' : `<div class="sx-line"><span class="sx-ico">${icon('cash')}</span>
+          <span>${r.owing
+            ? `<b>${r.owing}</b> still to pay`
+            : 'everybody has paid'}</span></div>`}
       </div>
     </article>`;
   },
@@ -8366,12 +8518,13 @@ const Feed = {
       </div>
 
       ${rows.length ? rows.map(r => this.card(r)).join('')
-        : `<p class="conn">${this.up === null ? 'Looking\u2026'
-            : (this.filter === 'all'
+        : this.up === null
+          ? `<div class="ld-block"><span class="ld-ball"></span><p>Looking for what\u2019s on\u2026</p></div>`
+          : `<p class="conn">${this.filter === 'all'
                ? (canOrganize()
                   ? 'Nothing listed yet. Set one up and it will show here for the whole club.'
                   : 'Nothing listed yet. Your organizer may still be sending links directly.')
-               : 'Nothing matches that filter.')}</p>`}
+               : 'Nothing matches that filter.'}</p>`}
       ${past.length ? `<h2 style="margin-top:22px">Already played</h2>
         ${past.slice(0, 12).map(r => this.pastCard(r)).join('')}` : ''}
     </div>`;
@@ -8417,10 +8570,31 @@ function paintHome(){
 }
 /* What happened that night: who won it, how long it ran, how many
    turned out. Read from the results table, which is the only thing
-   that outlives a session. */
+   that outlives a session.
+
+   Sharing is not behind canOrganize(): it was everybody's night, not the
+   organizer's record of it, so anybody who was there can send it on. */
+
+/* The ⋯ on the corner of a past card. A sheet rather than a floating menu:
+   it is the pattern the rest of the app already uses, it needs no work to
+   dismiss, and a thumb can reach the bottom of a phone. Reset is deliberately
+   not in here — it stays inside the night itself, behind typing the code,
+   because this menu is one tap from a scrolling feed. */
+function pastCardMenu(code, title, hasCover){
+  if(!canOrganize() || !code) return;
+  openSheet(`<h3>${esc(title || 'That night')}</h3>
+    <p class="sub">The picture on this card is the one the whole club sees.</p>
+    <button class="btn btn-quiet"
+      onclick="closeSheet();PastPic.pick('${esc(code)}')">${icon('camera')} ${
+        hasCover ? 'Change the picture' : 'Add a picture'}</button>
+    ${hasCover ? `<button class="btn btn-quiet" style="margin-top:8px"
+      onclick="closeSheet();PastPic.clear('${esc(code)}')">Remove the picture</button>` : ''}
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
+}
+
 async function pastSession(code){
   if(!code) return;
-  openSheet(`<h3>Session ended</h3><p class="conn load"><span class="ld-ring"></span>Reading the night\u2026</p>`);
+  openSheet(`<h3>Session ended</h3><div class="ld-block"><span class="ld-ball"></span><p>Reading the night\u2026</p></div>`);
   let rows = [];
   try{
     rows = await Live.api('results?club=eq.' + encodeURIComponent(CONFIG.club || 'sideout')
@@ -8451,7 +8625,7 @@ async function pastSession(code){
     return `<div class="lad-row${mine ? ' you' : ''}">
       <span class="lad-pos">${i + 1}</span>
       <span class="lad-n"><span class="nmn">${esc(r.name)}${mine ? ' <b class="you-tag">You</b>' : ''}</span>
-        <em>${r.games} game${r.games === 1 ? '' : 's'}${r.crowns ? ' \u00b7 \u{1F451} ' + r.crowns : ''}</em></span>
+        <em>${r.games} game${r.games === 1 ? '' : 's'}${r.crowns ? ' \u00b7 ' + icon('crown') + ' ' + r.crowns : ''}</em></span>
       <span class="lad-w">${r.wins}<i>won</i></span>
       <span class="lad-r">${rate}%<i>${diff >= 0 ? '+' : ''}${diff}</i></span>
     </div>`;
@@ -8464,13 +8638,14 @@ async function pastSession(code){
       <div class="ps"><b>${rough}m</b><i>about</i></div>
     </div>
     <div class="lad">${body}</div>
-    ${canOrganize() ? `<button class="btn btn-quiet" style="margin-top:10px"
-        onclick="Takings.open('${esc(code)}','${esc(title.replace(/'/g,''))}')">💵 Who paid</button>` : ''}
+    <button class="btn btn-quiet" style="margin-top:10px"
+      onclick="Recap.share('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
+        navIcon('share')}Share this night</button>
     ${canOrganize() ? `<button class="btn btn-quiet" style="margin-top:8px"
-        onclick="PastPic.pick('${esc(code)}')">📷 Change the picture</button>` : ''}
+        onclick="Takings.open('${esc(code)}','${esc(title.replace(/'/g,''))}')">${icon('cash')} Payment Record</button>` : ''}
     ${canOrganize() ? `<button class="btn btn-quiet sx-undo" style="margin-top:8px"
         onclick="resetPastSession('${esc(code)}','${esc(title.replace(/'/g,''))}',${rows.length})">
-        \u21BA Reset \\u2014 ended by mistake</button>` : ''}
+        \u21BA Reset \u2014 ended by mistake</button>` : ''}
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
 }
 
@@ -8481,42 +8656,130 @@ async function pastSession(code){
    following week. Reads and writes the banked result, not the session,
    which by then may not exist. */
 const Takings = {
+  code: null,
+  title: '',
+  rows: [],
+  show: 'all',
+
   async open(code, title){
-    openSheet(`<h3>Who paid</h3><p class="conn load"><span class="ld-ring"></span>Reading the night\u2026</p>`);
+    openSheet(`<h3>Payment Record</h3><div class="ld-block"><span class="ld-ball"></span><p>Reading the night\u2026</p></div>`);
     let rows = [];
     try{
       rows = await Live.rpc('sideout_takings',
         { p_club: CONFIG.club || 'sideout', p_code: code }) || [];
     }catch(e){
-      openSheet(`<h3>Who paid</h3><p class="sub">Could not read that night.</p>
+      openSheet(`<h3>Payment Record</h3><p class="sub">Could not read that night.</p>
         <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
       return;
     }
-    this.paint(code, title, rows);
+    this.code = code;
+    this.title = title || '';
+    this.show = 'all';
+    /* Kept as our own copy so a tap can change it on the spot. The server
+       hands them back unpaid first, which is the right order to walk a room
+       in \u2014 but it is taken once, on opening, and never re-sorted while the
+       sheet is up. Somebody who has just been marked paid should stay under
+       the thumb that marked them, not jump to the bottom of the list. */
+    this.rows = rows.map(r => ({ name: r.name, member: r.member, paid: !!r.paid }));
+    this.paint();
   },
 
-  paint(code, title, rows){
-    const owing = rows.filter(r => !r.paid).length;
-    openSheet(`<h3>Who paid</h3>
-      <p class="sub">${esc(title || 'That night')} \u00b7 ${rows.length - owing} of ${rows.length} settled${
-        owing ? ` \u00b7 <b>${owing}</b> outstanding` : ''}</p>
-      <div class="tk-list">${rows.map(r => `
-        <button class="tk${r.paid ? ' on' : ''}"
-          onclick="Takings.set('${esc(code)}','${esc((title||'').replace(/'/g,''))}','${esc(r.name)}',${!r.paid})">
-          <span class="paid${r.paid ? ' on' : ''}">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5 11-11"/></svg></span>
-          <span>${esc(r.name)}</span>
-          <em>${r.paid ? 'paid' : 'owes'}</em>
-        </button>`).join('')}</div>
+  summary(){
+    const n = this.rows.length;
+    const owing = this.rows.filter(r => !r.paid).length;
+    return `${esc(this.title || 'That night')} \u00b7 ${n - owing} of ${n} settled${
+      owing ? ` \u00b7 <b>${owing}</b> outstanding` : ''}`;
+  },
+
+  /* Rows carry their index in the full list, so filtering never changes what
+     a tap means. Names cannot be trusted in an onclick \u2014 esc() leaves the
+     apostrophe alone, and one O'Brien in the club would break every button
+     on the sheet. */
+  listHTML(){
+    const want = this.show;
+    const shown = this.rows
+      .map((r, i) => ({ r: r, i: i }))
+      .filter(x => want === 'all' || (want === 'paid' ? x.r.paid : !x.r.paid));
+
+    if(!shown.length){
+      return `<p class="hint tight">${want === 'paid'
+        ? 'Nobody has settled up yet.'
+        : 'Everybody has paid \u2014 nothing outstanding.'}</p>`;
+    }
+    return shown.map(x => `
+      <button class="tk${x.r.paid ? ' on' : ''}" onclick="Takings.set(${x.i})">
+        <span class="paid${x.r.paid ? ' on' : ''}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5 11-11"/></svg></span>
+        <span>${esc(x.r.name)}</span>
+        <em>${x.r.paid ? 'paid' : 'owes'}</em>
+      </button>`).join('');
+  },
+
+  paint(){
+    openSheet(`<h3>Payment Record</h3>
+      <p class="sub" id="tk-sub">${this.summary()}</p>
+      <div class="seg" id="tk-seg" style="margin-bottom:10px">
+        <button class="${this.show === 'all'  ? 'on' : ''}" onclick="Takings.filter('all')">Everyone</button>
+        <button class="${this.show === 'owed' ? 'on' : ''}" onclick="Takings.filter('owed')">Owes</button>
+        <button class="${this.show === 'paid' ? 'on' : ''}" onclick="Takings.filter('paid')">Paid</button>
+      </div>
+      <div class="tk-list" id="tk-list">${this.listHTML()}</div>
       <button class="btn btn-quiet" style="margin-top:10px" onclick="closeSheet()">Close</button>`);
   },
 
-  async set(code, title, name, paid){
+  /* Only the parts that actually changed. Rebuilding the whole sheet threw
+     the list back to the top, which on a long night meant scrolling to find
+     your place again after every single tap. */
+  refresh(){
+    const list = document.getElementById('tk-list');
+    const sub  = document.getElementById('tk-sub');
+    const seg  = document.getElementById('tk-seg');
+    if(list) list.innerHTML = this.listHTML();
+    if(sub)  sub.innerHTML  = this.summary();
+    if(seg){
+      const order = ['all', 'owed', 'paid'];
+      Array.prototype.forEach.call(seg.children, (b, i) =>
+        b.classList.toggle('on', order[i] === this.show));
+    }
+  },
+
+  filter(v){
+    this.show = v;
+    this.refresh();
+  },
+
+  /* The card behind the sheet counts the same thing, and it is already in
+     memory — so it is corrected here rather than by asking the server for
+     the whole feed again after every tap. Close the sheet and the number
+     is already right. */
+  syncFeed(){
+    const row = (Feed.past || []).filter(x => x.code === this.code)[0];
+    if(!row || row.owing == null) return;
+    row.owing = this.rows.filter(r => !r.paid).length;
+    if(currentScreen() === 'home') paintHome();
+  },
+
+  /* The tap is believed immediately and the server told afterwards. Waiting
+     on the round trip before showing anything is what made this feel broken:
+     you tapped a name, nothing moved, and the old code then re-read the whole
+     night and repainted \u2014 which put the row somewhere else entirely. If the
+     write does fail it goes back exactly as it was and says so. */
+  async set(i){
+    const row = this.rows[i];
+    if(!row) return;
+    const was = row.paid;
+    row.paid = !was;
+    this.refresh();
+    this.syncFeed();
     try{
-      await Live.rpc('sideout_set_paid',
-        { p_club: CONFIG.club || 'sideout', p_code: code, p_name: name, p_paid: paid });
-    }catch(e){ toast('Could not change that.'); return; }
-    this.open(code, title);
+      await Live.rpc('sideout_set_paid', { p_club: CONFIG.club || 'sideout',
+        p_code: this.code, p_name: row.name, p_paid: row.paid });
+    }catch(e){
+      row.paid = was;
+      this.refresh();
+      this.syncFeed();
+      toast('Could not change that.');
+    }
   }
 };
 
@@ -8567,16 +8830,16 @@ const PastPic = {
 /* Two ways out, depending on whether the organizer has picked the
    join up yet. Say which one happened rather than a bare "done". */
 function withdrawFrom(code, title){
-  openSheet(`<h3>Withdraw from ${esc(title || 'this session')}?</h3>
+  openSheet(`<h3>Leave ${esc(title || 'this session')}?</h3>
     <p class="sub">Your place goes to whoever is next on the waiting list.
       You can join again if there is still room.</p>
-    <button class="btn btn-risk" onclick="doWithdraw('${esc(code)}')">Withdraw</button>
+    <button class="btn btn-risk" onclick="doWithdraw('${esc(code)}')">Leave session</button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Stay in</button>`);
 }
 async function doWithdraw(code){
   try{ await Live.withdraw(code); }
   catch(e){
-    openSheet(`<h3>Could not withdraw</h3>
+    openSheet(`<h3>Could not leave</h3>
       <p class="sub">${esc(e.detail || e.message || 'Something went wrong.')}</p>
       <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
     return;
@@ -8727,8 +8990,23 @@ function resetPastSession(code, title, players){
       <span>Results, standings and any playoff for this session come off the club ladder for good.
         Player ratings already moved by it are not put back.</span>
     </div>
-    <button class="btn btn-risk" onclick="doResetPastSession('${esc(code)}')">Reset it</button>
+    <div class="field"><span class="label">Type <b>${esc(code)}</b> to confirm</span>
+      <input type="text" id="rs-say" maxlength="12" autocomplete="off" autocapitalize="characters"
+        spellcheck="false" placeholder="${esc(code)}" oninput="resetTyped('${esc(code)}')"></div>
+    <button class="btn btn-risk" id="rs-go" disabled
+      onclick="doResetPastSession('${esc(code)}')">Reset it</button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Leave it alone</button>`);
+}
+
+/* Typing the code is not a password — anyone reading the sheet can see it.
+   It is there to make the hand stop and the eye read which night this is.
+   Somebody who means it types five characters; somebody who caught the
+   wrong row finds out while everything is still there. */
+function resetTyped(code){
+  const el = document.getElementById('rs-say');
+  const go = document.getElementById('rs-go');
+  if(!el || !go) return;
+  go.disabled = String(el.value || '').trim().toUpperCase() !== String(code || '').toUpperCase();
 }
 
 /* Everything a player carries that belongs to one night rather than
@@ -8741,8 +9019,8 @@ function zeroPlayer(p){
 }
 
 async function doResetPastSession(code){
-  openSheet(`<h3>Resetting\\u2026</h3>
-    <p class="conn load"><span class="ld-ring"></span>Putting the night back.</p>`);
+  openSheet(`<h3>Resetting\u2026</h3>
+    <div class="ld-block"><span class="ld-ball"></span><p>Putting the night back.</p></div>`);
 
   /* Prefer the saved session: it still holds the full roster, the
      title, the venue and the settings. */
@@ -8814,7 +9092,7 @@ async function doResetPastSession(code){
 
   const heads = Object.keys(S.players || {}).length;
   toast(stripped
-    ? `Session reset \\u2014 ${heads} player${heads === 1 ? '' : 's'} still here, scores at nought.`
+    ? `Session reset \u2014 ${heads} player${heads === 1 ? '' : 's'} still here, scores at nought.`
     : 'Session reset here, but it could not be taken off the club ladder.');
 }
 
@@ -8991,7 +9269,7 @@ const Roles = {
     const now = m.role || 'player';
     const opt = (val, title, sub) => `<button class="pick" onclick="Roles.setRole('${esc(id)}','${val}')"
         ${val === now ? 'disabled style="opacity:.5"' : ''}>
-        <span class="glyph">${val === 'owner' ? '\u{1F511}' : (val === 'organizer' ? '\u{1F4CB}' : '\u{1F3D3}')}</span>
+        <span class="glyph">${val === 'owner' ? icon('key') : (val === 'organizer' ? icon('clipboard') : icon('paddle'))}</span>
         <span><b>${title}${val === now ? ' \u00b7 now' : ''}</b><span>${sub}</span></span></button>`;
     const mine = Auth.me && Auth.me.id === id;
     openSheet(`<div class="mem-big">${avatar(shown, m.photo, 'xl')}
@@ -9467,9 +9745,96 @@ function navIcon(kind){
     standings:'<path d="M5 19V11M12 19V5M19 19v-5M3 21h18"/>',
     playoff:  '<path d="M4 5h5v6H4zM4 13h5v6H4zM11 8h4v8h-4zM15 12h5"/>',
     plus:     '<path d="M12 5v14M5 12h14"/>',
-    open:     '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/>'
+    open:     '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/>',
+    /* an eye: looking at the night, not doing anything to it */
+    eye:      '<path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/>'
+            + '<circle cx="12" cy="12" r="3.1"/>',
+    /* a door with the arrow going out — the glyph everything else on a phone
+       already uses for leaving, so there is nothing to learn */
+    leave:    '<path d="M9.5 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3.5"/>'
+            + '<path d="M15 8.2 18.8 12 15 15.8M18.8 12H9.8"/>',
+    /* three points joined: the one everybody reads as "send this on" */
+    share:    '<circle cx="18" cy="5.6" r="2.5"/><circle cx="6" cy="12" r="2.5"/>'
+            + '<circle cx="18" cy="18.4" r="2.5"/>'
+            + '<path d="M8.2 10.8 15.8 6.8M8.2 13.2l7.6 4"/>',
+
+    /* ── the set that replaced the emoji ──────────────────────────
+       Drawn to the same rules as the ones above: one weight, no fill,
+       stroked in currentColor. An emoji is drawn by the phone, so the
+       same screen looked like three different apps on three handsets. */
+    tv:       '<rect x="3" y="6.4" width="18" height="12" rx="1.6"/>'
+            + '<path d="M8.4 3.2 12 6.4l3.6-3.2"/>',
+    folder:   '<path d="M4 7.6a1 1 0 0 1 1-1h3.5l1.6 2H19a1 1 0 0 1 1 1v7.8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>',
+    moon:     '<path d="M20 14.4A8.3 8.3 0 1 1 10.3 4a6.7 6.7 0 0 0 9.7 10.4z"/>',
+    swords:   '<path d="M4 4.4h2.8l9.4 9.4M20 4.4h-2.8L7.8 13.8"/>'
+            + '<path d="M5.6 15.2 9 18.6M18.4 15.2 15 18.6"/>',
+    shuffle:  '<path d="M4 7h3.4l9.2 10H20M4 17h3.4l2.8-3M14 10.4l2.6-3.4H20"/>'
+            + '<path d="M17.4 4.2 20.4 7l-3 2.8M17.4 14.2l3 2.8-3 2.8"/>',
+    sliders:  '<path d="M6 3.4v6.2M6 14.4v6.2M12 3.4v3.2M12 11.4v9.2M18 3.4v10.2M18 18.4v2.2"/>'
+            + '<circle cx="6" cy="12" r="2.2"/><circle cx="12" cy="9" r="2.2"/><circle cx="18" cy="16" r="2.2"/>',
+    crown:    '<path d="M4.6 18.4h14.8"/>'
+            + '<path d="M4.4 7.4 8.2 11l3.8-5.6L15.8 11l3.8-3.6-1.5 8.4H5.9z"/>',
+    mixed:    '<circle cx="8.8" cy="14.2" r="4.4"/><circle cx="15.2" cy="9.8" r="4.4"/>',
+    trophy:   '<path d="M8 4.2h8v4.9a4 4 0 0 1-8 0z"/>'
+            + '<path d="M8 5.7H5.2a3 3 0 0 0 3 4M16 5.7h2.8a3 3 0 0 1-3 4"/>'
+            + '<path d="M12 13.1v3.4M9 20.2h6l-.6-3.7H9.6z"/>',
+    paddle:   '<ellipse cx="10.4" cy="9.4" rx="5.9" ry="6.5"/>'
+            + '<path d="M8.9 15.9 7.6 20.4M12 15.9l1.3 4.5"/><circle cx="18.6" cy="16.6" r="2.5"/>',
+    upload:   '<path d="M12 15.4V4.6M8.4 8.2 12 4.6l3.6 3.6"/>'
+            + '<path d="M4.6 14v4.4a1 1 0 0 0 1 1h12.8a1 1 0 0 0 1-1V14"/>',
+    scales:   '<path d="M12 5v14.2M7.6 19.2h8.8M4.6 8.6h14.8"/>'
+            + '<path d="M4.6 8.6 2.4 13.4a2.4 2.4 0 0 0 4.4 0zM19.4 8.6l2.2 4.8a2.4 2.4 0 0 1-4.4 0z"/>',
+    target:   '<circle cx="12" cy="12" r="7.8"/><circle cx="12" cy="12" r="3.9"/>'
+            + '<circle cx="12" cy="12" r=".9"/>',
+    pin:      '<path d="M12 20.8s6.4-6.2 6.4-10.3a6.4 6.4 0 0 0-12.8 0C5.6 14.6 12 20.8 12 20.8z"/>'
+            + '<circle cx="12" cy="10.4" r="2.4"/>',
+    search:   '<circle cx="10.6" cy="10.6" r="6"/><path d="M15 15 19.8 19.8"/>',
+    link:     '<path d="M10.2 13.8a3.6 3.6 0 0 0 5.1 0l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1.2 1.2"/>'
+            + '<path d="M13.8 10.2a3.6 3.6 0 0 0-5.1 0l-2.6 2.6a3.6 3.6 0 0 0 5.1 5.1l1.2-1.2"/>',
+    chair:    '<path d="M7 4.2v6.9h10V4.2M6 11.1h12M8.2 11.1v4.6M15.8 11.1v4.6"/>'
+            + '<path d="M6.6 15.7h10.8M9 15.7v4.1M15 15.7v4.1"/>',
+    swap:     '<path d="M4 8.6h13.4M14 5.2l3.4 3.4L14 12"/>'
+            + '<path d="M20 15.4H6.6M10 12 6.6 15.4 10 18.8"/>',
+    pencil:   '<path d="M14.8 4.9 19.1 9.2M4.6 19.4l1-4 9.7-9.7 3.3 3.3-9.7 9.7z"/>',
+    trash:    '<path d="M4.6 7h14.8M9.6 7V4.7h4.8V7"/>'
+            + '<path d="M6.7 7l.9 12.3a1 1 0 0 0 1 .9h6.8a1 1 0 0 0 1-.9L17.3 7"/>'
+            + '<path d="M10.4 10.6v6.3M13.6 10.6v6.3"/>',
+    camera:   '<path d="M4 8.6h3.3L8.9 6h6.2l1.6 2.6H20a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z"/>'
+            + '<circle cx="12" cy="13.4" r="3.3"/>',
+    cash:     '<rect x="2.8" y="6.6" width="18.4" height="10.8" rx="1.6"/>'
+            + '<circle cx="12" cy="12" r="2.5"/><path d="M6.2 9.7v4.6M17.8 9.7v4.6"/>',
+    broom:    '<path d="M14.7 4.5 9.5 9.7"/>'
+            + '<path d="M12.9 8.3 6.5 14.7a3 3 0 0 0-.8 1.6L5.1 20l3.7-.6a3 3 0 0 0 1.6-.8l6.4-6.4z"/>'
+            + '<path d="M8.7 12.5l2.8 2.8"/>',
+    undo:     '<path d="M4.6 9.8h7.1a5.3 5.3 0 1 1 0 10.6H7.2"/><path d="M7.8 6 4.2 9.8l3.6 3.8"/>',
+    gear:     '<circle cx="12" cy="12" r="3"/>'
+            + '<path d="M12 3.4v2.2M12 18.4v2.2M20.6 12h-2.2M5.6 12H3.4"/>'
+            + '<path d="m18.1 5.9-1.6 1.6M7.5 16.5l-1.6 1.6M18.1 18.1l-1.6-1.6M7.5 7.5 5.9 5.9"/>',
+    key:      '<circle cx="8.2" cy="13.8" r="3.6"/>'
+            + '<path d="M11.2 11.4 19 3.6M16.2 6.4l2.2 2.2M14 8.6l2.2 2.2"/>',
+    lock:     '<rect x="5" y="10.4" width="14" height="9.4" rx="1.6"/>'
+            + '<path d="M8.4 10.4V7.9a3.6 3.6 0 0 1 7.2 0v2.5"/>',
+    clipboard:'<path d="M9.2 4.6H7a1 1 0 0 0-1 1v13.6a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5.6a1 1 0 0 0-1-1h-2.2"/>'
+            + '<rect x="9.2" y="3" width="5.6" height="3.2" rx="1"/><path d="M9 11h6M9 14.6h4"/>',
+    check:    '<circle cx="12" cy="12" r="8.2"/><path d="M8.4 12.3l2.5 2.5 4.7-5.4"/>'
   }[kind] || '';
   return `<svg class="dr-i" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+}
+
+/* The same drawings at text size. An icon sitting in prose or in a label
+   should take its size from the type around it, so a 30px empty state and a
+   17px menu row get the right one from identical markup. */
+function icon(kind){ return navIcon(kind).replace('class="dr-i"', 'class="ic"'); }
+
+/* Markup that is written straight into the page cannot call icon(), so it
+   marks the spot with data-ic and this fills them in once at boot. Anything
+   rendered from a template calls icon() itself and never comes through here. */
+function paintIcons(root){
+  const list = (root || document).querySelectorAll('[data-ic]');
+  Array.prototype.forEach.call(list, el =>{
+    if(el.firstElementChild) return;
+    el.innerHTML = icon(el.getAttribute('data-ic'));
+  });
 }
 
 /* Android fires beforeinstallprompt and lets us call it on a tap, so
@@ -9577,9 +9942,14 @@ const Install = {
 };
 
 /* Two boards off the same results: all-time is everything ever, the
-   season is everything since the owner last drew the line. Nothing is
-   deleted either way \u2014 resetting a season moves a date, so a club can
-   start fresh in March without losing what happened in February. */
+   season is everything since the owner last drew the line. No game is ever
+   deleted \u2014 resetting a season moves a date, so a club can start fresh
+   in March without losing what happened in February.
+
+   The date itself is the one casualty. club_season holds a single row per
+   club and sideout_season_reset writes over it, so when the last season
+   began is gone the moment a new one starts. That is why the sheet shows
+   the current date before it offers to move it. */
 const Ladder = {
   season: false,
   set(on){
@@ -9595,11 +9965,42 @@ function seasonSheet(){
   openSheet(`<h3>Season</h3>
     <p class="sub">The season board shows results since it last started. The all-time board
       keeps everything, always \u2014 starting a new season does not delete a single game.</p>
+    <p class="hint tight" id="sn-now">Looking up when this season started\u2026</p>
     <div class="field"><span class="label">Name it <span style="opacity:.6">\u2014 optional</span></span>
       <input type="text" id="sn-name" maxlength="40" placeholder="e.g. Spring 2026" autocomplete="off"></div>
     <button class="btn btn-risk" onclick="doSeasonReset()">Start a new season</button>
     <p class="hint tight">Everyone's season points go back to zero. Their all-time record does not move.</p>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not now</button>`);
+  seasonLine();
+}
+
+/* Filled in after the sheet is already up, because the owner should not
+   wait on a round trip to read a dialog. Knowing the date is helpful, not
+   load-bearing, so a lookup that fails says so rather than guessing — an
+   unreachable server and a club with no season yet are not the same thing
+   and must not read the same. */
+async function seasonLine(){
+  let t = null, reached = true;
+  try{
+    t = await Live.rpc('sideout_season_start', { p_club: CONFIG.club || 'sideout' });
+  }catch(e){ reached = false; }
+
+  const node = document.getElementById('sn-now');
+  if(!node) return;
+
+  if(!reached){
+    node.textContent = 'Could not check when this season started.';
+    return;
+  }
+
+  /* A club that has never started one gets -infinity back, which is not a
+     date and should not be dressed up as one. */
+  const ms = t ? new Date(t).getTime() : NaN;
+  node.innerHTML = isFinite(ms)
+    ? `This season has run since <b>${esc(longDate(ms))} ${new Date(ms).getFullYear()}</b>. Starting
+       a new one moves that date to today, and the old one is not kept anywhere you can read it
+       back.`
+    : `No season has been started yet, so the season board has been counting everything so far.`;
 }
 
 async function doSeasonReset(){
@@ -9727,7 +10128,7 @@ const Pull = {
    beside it reads like something is happening \u2014 the difference
    between the app telling you to wait and showing you it is busy. */
 function loading(text){
-  return `<p class="conn load"><span class="ld-ring"></span>${esc(text || 'Just a moment\u2026')}</p>`;
+  return `<div class="ld-block"><span class="ld-ball"></span><p>${esc(text || 'Just a moment\u2026')}</p></div>`;
 }
 
 function greetWord(){
@@ -9813,7 +10214,7 @@ function roleSheet(id){
     if(val === 'owner' && !Auth.isOwner()) return '';
     return `<button class="pick" onclick="setMemberRole('${id}','${val}')"
       ${val === now ? 'disabled style="opacity:.5"' : ''}>
-      <span class="glyph">${val === 'owner' ? '\u{1F511}' : (val === 'organizer' ? '\u{1F4CB}' : '\u{1F3D3}')}</span>
+      <span class="glyph">${val === 'owner' ? icon('key') : (val === 'organizer' ? icon('clipboard') : icon('paddle'))}</span>
       <span><b>${title}${val === now ? ' \u00b7 now' : ''}</b><span>${sub}</span></span></button>`;
   };
   openSheet(`<h3>${esc(m.name || 'This player')}</h3>
@@ -10395,9 +10796,9 @@ function renderStats(){
   document.getElementById('lb').innerHTML = rows.length && S.games ? rows.map((id,i)=>{
     const p = P(id);
     return `<div class="lb-row${i<3?' podium':''}">
-      <span class="rk">${i < 3 ? ['🥇','🥈','🥉'][i] : (i+1)}</span>
+      <span class="rk">${i + 1}</span>
       <span class="nm">${esc(p.name)}</span>
-      <span class="crowns">${'👑'.repeat(Math.min(p.crowns,5))}</span>
+      <span class="crowns">${p.crowns ? icon('crown') + (p.crowns > 1 ? ' ' + p.crowns : '') : ''}</span>
       ${avatar(p.name, pPhoto(p), 'sm')}
       ${duprBadge(p.dupr, true)}
       <span class="rec"><b>${p.w}</b>–${p.l}${S.scores && (p.pf||p.pa) ? `<i class="dif">${(p.pf-p.pa)>=0?'+':''}${p.pf-p.pa}</i>` : ''}</span>
@@ -10433,7 +10834,7 @@ function renderLog(){
     `<div class="log-row"><span class="rd">${e.court ? `C${e.c+1} · G${e.r}` : `R${e.r} · C${e.c+1}`}</span>
       <span class="txt"><b>${esc(e.win.join(' & '))}</b> beat <s>${esc(e.lose.join(' & '))}</s></span>
       <button class="lg-sc${e.ws==null?' none':''}" onclick="editLogScore(${k})">${e.ws==null?'+':e.ws+'\u2013'+e.ls}</button>
-      ${e.king?'<span>👑</span>':''}
+      ${e.king ? '<span>' + icon('crown') + '</span>' : ''}
       <button class="swapw" onclick="swapResult(${k})" title="Swap the winner" aria-label="Swap the winner">⇄</button>
     </div>`).join('');
 
@@ -10446,14 +10847,14 @@ function renderLog(){
       ? `<button class="linky log-more" onclick="S.logAll=false;renderLog()">Show just the latest ${LOG_RECENT}</button>` : '');
 
   box.innerHTML = tools + `<div data-log-rows>${rows ||
-    `<div class="empty"><span class="glyph">🔍</span>No games with \u201c${esc(S.logQ)}\u201d in them.</div>`}</div>` + more;
+    `<div class="empty"><span class="glyph">${icon('search')}</span>No games with \u201c${esc(S.logQ)}\u201d in them.</div>`}</div>` + more;
 }
 /* Same reason as the roster: redraw the rows, leave the input alone. */
 function logRow(e, k){
   return `<div class="log-row"><span class="rd">${e.court ? `C${e.c+1} \u00b7 G${e.r}` : `R${e.r} \u00b7 C${e.c+1}`}</span>
       <span class="txt"><b>${esc(e.win.join(' & '))}</b> beat <s>${esc(e.lose.join(' & '))}</s></span>
       <button class="lg-sc${e.ws==null?' none':''}" onclick="editLogScore(${k})">${e.ws==null?'+':e.ws+'\u2013'+e.ls}</button>
-      ${e.king?'<span>👑</span>':''}
+      ${e.king ? '<span>' + icon('crown') + '</span>' : ''}
       <button class="swapw" onclick="swapResult(${k})" title="Swap the winner" aria-label="Swap the winner">\u21C4</button>
     </div>`;
 }
@@ -10466,7 +10867,7 @@ function setLogQ(v){
     !q || e.win.concat(e.lose).some(n2 => String(n2).toLowerCase().includes(q)));
   const list = (S.logAll || q) ? hits : hits.slice(0, LOG_RECENT);
   box.innerHTML = list.map(({e,k}) => logRow(e,k)).join('') ||
-    `<div class="empty"><span class="glyph">🔍</span>No games with \u201c${esc(v)}\u201d in them.</div>`;
+    `<div class="empty"><span class="glyph">${icon('search')}</span>No games with \u201c${esc(v)}\u201d in them.</div>`;
   const more = document.querySelector('.log-more');
   if(more) more.hidden = !!q;
 }
@@ -10866,6 +11267,239 @@ function doClearBracket(){
 }
 
 /* ═══════════════════════════════════════════════════
+   THE RECAP — a finished night, as a page you can send
+   ═══════════════════════════════════════════════════
+   Reached at /recap/CODE, which the redirects file rewrites to ?r=CODE.
+   It is a separate door from ?s=CODE on purpose: whoever opens a shared
+   link may not be a member, may not be signed in, and is reading about a
+   night that is already over — none of which should drop them into a
+   join flow for a session that finished last week.
+
+   Everything here comes from sideout_recap, which builds the handful of
+   fields a recap shows. The session state is never fetched: it carries
+   the host PIN and a great deal else that is nobody's business.
+
+   The game log is not guaranteed. A night can be banked with no log at
+   all, and the session row can be deleted while the results live on, so
+   the standings are the part that always works and the games are drawn
+   only when they survived.                                             */
+const Recap = {
+  code: null,
+  data: null,
+  who: null,
+
+  url(code){ return location.origin + '/recap/' + encodeURIComponent(code); },
+
+  async start(code){
+    this.code = code;
+    document.title = 'A night at Sideout Society';
+    document.getElementById('recap').hidden = false;
+    document.body.classList.add('recapping');
+    const b = document.getElementById('rc-badge'); if(b) b.src = BADGE;
+    const m = document.getElementById('rc-mark');  if(m) m.src = LOGO_LIGHT;
+    document.getElementById('rc-body').innerHTML =
+      '<div class="ld-block"><span class="ld-ball"></span><p>Reading the night…</p></div>';
+
+    let d = null;
+    try{
+      d = await Live.rpc('sideout_recap',
+        { p_club: CONFIG.club || 'sideout', p_code: code });
+    }catch(e){
+      this.nothing('That link could not be opened just now. It may be the connection.');
+      return;
+    }
+    if(!d){
+      this.nothing('There is no record of that night. It may have been reset, or the link may be wrong.');
+      return;
+    }
+    this.data = d;
+    this.paint();
+  },
+
+  nothing(why){
+    document.getElementById('rc-title').textContent = 'Nothing to show';
+    document.getElementById('rc-sub').textContent = '';
+    document.getElementById('rc-body').innerHTML = `<p class="sub">${esc(why)}</p>
+      <div class="rc-foot"><button class="btn btn-quiet" onclick="leaveRecap()">Go to Sideout Society</button></div>`;
+  },
+
+  paint(){
+    const d = this.data;
+    const when = d.played_at ? new Date(d.played_at).getTime() : null;
+    const games = d.games || [];
+
+    document.getElementById('rc-title').textContent = d.title || 'Open play';
+    document.getElementById('rc-sub').textContent =
+      `${when ? longDate(when) + ' · ' : ''}${d.players} played${
+        games.length ? ' · ' + games.length + ' games' : ''}`;
+
+    const top = document.getElementById('rc-top');
+    if(d.cover && top){
+      top.classList.add('shot');
+      top.style.backgroundImage = `url('${d.cover}')`;
+    }
+    this.body();
+  },
+
+  /* Split out from paint() so picking a player redraws the page without
+     re-reading anything or disturbing the header. */
+  body(){
+    const d = this.data;
+    document.getElementById('rc-body').innerHTML =
+      this.boardHTML(d.standings || []) + this.gamesHTML(d.games || []) + this.footHTML();
+  },
+
+  /* Tapping a name narrows the night to that person, and tapping it again
+     puts everybody back. Rows are picked by position rather than by name:
+     esc() leaves the apostrophe alone, and there is at least one O'Brien in
+     every club. */
+  only(i){
+    const board = (this.data && this.data.standings) || [];
+    const row = board[i];
+    if(!row || !row.name) return;
+    this.who = this.who === row.name ? null : row.name;
+    this.body();
+    if(this.who){
+      const el = document.getElementById('rc-games');
+      if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  },
+
+  clear(){ this.who = null; this.body(); },
+
+  boardHTML(board){
+    if(!board.length) return '';
+    return `<section class="rc-sec">
+      <h2 class="rc-h">How it finished</h2>
+      <p class="hint tight">Tap anybody to see just their games.</p>
+      <div class="lad">${board.map((r, i) =>{
+        const rate = r.games ? Math.round(r.wins / r.games * 100) : 0;
+        const diff = (r.pf || 0) - (r.pa || 0);
+        return `<div class="lad-row rc-tap${this.who === r.name ? ' sel' : ''}"
+          onclick="Recap.only(${i})">
+          <span class="lad-pos">${i + 1}</span>
+          <span class="lad-n"><span class="nmn">${esc(r.name)}${
+            r.crowns ? ' ' + icon('crown') + ' ' + r.crowns : ''}</span>
+            <em>${r.games} game${r.games === 1 ? '' : 's'}</em></span>
+          <span class="lad-w">${r.wins}<i>won</i></span>
+          <span class="lad-r">${rate}%<i>${diff >= 0 ? '+' : ''}${diff}</i></span>
+        </div>`;
+      }).join('')}</div>
+    </section>`;
+  },
+
+  gamesHTML(games){
+    if(!games.length){
+      return `<section class="rc-sec" id="rc-games">
+        <h2 class="rc-h">Every game</h2>
+        <p class="hint tight">The game-by-game record was not kept for this night —
+          only how it finished.</p>
+      </section>`;
+    }
+    return this.who ? this.mineHTML(games) : this.allHTML(games);
+  },
+
+  /* Rounds are labelled as they change rather than nested in boxes: read
+     top to bottom it is the night in the order it happened, which is how
+     anybody who was there remembers it. The order comes from the RPC —
+     state.log is stored newest first and must not be trusted as it lies. */
+  allHTML(games){
+    let last = null;
+    const rows = games.map(g =>{
+      const head = g.r !== last ? `<p class="rc-rd">Round ${esc(g.r)}</p>` : '';
+      last = g.r;
+      const win  = (g.win  || []).join(' & ');
+      const lose = (g.lose || []).join(' & ');
+      return `${head}<div class="rc-g">
+        <span class="rc-c">${g.court == null ? '' : 'C' + (Number(g.court) + 1)}</span>
+        <span><span class="rc-w">${esc(win)}</span>${g.king ? ' ' + icon('crown') : ''}<span
+          class="rc-beat">beat</span><span class="rc-l">${esc(lose)}</span></span>
+      </div>`;
+    }).join('');
+    return `<section class="rc-sec" id="rc-games"><h2 class="rc-h">Every game</h2>${rows}</section>`;
+  },
+
+  /* One person's night. Once you know who you are reading about, naming both
+     sides of every game is noise — what you want is who you were up against
+     and who you were with, which is the half nobody can remember afterwards. */
+  mineHTML(games){
+    const me = this.who;
+    const has = arr => (arr || []).indexOf(me) >= 0;
+    const mine = games.filter(g => has(g.win) || has(g.lose));
+
+    if(!mine.length){
+      return `<section class="rc-sec" id="rc-games">
+        ${this.pickedHTML(0, 0, 0)}
+        <p class="hint tight">No games were recorded for ${esc(me)} that night.</p>
+      </section>`;
+    }
+
+    let won = 0, crowns = 0, last = null;
+    const rows = mine.map(g =>{
+      const win = has(g.win);
+      if(win){ won++; if(g.king) crowns++; }
+      const with_ = (win ? g.win : g.lose).filter(n => n !== me);
+      const them  = (win ? g.lose : g.win) || [];
+      const head  = g.r !== last ? `<p class="rc-rd">Round ${esc(g.r)}</p>` : '';
+      last = g.r;
+      return `${head}<div class="rc-g">
+        <span class="rc-c">${g.court == null ? '' : 'C' + (Number(g.court) + 1)}</span>
+        <span><span class="rc-res ${win ? 'w' : 'l'}">${win ? 'beat' : 'lost to'}</span><span
+          class="${win ? 'rc-w' : 'rc-l'}">${esc(them.join(' & '))}</span>${
+          win && g.king ? ' ' + icon('crown') : ''}${
+          with_.length ? `<em class="rc-with">with ${esc(with_.join(' & '))}</em>` : ''}</span>
+      </div>`;
+    }).join('');
+
+    return `<section class="rc-sec" id="rc-games">
+      ${this.pickedHTML(mine.length, won, crowns)}${rows}</section>`;
+  },
+
+  pickedHTML(played, won, crowns){
+    return `<h2 class="rc-h">${esc(this.who)} — how the night went</h2>
+      <div class="pstats">
+        <div class="ps"><b>${played}</b><i>played</i></div>
+        <div class="ps"><b>${won}</b><i>won</i></div>
+        <div class="ps"><b>${played - won}</b><i>lost</i></div>
+        ${crowns ? `<div class="ps"><b>${crowns}</b><i>crown${crowns === 1 ? '' : 's'}</i></div>` : ''}
+      </div>
+      <button class="btn btn-quiet" style="margin:0 0 14px"
+        onclick="Recap.clear()">Show everyone</button>`;
+  },
+
+  footHTML(){
+    return `<div class="rc-foot">
+      <button class="btn btn-go" onclick="Recap.share()">${navIcon('share')}Share this night</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="leaveRecap()">Go to Sideout Society</button>
+    </div>`;
+  },
+
+  /* The share sheet where there is one, the clipboard where there is not.
+     A cancelled share is not a failure and must not toast at somebody who
+     simply changed their mind. */
+  async share(code, title){
+    const c = code || this.code;
+    if(!c) return;
+    const url = this.url(c);
+    const name = title || (this.data && this.data.title) || 'Open play';
+    if(navigator.share){
+      try{
+        await navigator.share({ title: name, text: 'How ' + name + ' finished', url: url });
+        return;
+      }catch(e){
+        if(e && e.name === 'AbortError') return;
+      }
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(url); toast('Link copied.'); return; }catch(e){}
+    }
+    toast(legacyCopy(url) ? 'Link copied.' : url);
+  }
+};
+
+function leaveRecap(){ location.href = location.origin + '/'; }
+
+/* ═══════════════════════════════════════════════════
    WATCHING — what a player sees on their own phone
    ═══════════════════════════════════════════════════ */
 const View = {
@@ -10978,11 +11612,11 @@ const View = {
 
     const table = s2.table.length ? `<div class="vw-panel"><h3>Standings</h3>
       ${s2.table.slice(0,12).map((p,i)=>`<div class="vw-row">
-        <span class="rk">${i<3?['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'][i]:(i+1)}</span>
+        <span class="rk">${i + 1}</span>
         ${avatar(p.n, View.faceOf(p.m), 'sm')}
         <span class="nm">${esc(p.n)}</span>
         ${p.r!=null?duprBadge(p.r,true):''}
-        <span class="rec">${p.c?'\uD83D\uDC51'.repeat(Math.min(p.c,3))+' ':''}<b>${p.w}</b>\u2013${p.l}</span>
+        <span class="rec">${p.c ? icon('crown') + (p.c > 1 ? ' ' + p.c : '') + ' ' : ''}<b>${p.w}</b>\u2013${p.l}</span>
       </div>`).join('')}</div>` : '';
 
     const roster = (s2.roster && s2.roster.length) ? `<div class="vw-panel"><h3>Everyone here \u00b7 ${s2.roster.length}</h3>
@@ -10993,6 +11627,19 @@ const View = {
 
     const queue = s2.queue.length ? `<div class="vw-panel"><h3>Waiting</h3>
       <div class="chips">${s2.queue.map((n2,i)=>`<span class="chip${i<2?' up':''}">${esc(n2)}</span>`).join('')}</div></div>` : '';
+
+    /* Checked before "ended", because a called-off night is technically
+       ended and somebody reading "Session ended" will assume they simply
+       missed it. The one thing they need is that it is not happening, and
+       why. No table: there is nothing to show for a night called off. */
+    if(s2.cancelled){
+      document.getElementById('vw-live').innerHTML =
+        `<div class="vw-over"><b>Called off</b>
+          <span>${s2.cancelNote ? esc(s2.cancelNote) : 'This session is not going ahead.'}</span></div>`
+        + roster
+        + `<p class="vw-foot">Sideout Society · session ${esc(this.code)}</p>`;
+      return;
+    }
 
     if(s2.ended){
       document.getElementById('vw-live').innerHTML =
@@ -11017,7 +11664,7 @@ const View = {
       <circle cx="10" cy="10" r="7.4"/><path d="M10 5.6V10l3 1.9"/></svg>`;
     const bits = [];
     const p = (typeof parseVenue === 'function') ? parseVenue(s2.venue) : null;
-    if(p) bits.push(`<a href="${esc(p.url)}" target="_blank" rel="noopener">📍 <b>${esc(p.name)}</b></a>`);
+    if(p) bits.push(`<a href="${esc(p.url)}" target="_blank" rel="noopener">${icon('pin')} <b>${esc(p.name)}</b></a>`);
     if(s2.repeat === 'weekly' && s2.startsAt){
       bits.push(`<span>Every ${DAYS[new Date(s2.startsAt).getDay()]}</span>`);
     }
@@ -11078,7 +11725,7 @@ const View = {
   staffBar(){
     if(!Auth.signedIn() || !canOrganize() || !this.code) return '';
     return `<button class="btn btn-quiet vw-manage" onclick="manageSession('${esc(this.code)}')">
-      ⚙ Manage this session</button>`;
+      ${icon('gear')} Manage this session</button>`;
   },
   /* Only when the host is running a timed round. A score-based round
      has no clock to show, and an empty box is worse than none. */
@@ -11162,7 +11809,7 @@ const View = {
       box.innerHTML = `<div class="vw-me">${avatar(shown, m && m.photo, 'sm')}
         <span>On as <b>${esc(shown)}</b> \u2014 ${where}.</span>
         <button class="vw-off" onclick="View.askLeave()" title="Take me off tonight">Can\u2019t make it</button></div>
-        ${hasPhoto ? '' : `<button class="btn btn-go vw-photo" onclick="View.editMe()">📷 Add your photo</button>
+        ${hasPhoto ? '' : `<button class="btn btn-go vw-photo" onclick="View.editMe()">${icon('camera')} Add your photo</button>
              <p class="hint tight" style="text-align:center;margin:7px 0 0">Once only \u2014 it follows you to every session after this.</p>`}`;
       return;
     }
@@ -11735,6 +12382,11 @@ function renderLive(){
   if(!box) return;
   const pill = document.getElementById('live-pill');
   if(pill) pill.hidden = !S.live;
+  /* Calling off only means anything when somebody is watching. On a session
+     that was never shared there is nobody to tell, and Start fresh is the
+     thing they actually want. */
+  const cx = document.getElementById('cancel-btn');
+  if(cx) cx.hidden = !S.live;
 
   if(!S.live){
     box.innerHTML = `<label class="label" style="display:block;margin-bottom:6px">Put it online</label>
@@ -11943,6 +12595,81 @@ function fallbackCopy(text){
   }catch(e){ toast(text); }
 }
 
+/* ═══════════════════════════════════════════════════
+   CALLING A SESSION OFF
+   ═══════════════════════════════════════════════════
+   Deleting a running session works, but it reads as a fault to everybody
+   holding a paddle: their page falls back to "Nothing running under GDW5Y
+   just yet" and tells them to leave it open and keep waiting — for a
+   session that is never coming back.
+
+   So this does not delete anything. The row stays exactly where it is,
+   marked off, and the watch screen has something true to say. It is marked
+   ended as well, so it leaves Home the way a finished night does, and
+   nothing is banked: a night that did not happen has no results.        */
+function cancelSession(){
+  if(!S.live){
+    openSheet(`<h3>Nobody is watching</h3>
+      <p class="sub">This session was never put online, so there is no one to tell.
+        Start fresh instead — nothing is sent anywhere.</p>
+      <button class="btn btn-quiet" onclick="closeSheet();freshSession()">Start fresh</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
+    return;
+  }
+  const played = (S.log || []).length;
+  const joined = (S.order || []).length;
+  openSheet(`<h3>Call this session off?</h3>
+    <p class="sub">${joined ? `The <b>${joined} ${joined === 1 ? 'person' : 'people'}</b> on the list are` : 'Anyone watching is'}
+      told on the page they already have open, within a few seconds.</p>
+    ${played ? `<div class="warn-box">
+      <b>${played} game${played === 1 ? '' : 's'} already played.</b>
+      <span>A night that was called off does not go to the club ladder, so those games are not kept.
+        End the session instead if you want them counted.</span>
+    </div>` : ''}
+    <div class="field"><span class="label">Say why <span style="opacity:.6">— optional</span></span>
+      <input type="text" id="cx-why" maxlength="80" autocomplete="off"
+        placeholder="e.g. rain — courts are flooded"></div>
+    <button class="btn btn-risk" onclick="doCancelSession()">Call it off</button>
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep playing</button>`);
+}
+
+async function doCancelSession(){
+  const el = document.getElementById('cx-why');
+  const why = String((el && el.value) || '').trim();
+  const btn = document.querySelector('#sheet .btn-risk');
+  if(btn){ btn.disabled = true; btn.innerHTML = `<span class="ld-ring"></span>Telling everyone…`; }
+
+  /* Written first, sent second: if the write does not land, none of this
+     happened and the session carries on as it was. */
+  const was = { cancelled: S.cancelled, note: S.cancelNote, ended: S.ended,
+                endedAt: S.endedAt, active: S.active };
+  S.cancelled = true;
+  S.cancelNote = why;
+  S.ended = true;
+  S.endedAt = Date.now();
+  S.active = false;
+  try{ Clock.reset(); }catch(e){}
+
+  try{
+    await Live.saveAll();
+  }catch(e){
+    S.cancelled = was.cancelled; S.cancelNote = was.note;
+    S.ended = was.ended; S.endedAt = was.endedAt; S.active = was.active;
+    if(btn){ btn.disabled = false; btn.textContent = 'Call it off'; }
+    toast('Could not reach the server — nothing was called off.');
+    return;
+  }
+
+  closeSheet();
+  /* Put the session down on this device without touching the row: the
+     watchers still need it there to read. */
+  leaveSession();
+  Feed.up = null; Feed.past = null;
+  go('home');
+  toast(why ? 'Called off — everybody watching has been told why.'
+            : 'Called off — everybody watching has been told.');
+}
+
 function confirmReset(){
   const willRepeat = S.repeat === 'weekly' && !!S.liveCode;
   openSheet(`<h3>End the session?</h3>
@@ -11959,13 +12686,13 @@ function confirmReset(){
          it game by game — the club ladder only keeps totals. Last
          chance to take it, so say so. */
       return scored ? `<button class="pick dupr-now" onclick="closeSheet();exportDUPR()">
-        <span class="glyph">\u{1F4E4}</span><span><b>Send to DUPR first</b>
+        <span class="glyph">${icon('upload')}</span><span><b>Send to DUPR first</b>
         <span>${scored} game${scored === 1 ? '' : 's'} with scores. The game-by-game record goes when you clear.</span></span></button>` : ''; })()}
     <button class="pick" onclick="doReset(false)">
-      <span class="glyph">↩️</span><span><b>Keep the players</b>
+      <span class="glyph">${icon('undo')}</span><span><b>Keep the players</b>
       <span>Same crowd next time — you start again in one tap</span></span></button>
     <button class="pick" onclick="doReset(true)">
-      <span class="glyph">🧹</span><span><b>Clear the players too</b>
+      <span class="glyph">${icon('broom')}</span><span><b>Clear the players too</b>
       <span>Different crowd — start from an empty list</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep playing</button>`);
 }
@@ -12251,7 +12978,7 @@ const TV = {
       };
       const nextRow = `<div class="tv-next"><b>Next</b><span class="tv-nx">${nextInfoHTML(i, upNext, 'tv')}</span></div>`;
       return `<div class="tv-court${king?' king':''}">
-        <div class="hd"><span class="no">${king?'👑 ':''}${ordinal(i)}</span>
+        <div class="hd"><span class="no">${king ? icon('crown') + ' ' : ''}${ordinal(i)}</span>
           <span class="tier">${courtTag(i,N,S.courtLevels[i]||'int')}</span></div>
         <div class="tv-body">${team(0)}<div class="tv-vs">versus</div>${team(1)}</div>
         ${nextRow}
@@ -12635,6 +13362,7 @@ function saveCard(){
     if(mt) mt.content = (th || 'night') === 'night' ? '#071320' : '#0B1B2B';
   }catch(e){}
 
+  paintIcons();
   const had = load();
   setMode(S.mode);
   setNewLevel('int');
@@ -12648,6 +13376,10 @@ function saveCard(){
   const scanned = (params.get('p') || '').trim();
   const watch = (params.get('s') || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
   if(watch){ View.start(watch, params.get('join') === '1'); return; }
+  /* a shared recap: its own door, taken before anything decides to show a
+     screen or ask anybody to sign in */
+  const seen = (params.get('r') || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+  if(seen){ Recap.start(seen); return; }
 
   Clock.setDefault(S.mins * 60);
   if(S.active && !S.roundStart) S.roundStart = Date.now();

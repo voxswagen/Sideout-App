@@ -5,3 +5,7 @@
 /organize   /index.html?organize   200
 /organise   /index.html?organize   200
 /join/*     /index.html?s=:splat   200
+# a finished night, shared. Kept separate from /join so a link sent round
+# after the fact opens the recap rather than a join flow for a session
+# that is already over.
+/recap/*    /index.html?r=:splat   200
