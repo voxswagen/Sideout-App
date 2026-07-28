@@ -1150,6 +1150,16 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
   background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
   transition:background .15s}
 .vw-home:hover{background:rgba(255,255,255,.26)}
+/* The code, sitting with the venue and the notes where somebody reads before
+   they set off. Tapping copies it. */
+.vw-code{display:inline-flex;align-items:center;gap:8px;margin-top:11px;cursor:pointer;
+  padding:7px 12px;border-radius:99px;color:#fff;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24)}
+.vw-code:hover{background:rgba(255,255,255,.24)}
+.vw-code i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+.vw-code b{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.18em}
+.vw-code .ic{opacity:.75;font-size:13px}
 .vw-top{position:relative;overflow:hidden;color:#fff;
   padding:calc(15px + env(safe-area-inset-top)) 18px 20px;
   background:linear-gradient(157deg,var(--court) 0%,var(--court-deep) 58%,#08243C 100%)}
@@ -2107,7 +2117,7 @@ textarea:focus{border-color:var(--court)}
         </button>
         <button class="mode" id="mode-river" aria-pressed="false" onclick="setMode('river')">
           <span class="glyph" data-ic="swords"></span>
-          <span><b>Court Wars</b><span>Every court is a rank and Court 1 is the throne. Win and you take a court off somebody, lose and you give one up. Works with any number of players.</span></span>
+          <span><b>Court Wars</b><span>Up and down the river. Every court is a rank and Court 1 is the top — win your way up, lose and you drop one. Works with any number of players.</span></span>
         </button>
         <button class="mode" id="mode-tour" aria-pressed="false" onclick="setMode('tour')">
           <span class="glyph" data-ic="trophy"></span>
@@ -2491,10 +2501,13 @@ textarea:focus{border-color:var(--court)}
   <header class="vw-top">
     <div class="vw-bar">
       <button class="vw-home" onclick="leaveWatching()"
-        aria-label="Leave and go to Sideout Society" title="Leave and go to Sideout Society">←</button>
+        aria-label="Go to Sideout Society" title="Go to Sideout Society"><span class="lic" data-ic="home"></span></button>
       <img class="badge" id="vw-badge" alt="">
       <img class="vw-mark" id="vw-mark" alt="Sideout Society">
       <span class="live-pill" id="vw-pill"><i></i>Live</span>
+      <!-- sharing the night you are looking at, without going back for it -->
+      <button class="vw-home" onclick="View.share()"
+        aria-label="Share this session" title="Share this session"><span class="lic" data-ic="share"></span></button>
     </div>
     <h1 class="vw-title" id="vw-title"> </h1>
     <p class="vw-meta" id="vw-sub">Connecting…</p>
@@ -2513,7 +2526,7 @@ textarea:focus{border-color:var(--court)}
   <header class="vw-top" id="rc-top">
     <div class="vw-bar">
       <button class="vw-home" onclick="leaveRecap()"
-        aria-label="Go to Sideout Society" title="Go to Sideout Society">←</button>
+        aria-label="Go to Sideout Society" title="Go to Sideout Society"><span class="lic" data-ic="home"></span></button>
       <img class="badge" id="rc-badge" alt="">
       <img class="vw-mark" id="rc-mark" alt="Sideout Society">
     </div>
@@ -3945,7 +3958,9 @@ const Auth = {
 };
 
 const Club = {
-  key: 'sideout_members_' + (CONFIG.club || 'sideout'),
+  /* v2: the cached rows predate rating, rating_games and created_at, and a
+     six-hour-old cache would have hidden them. A new key throws those away. */
+  key: 'sideout_members_v2_' + (CONFIG.club || 'sideout'),
   meKey: 'sideout_member_me',
   list: [], loaded: 0,
 
@@ -3976,6 +3991,7 @@ const Club = {
     try{
       const rows = await Live.api('members?club=eq.' + encodeURIComponent(CONFIG.club || 'sideout') +
         '&select=id,name,dupr,photo,seen_at,alias,role,official,sex,birth_month,birth_day' +
+        ',rating,rating_games,created_at' +
         '&order=seen_at.desc&limit=400');
       this.list = rows || [];
       this.loaded = Date.now();
@@ -4392,8 +4408,12 @@ function toggleTheme(){
 /* ═══════════════════════════════════════════════════
    SETUP
    ═══════════════════════════════════════════════════ */
+/* Every mode in MODES needs a name here. river was added without one, so
+   anything showing the format read "undefined" — the watch screen under the
+   date, the big screen, and the story card. */
 const MODE_NAME = { gauntlet:'Gauntlet', mix:'Social mix', levels:'Skill-based',
-                    kotc:'King of the Court', mixed:'Mixed doubles', tour:'Tournament' };
+                    kotc:'King of the Court', mixed:'Mixed doubles', tour:'Tournament',
+                    river:'Court Wars' };
 const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river'];
 
 /* ══════════════════════════════════════════════════════
@@ -5212,7 +5232,9 @@ function planRound(){
   return honourPairs(S.mode === 'levels' ? planLevels(true) : planMix(true));
 }
 function refreshPlan(){
-  if(!S.active || S.mode === 'kotc'){ S.next = null; return; }
+  /* river deals per tier at the end of the round, so there is no shared plan
+     to build — the same reason kotc is excluded. */
+  if(!S.active || S.mode === 'kotc' || S.mode === 'river'){ S.next = null; return; }
   if(!S.next || S.planRound !== S.round){ S.next = planRound(); S.planRound = S.round; }
 }
 
@@ -6356,9 +6378,27 @@ function memberSheet(id){
         ${rec.wins} won (${rec.games ? Math.round(rec.wins/rec.games*100) : 0}%)${
         rec.crowns ? ' \u00b7 ' + icon('crown') + ' ' + rec.crowns : ''}</p>`
     : '';
-  openSheet(`<h3>${esc(m.name)}</h3>
-    <div class="mem-big">${avatar(m.name, m.photo, 'xl')}
-      ${m.dupr != null ? duprBadge(m.dupr) : '<span class="hint">No rating</span>'}</div>
+  /* Enough for somebody who has just been introduced across a court and has
+     no idea who they are playing: what they are rated, how long they have
+     been coming, and when they were last here. The same two badges as your
+     own profile, so a number means the same thing wherever it is read. */
+  const since = m.created_at ? Date.parse(m.created_at) : null;
+  const seen = m.seen_at ? Date.parse(m.seen_at) : null;
+  const roleWord = m.role === 'owner' ? 'Owner' : (m.role === 'organizer' ? 'Organizer' : null);
+  const bits = [];
+  if(roleWord) bits.push('<b>' + roleWord.toLowerCase() + '</b>');
+  else if(m.official) bits.push('<b>member</b>');
+  if(isFinite(since)) bits.push('playing here since ' + esc(longDate(since)).replace(/^\w+ /, ''));
+  if(isFinite(seen)) bits.push('last seen ' + esc(timeAgo(seen)));
+
+  openSheet(`<h3>${esc(m.alias || m.name)}${m.official ? verifiedMark(16) : ''}</h3>
+    <div class="mem-big">${avatar(m.alias || m.name, m.photo, 'xl')}</div>
+    ${m.alias && m.alias !== m.name
+      ? `<p class="sub" style="text-align:center;margin:0 0 4px">${esc(m.name)}</p>` : ''}
+    ${(m.dupr != null || m.rating != null)
+      ? ratingsRow(m)
+      : '<p class="hint tight" style="text-align:center">No rating yet — it arrives after their first few games.</p>'}
+    ${bits.length ? `<p class="sub" style="text-align:center">${bits.join(' · ')}</p>` : ''}
     ${recLine}
     ${inPlay ? '<p class="conn">On tonight\u2019s list. Deleting the club record does not remove them from this session.</p>' : ''}
     <div class="field"><span class="label">Name</span>
@@ -8770,7 +8810,10 @@ async function pastSession(code){
       <div class="ps"><b>${rough}m</b><i>about</i></div>
     </div>
     <div class="lad">${body}</div>
-    <button class="btn btn-quiet" style="margin-top:10px"
+    <button class="btn btn-go" style="margin-top:10px"
+      onclick="location.href='?r=${encodeURIComponent(code)}'">${
+        navIcon('eye')}View the full night</button>
+    <button class="btn btn-quiet" style="margin-top:8px"
       onclick="Recap.share('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
         navIcon('share')}Share this night</button>
     ${canOrganize() ? `<button class="btn btn-quiet" style="margin-top:8px"
@@ -11744,16 +11787,14 @@ const Recap = {
   who: null,
   all: false,        /* whether the whole night is showing or just the end */
 
-  /* The pretty form needs the redirects file, which only exists once this is
-     served by Netlify. Opened straight off the disk there is no origin at all
-     — location.origin is the string "null" — so a shared link would read
-     "null/recap/GDW5Y". Falling back to the query form keeps a local link
-     working; in production the first branch is always the one taken. */
+  /* Built off the page's own address with a query rather than the pretty
+     /recap/CODE form. The pretty one needs the redirects file to be live, and
+     a shared link that lands on a 404 is worse than an ugly one that works —
+     it also has to survive being opened straight off the disk, where
+     location.origin is the string "null". The /recap/* rule stays in
+     _redirects so links already sent keep working. */
   url(code){
-    const origin = (location.origin && location.origin !== 'null') ? location.origin : '';
-    return origin
-      ? origin + '/recap/' + encodeURIComponent(code)
-      : location.href.split(/[?#]/)[0] + '?r=' + encodeURIComponent(code);
+    return location.href.split(/[?#]/)[0] + '?r=' + encodeURIComponent(code);
   },
 
   async start(code){
@@ -12035,6 +12076,35 @@ const View = {
     else this.misses++;
     this.paint();
   },
+  /* Sharing the session you are already looking at. The join link, not the
+     recap: this one has not happened yet, and what somebody wants is to be
+     told where to turn up. */
+  async share(){
+    if(!this.code) return;
+    const url = Live.url(this.code);
+    const name = (this.snap && this.snap.title) || 'Open play';
+    if(navigator.share){
+      try{ await navigator.share({ title: name, text: 'Playing at ' + name, url }); return; }
+      catch(e){ if(e && e.name === 'AbortError') return; }
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(url); toast('Link copied.'); return; }catch(e){}
+    }
+    toast(legacyCopy(url) ? 'Link copied.' : url);
+  },
+
+  /* The code itself, because half of sharing a session happens out loud
+     across a car park — "it's GDW5Y" — rather than by sending a link. */
+  copyCode(){
+    if(!this.code) return;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(this.code)
+        .then(()=> toast('Code copied.'), ()=> toast(legacyCopy(this.code) ? 'Code copied.' : this.code));
+      return;
+    }
+    toast(legacyCopy(this.code) ? 'Code copied.' : this.code);
+  },
+
   /* Names in a club repeat, so check before adding rather than
      leaving the host to untangle two Kes's afterwards. */
   norm(n){ return String(n||'').toLowerCase().replace(/\s+/g,' ').trim(); },
@@ -12072,9 +12142,14 @@ const View = {
     if(document.title !== want) document.title = want;
     const cd = this.countdownHTML(s2);
     const where = this.whereHTML(s2);
-    if(s2.details || cd || where){
+    /* The code sits with the details rather than only in the link, because
+       somebody standing next to you wants to type it in, not be sent a URL. */
+    const codeRow = `<button class="vw-code" onclick="View.copyCode()"
+      title="Copy the code" aria-label="Copy the session code">
+      <i>Code</i><b>${esc(this.code || '')}</b>${icon('share')}</button>`;
+    if(s2.details || cd || where || this.code){
       const next = where + (s2.details ? `<p style="margin:${where ? '11px' : '0'} 0 0">`
-        + esc(s2.details).replace(/\n/g, '<br>') + '</p>' : '') + cd;
+        + esc(s2.details).replace(/\n/g, '<br>') + '</p>' : '') + cd + codeRow;
       /* the seconds change every tick; compare without them */
       const key = next.replace(/<div class="cd-units"[^>]*>[\s\S]*?<\/div>/, '<CD>');
       /* The poll runs every few seconds. Rewriting this block each
@@ -12087,9 +12162,15 @@ const View = {
       }
       det.hidden = false;
     } else { det.hidden = true; this.detKey = null; }
+    /* Round 0 is not a round \u2014 it is a session nobody has started. Saying
+       "Round 0" to somebody who opened the link early reads like something
+       has gone wrong. And modeName has to be guarded: a mode with no entry in
+       MODE_NAME used to print the word "undefined" here. */
     sub.textContent = (s2.date ? s2.date + ' \u00b7 ' : '') + (s2.ended
       ? 'Finished'
-      : s2.modeName + ' \u00b7 Round ' + s2.round + (s2.timed ? '' : ' \u00b7 first to ' + s2.target));
+      : (s2.modeName || 'Open play')
+        + (s2.round > 0 ? ' \u00b7 Round ' + s2.round : ' \u00b7 not started yet')
+        + (s2.timed || !s2.target ? '' : ' \u00b7 first to ' + s2.target));
     if(s2.ended && this.t){ clearInterval(this.t); this.t = setInterval(()=> this.tick(), 15000); }
 
     this.paintJoin(s2);
@@ -13381,6 +13462,17 @@ function nextInfoHTML(i, exactArr, cls){
 
 function nextLineups(){
   if(!S.active) return [];
+  /* Court Wars cannot be previewed, and used to pretend it could. It fell
+     through to planMix — a planner with nothing to do with how this format
+     deals — so the "Next" row showed four names picked by the wrong
+     algorithm, reshuffled every time somebody joined or dropped out. That is
+     the flicker.
+
+     There is no honest preview here: the tiers are rebuilt from the whole
+     round's standings when the round ends, so who is on Court 1 next depends
+     on results that have not been tapped in yet. Better to show nothing than
+     a guess that keeps changing its mind. */
+  if(S.mode === 'river') return S.courts.map(()=> null);
   if(rolling()) return S.courts.map((c,i)=> c.win === null ? null : (refillPlan(i) || {}).teams || null);
   if(S.mode === 'kotc'){
     const full = honourPairs(planKOTC());
