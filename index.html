@@ -12028,9 +12028,173 @@ const Recap = {
 
   footHTML(){
     return `<div class="rc-foot">
-      <button class="btn btn-go" onclick="Recap.share()">${navIcon('share')}Share this night</button>
+      <button class="btn btn-go" onclick="Recap.card()">${navIcon('camera')}Story card for Instagram</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="Recap.share()">${
+        navIcon('share')}Share the link</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="leaveRecap()">Go to Sideout Society</button>
     </div>`;
+  },
+
+  /* ── the story card ──────────────────────────────────────────
+     1080 by 1920, which is what a story wants, drawn to the same rules as
+     the one the organizer makes mid-session: the wordmark, the ball green
+     eyebrow, gold for the winner. The difference is the night's own photo
+     across the top — this is a finished evening being remembered rather
+     than a live table, and the picture is the part people recognise.
+
+     No club branding is invented here: the colours, the wordmark and the
+     crowns are the ones already in the app.                              */
+  async card(){
+    const d = this.data;
+    if(!d || !(d.standings || []).length){ toast('Nothing to put on a card yet.'); return; }
+    toast('Building your card…');
+    try{
+      await document.fonts.load('130px "Bebas Neue"');
+      await document.fonts.load('800 30px "Barlow Condensed"');
+    }catch(e){}
+
+    const logo = await loadImg(LOGO_LIGHT);
+    /* Covers are data URLs, so the canvas stays clean and can still be
+       exported. A remote one would taint it and toBlob would throw, so a
+       photo that will not load is simply skipped. */
+    const shot = d.cover ? await loadImg(d.cover) : null;
+
+    const c = document.getElementById('card-canvas');
+    c.width = 1080; c.height = 1920;
+    const x = c.getContext('2d');
+    const W = 1080, PAD = 72;
+    const GOLD = '#E0A93A', BALL = '#C3D92B';
+
+    const g = x.createLinearGradient(0, 0, 220, 1920);
+    g.addColorStop(0, '#061726'); g.addColorStop(.45, '#0E3A61'); g.addColorStop(1, '#050F1B');
+    x.fillStyle = g; x.fillRect(0, 0, W, 1920);
+
+    let y = 108;
+
+    if(shot){
+      /* cover the band rather than stretch it: a squashed photo of a court
+         looks worse than a cropped one */
+      const bandH = 620;
+      const r = Math.max(W / shot.width, bandH / shot.height);
+      const sw = shot.width * r, sh = shot.height * r;
+      x.save();
+      x.beginPath(); x.rect(0, 0, W, bandH); x.clip();
+      x.drawImage(shot, (W - sw) / 2, (bandH - sh) / 2, sw, sh);
+      const veil = x.createLinearGradient(0, bandH * .35, 0, bandH);
+      veil.addColorStop(0, 'rgba(6,23,38,0)'); veil.addColorStop(1, 'rgba(6,23,38,.96)');
+      x.fillStyle = veil; x.fillRect(0, 0, W, bandH);
+      x.restore();
+      y = bandH - 150;
+    } else {
+      x.save(); x.globalAlpha = .045; x.strokeStyle = '#fff'; x.lineWidth = 54;
+      for(let i = -1400; i < 2200; i += 150){ x.beginPath(); x.moveTo(i, -200); x.lineTo(i + 1300, 2200); x.stroke(); }
+      x.restore();
+    }
+
+    if(logo){
+      const lw = 380, lh = logo.height * lw / logo.width;
+      x.drawImage(logo, (W - lw) / 2, y, lw, lh);
+      y += lh + 42;
+    } else { y += 90; }
+
+    const when = d.played_at ? new Date(d.played_at) : null;
+    const stamp = when
+      ? when.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }).toUpperCase()
+      : '';
+    x.textAlign = 'center'; x.fillStyle = BALL;
+    track(x, 7); x.font = '800 27px "Barlow Condensed"';
+    x.fillText(stamp, W / 2, y);
+    track(x, 0);
+    y += 62;
+
+    const title = String(d.title || 'OPEN PLAY').toUpperCase();
+    const tSize = fitFont(x, title, '', 'Bebas Neue', 104, W - PAD * 2);
+    track(x, 4); x.fillStyle = '#fff'; x.font = tSize + 'px "Bebas Neue"';
+    x.fillText(title, W / 2, y);
+    track(x, 0);
+    y += 54;
+
+    const rows = d.standings.slice();
+    const champ = rows[0];
+    const cH = 232;
+    x.fillStyle = 'rgba(224,169,58,.12)';
+    rrect(x, PAD, y, W - PAD * 2, cH, 26); x.fill();
+    x.strokeStyle = 'rgba(224,169,58,.55)'; x.lineWidth = 2;
+    rrect(x, PAD, y, W - PAD * 2, cH, 26); x.stroke();
+
+    x.textAlign = 'left';
+    track(x, 6); x.fillStyle = GOLD; x.font = '800 25px "Barlow Condensed"';
+    x.fillText('TOP OF THE TABLE', PAD + 42, y + 58);
+    track(x, 0);
+
+    const cn = String(champ.name || '').toUpperCase();
+    const nameSize = fitFont(x, cn, '', 'Bebas Neue', 90, W - PAD * 2 - 250 - 84);
+    x.fillStyle = '#fff'; x.font = nameSize + 'px "Bebas Neue"';
+    x.fillText(cn, PAD + 42, y + 146);
+
+    const after = drawCrowns(x, champ.crowns || 0, PAD + 44, y + 184, 13, GOLD);
+    x.font = '30px "Barlow Condensed"'; x.fillStyle = 'rgba(255,255,255,.55)';
+    x.fillText((champ.games || 0) + ' games played', after + (champ.crowns ? 10 : 0), y + 194);
+
+    x.textAlign = 'right';
+    x.fillStyle = GOLD; x.font = '78px "Bebas Neue"';
+    x.fillText((champ.wins || 0) + '–' + (champ.losses || 0), W - PAD - 42, y + 152);
+    track(x, 4); x.font = '800 22px "Barlow Condensed"'; x.fillStyle = 'rgba(255,255,255,.4)';
+    x.fillText('WON  LOST', W - PAD - 42, y + 190);
+    track(x, 0);
+
+    y += cH + 24;
+
+    const rest = rows.slice(1, 8);
+    const rH = 100, gap = 11;
+    rest.forEach((p, i) =>{
+      const top = y + i * (rH + gap);
+      x.fillStyle = 'rgba(255,255,255,.055)';
+      rrect(x, PAD, top, W - PAD * 2, rH, 18); x.fill();
+
+      x.textAlign = 'left';
+      x.fillStyle = 'rgba(255,255,255,.42)'; x.font = '44px "Bebas Neue"';
+      x.fillText(String(i + 2), PAD + 34, top + 66);
+
+      const n2 = String(p.name || '').toUpperCase();
+      const ns = fitFont(x, n2, '', 'Bebas Neue', 52, 460);
+      x.fillStyle = '#fff'; x.font = ns + 'px "Bebas Neue"';
+      x.fillText(n2, PAD + 108, top + 66);
+
+      if(p.crowns){
+        x.font = ns + 'px "Bebas Neue"';
+        drawCrowns(x, p.crowns, PAD + 120 + x.measureText(n2).width, top + 50, 9, GOLD);
+      }
+      x.textAlign = 'right';
+      x.fillStyle = BALL; x.font = '46px "Bebas Neue"';
+      x.fillText((p.wins || 0) + '–' + (p.losses || 0), W - PAD - 34, top + 66);
+    });
+
+    y += rest.length * (rH + gap) + 36;
+
+    const fy = Math.max(y, 1620);
+    x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 1;
+    x.beginPath(); x.moveTo(PAD, fy); x.lineTo(W - PAD, fy); x.stroke();
+    const stats = [['PLAYERS', d.players || rows.length],
+                   ['GAMES', (d.games || []).length],
+                   ['ON THE BOARD', rows.length]];
+    x.textAlign = 'center';
+    stats.forEach((st, i) =>{
+      const cx = PAD + (W - PAD * 2) * (i * 2 + 1) / 6;
+      x.fillStyle = '#fff'; x.font = '64px "Bebas Neue"';
+      x.fillText(String(st[1]), cx, fy + 88);
+      track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 22px "Barlow Condensed"';
+      x.fillText(st[0], cx, fy + 124);
+      track(x, 0);
+    });
+
+    track(x, 8); x.fillStyle = 'rgba(255,255,255,.32)'; x.font = '800 24px "Barlow Condensed"';
+    x.fillText('SIDEOUT SOCIETY', W / 2, 1852);
+    track(x, 0);
+
+    try{
+      shareCanvas(c, 'sideout-' + (d.code || 'night') + '.png', d.title || 'Sideout Society');
+    }catch(e){ toast('Could not build the image.'); }
   },
 
   /* The share sheet where there is one, the clipboard where there is not.
@@ -13926,13 +14090,20 @@ async function cardFromSnap(){
   } finally { S = keep; }
 }
 
-function saveCard(){
-  const c = document.getElementById('card-canvas');
+function saveCard(){ shareCanvas(document.getElementById('card-canvas'),
+  'sideout-standings.png', 'Sideout Society standings'); }
+
+/* Getting a picture off a canvas and into somebody's story, by every route a
+   phone might allow. There is no way to post to Instagram from a web page —
+   no site can — so the share sheet is the route, and Instagram is one of the
+   things it offers. Everything after it is for the phones that refuse. */
+function shareCanvas(c, name, title){
+  if(!c) return;
   c.toBlob(async blob=>{
     if(!blob){ toast('Could not build the image.'); return; }
-    const file = new File([blob], 'sideout-standings.png', { type:'image/png' });
+    const file = new File([blob], name, { type:'image/png' });
     if(navigator.canShare && navigator.canShare({ files:[file] })){
-      try{ await navigator.share({ files:[file], title:'Sideout Society standings' }); return; }
+      try{ await navigator.share({ files:[file], title }); return; }
       catch(e){ if(e && e.name === 'AbortError') return; }
     }
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -13951,7 +14122,7 @@ function saveCard(){
     }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'sideout-standings.png';
+    a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
     toast('Saved to your gallery.');
