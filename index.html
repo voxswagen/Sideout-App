@@ -1717,6 +1717,8 @@ textarea:focus{border-color:var(--court)}
 #tv{position:fixed;inset:0;z-index:300;background:#050E18;color:#fff;display:none;
   flex-direction:column;font-family:'Barlow Condensed',sans-serif}
 #tv.on{display:flex}
+/* A screen showing nothing but the board: no app behind it to scroll. */
+body.casting{overflow:hidden}
 .tv-top{display:flex;align-items:center;gap:16px;padding:16px 26px;
   background:linear-gradient(180deg,#0D2B48,#071A2C);border-bottom:1px solid rgba(255,255,255,.1)}
 .tv-top .t{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.18em;line-height:1}
@@ -1794,10 +1796,17 @@ textarea:focus{border-color:var(--court)}
 .seg.four{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .seg.five{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .seg.five button:last-child{grid-column:1/-1}
+/* The format list, which grows whenever a format is added. Two up on a
+   phone, four across on anything wider, and a lone last one takes the full
+   width rather than sitting in a half-empty row. */
+.seg.fmt{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.seg.fmt button:last-child:nth-child(odd){grid-column:1/-1}
 @media(min-width:520px){
   .seg.four{grid-template-columns:repeat(4,1fr)}
   .seg.five{grid-template-columns:repeat(5,1fr)}
   .seg.five button:last-child{grid-column:auto}
+  .seg.fmt{grid-template-columns:repeat(4,1fr)}
+  .seg.fmt button:last-child:nth-child(odd){grid-column:auto}
 }
 .seg button{flex:1;padding:10px 4px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
   background:var(--card-2);color:var(--ink-2);font-family:'Barlow Condensed',sans-serif;font-weight:800;
@@ -1854,6 +1863,9 @@ textarea:focus{border-color:var(--court)}
   #screen-setup > *:nth-child(2){grid-column:1;grid-row:2}
   #screen-setup > *:nth-child(3){grid-column:1;grid-row:3}
   #screen-setup > *:nth-child(4){grid-column:2;grid-row:1/span 3}
+  /* same guard as Manage: anything past the fourth stacks rather than
+     landing wherever the grid happens to have room */
+  #screen-setup > *:nth-child(n+5){grid-column:1}
 
   /* manage — settings beside the roster */
   #screen-players.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
@@ -1861,6 +1873,12 @@ textarea:focus{border-color:var(--court)}
   #screen-players > *:nth-child(1){grid-column:1;grid-row:1}
   #screen-players > *:nth-child(2){grid-column:2;grid-row:1/span 2}
   #screen-players > *:nth-child(3){grid-column:1;grid-row:2}
+  /* The waiting and bench panels are hidden most of the time, so they were
+     never given a place. The moment somebody is waiting they appeared with
+     no rule of their own and the grid auto-placed them into whatever cell
+     was free, which threw the roster around. They stack under the settings
+     now, wherever they turn up. */
+  #screen-players > *:nth-child(n+4){grid-column:1}
 
   /* stats — standings hold the left, everything else stacks right */
   #screen-stats.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
@@ -2270,11 +2288,15 @@ textarea:focus{border-color:var(--court)}
   <div class="panel">
     <h2>Session settings</h2>
     <label class="label" style="display:block;margin-bottom:6px">Format</label>
-    <div class="seg five" style="margin-bottom:14px">
+    <!-- Every entry in MODES belongs here. Court Wars was added to the app
+         without being added to this list, so it could be started but never
+         switched to once a night was under way. -->
+    <div class="seg fmt" style="margin-bottom:14px">
       <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')"><span class="lic" data-ic="swords"></span> Gauntlet</button>
       <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Mix</button>
       <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill</button>
       <button id="fmt-kotc"     onclick="switchFormat('kotc')"><span class="lic" data-ic="crown"></span> Ladder</button>
+      <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Court Wars</button>
       <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed</button>
       <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
     </div>
@@ -2445,11 +2467,14 @@ textarea:focus{border-color:var(--court)}
     <canvas id="card-canvas" hidden></canvas>
   </div>
 
-  <button class="btn btn-risk" onclick="confirmReset()">End the session</button>
-  <!-- only worth offering while people are actually watching; renderLive()
-       shows it when the session is live -->
-  <button class="btn btn-quiet" id="cancel-btn" hidden style="margin-top:8px"
-    onclick="cancelSession()">Call it off</button>
+  <!-- Wrapped as one child on purpose. The desktop grid for this screen
+       places its children by nth-child, and adding a seventh sibling left it
+       with no placement of its own — which shuffles everything else. -->
+  <div class="end-box">
+    <button class="btn btn-risk" onclick="confirmReset()">End the session</button>
+    <button class="btn btn-quiet" id="cancel-btn" style="margin-top:8px"
+      onclick="cancelSession()">Call it off</button>
+  </div>
 </section>
 
 </div><!-- /wrap -->
@@ -2637,6 +2662,13 @@ const Live = {
   url(code, join){
     const base = location.origin + location.pathname;
     return base + '?s=' + code + (join ? '&join=1' : '');
+  },
+  /* The same night on a screen with nobody holding it. Its own address so a
+     TV or a spare laptop can be pointed at it once and left alone, rather
+     than the board only existing on the phone that is running the session. */
+  tvUrl(code){
+    const base = location.origin + location.pathname;
+    return base + '?tv=' + code;
   },
 
   /* ── transport ─────────────────────────────────────── */
@@ -10950,6 +10982,22 @@ function applyFormat(m){
   S.mode = m;
   if(m === 'levels'){ S.courtLevels = autoLevels(n); fillLevelCourts(); }
   else if(m === 'kotc'){ seedByRecord(n); }
+  /* Court Wars deals from tiers, not from a shared plan. Switching into it
+     mid-session used to fall through to planMix, which handed out a random
+     mix and left S.tiers empty, so the next round had nothing to rebuild
+     from. Seeded on the night's form so far rather than shuffled — everyone
+     has a record by this point and it would be odd to ignore it. */
+  else if(m === 'river'){
+    const rows = activeIds().map(id =>{
+      const p = P(id);
+      return { id, g: p.g || 0, w: p.w || 0, pf: p.pf || 0, pa: p.pa || 0,
+               court: null, was: p.wasRank == null ? null : p.wasRank };
+    });
+    S.tiers = Climb.spread(Climb.rank(rows).map(r => r.id), n);
+    S.tierStats = {};
+    S.courts = new Array(n).fill(0).map(()=>({ teams: [[], []], win: null }));
+    fillClimb();
+  }
   else if(m === 'mixed'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMixed(false))); }
   else if(m === 'gauntlet'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planGauntlet(false))); }
   else { S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMix(false))); }
@@ -13253,11 +13301,13 @@ function renderLive(){
   if(!box) return;
   const pill = document.getElementById('live-pill');
   if(pill) pill.hidden = !S.live;
-  /* Calling off only means anything when somebody is watching. On a session
-     that was never shared there is nobody to tell, and Start fresh is the
-     thing they actually want. */
+  /* Shown for any session that exists, not only a shared one. Hiding it
+     unless the night was online meant an organizer running a local session
+     had End the session as their only way out, and no way to say a night was
+     off. It explains itself when there is nobody to tell — cancelSession()
+     offers Start fresh instead. */
   const cx = document.getElementById('cancel-btn');
-  if(cx) cx.hidden = !S.live;
+  if(cx) cx.hidden = !(S.active || S.live);
 
   if(!S.live){
     box.innerHTML = `<label class="label" style="display:block;margin-bottom:6px">Put it online</label>
@@ -13284,6 +13334,13 @@ function renderLive(){
       <button class="btn btn-quiet" style="flex:1" onclick="copyLink()">Just the link</button>
       <button class="btn btn-quiet" style="flex:1" onclick="confirmOffline()">Take it offline</button>
     </div>
+    <hr class="rule">
+    <label class="label" style="display:block;margin-bottom:6px">On a big screen</label>
+    <p class="hint tight" style="margin-bottom:8px">Open this on the TV or a laptop and leave it. It follows
+      the courts on its own — the clock, who is on, who is next — so it does not have to be this phone.</p>
+    <p class="live-url">${esc(Live.tvUrl(S.liveCode))}</p>
+    <button class="btn btn-quiet" style="width:100%;margin-top:8px"
+      onclick="copyTVLink()">Copy the big screen link</button>
     <p class="hint" style="margin:9px 0 0">Anyone opening this follows the courts live, and whoever joins lands straight in your player list.
       Taking it offline keeps this code \u2014 go live again and the same link works. Ending the session retires it for good.</p>`;
   drawQR('live-qr', url, 168);
@@ -13443,6 +13500,17 @@ function confirmOffline(){
       Nothing is lost \u2014 the code <b>${S.liveCode}</b> stays yours, and going live again brings the same link back.</p>
     <button class="btn btn-risk" onclick="closeSheet(); Live.stopLive()">Take it offline</button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Stay live</button>`);
+}
+function copyTVLink(){
+  if(!S.liveCode) return;
+  const url = Live.tvUrl(S.liveCode);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url)
+      .then(()=> toast('Big screen link copied.'),
+            ()=> toast(legacyCopy(url) ? 'Big screen link copied.' : url));
+    return;
+  }
+  toast(legacyCopy(url) ? 'Big screen link copied.' : url);
 }
 function copyLink(){
   const url = Live.url(S.liveCode);
@@ -13878,6 +13946,117 @@ const TV = {
 };
 
 /* ═══════════════════════════════════════════════════
+   THE BIG SCREEN, ON ITS OWN
+   ═══════════════════════════════════════════════════
+   TV.open() draws the board from S, which means it only exists on the phone
+   running the session — fine for holding one up, useless for a television on
+   the wall. This is the same board at its own address, fed by the published
+   snapshot instead, so any screen can be pointed at ?tv=CODE and left there.
+
+   It follows whatever the host does — the clock, the courts, who is next,
+   the queue — because all of that already travels in the snapshot for the
+   watch screen. Nothing new had to be published to make this work.        */
+const Cast = {
+  code: null, snap: null, t: null, clockT: null, misses: 0,
+
+  start(code){
+    this.code = code;
+    document.title = 'Sideout Society · big screen';
+    document.body.classList.add('casting');
+    const tv = document.getElementById('tv');
+    if(tv) tv.classList.add('on');
+    const b = document.getElementById('tv-badge'); if(b) b.src = BADGE;
+    const m = document.getElementById('tv-mark');  if(m) m.src = LOGO_LIGHT;
+    /* there is nothing to close back to on a television */
+    const shut = document.querySelector('#tv .tv-top .icon-btn');
+    if(shut) shut.hidden = true;
+
+    const jc = document.getElementById('tv-jcode'); if(jc) jc.textContent = code;
+    const box = document.getElementById('tv-join'); if(box) box.hidden = false;
+    try{ drawQR('tv-qr', Live.url(code), 150); }catch(e){}
+
+    this.tick();
+    this.t = setInterval(()=> this.tick(), 3000);
+    this.clockT = setInterval(()=> this.clock(), 1000);
+  },
+
+  async tick(){
+    let s = null;
+    try{ s = await Live.pull(this.code); }catch(e){}
+    if(s){ this.snap = s; this.misses = 0; } else this.misses++;
+    this.paint();
+    this.clock();
+  },
+
+  /* Carried forward between polls so the seconds do not sit still for three
+     seconds at a time, and held where the host left it when paused. */
+  clock(){
+    const el = document.getElementById('tv-clock');
+    const s = this.snap;
+    if(!el) return;
+    if(!s || !s.timed || !s.clock || s.ended || !(s.round > 0)){ el.textContent = ''; return; }
+    const c = s.clock;
+    const left = c.run ? c.secs - Math.floor((Date.now() - (c.at || Date.now())) / 1000) : c.secs;
+    const over = left < 0, n = Math.abs(left);
+    el.textContent = (over ? '+' : '') + Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+  },
+
+  paint(){
+    const grid = document.getElementById('tv-grid');
+    const sub  = document.getElementById('tv-sub');
+    const ttl  = document.getElementById('tv-title');
+    const s = this.snap;
+    if(!grid) return;
+
+    if(!s){
+      if(ttl) ttl.textContent = this.misses > 1 ? 'Nothing here' : 'Sideout Society';
+      if(sub) sub.textContent = this.misses > 1
+        ? 'Nothing running under ' + this.code : 'Looking for the session…';
+      grid.style.gridTemplateColumns = '1fr';
+      grid.innerHTML = '';
+      return;
+    }
+
+    if(ttl) ttl.textContent = s.title || 'Open play';
+    if(sub) sub.textContent = s.cancelled ? 'Called off'
+      : (s.ended ? 'Finished'
+        : (s.modeName || 'Open play')
+          + (s.round > 0 ? ' · Round ' + s.round : ' · not started yet')
+          + (s.timed || !s.target ? '' : ' · first to ' + s.target));
+
+    const courts = s.courts || [];
+    const N = courts.length;
+    const cols = N <= 1 ? 1 : N === 2 ? 2 : N === 3 ? 3 : N === 4 ? 2 : N <= 6 ? 3 : 4;
+    grid.style.gridTemplateColumns = 'repeat(' + cols + ',1fr)';
+
+    const next = s.next || [];
+    grid.innerHTML = courts.map((c, i) =>{
+      const king = (s.mode === 'kotc' && i === 0);
+      const team = k =>{
+        const t = ((c.teams || [])[k] || []).map(esc);
+        const w = c.win === k ? ' win' : '';
+        return `<div class="tv-team${w}">${
+          t.length >= 2 ? t[0] + '<i>+</i>' + t[1] : (t[0] || '—')}</div>`;
+      };
+      const nx = next[i];
+      const nxt = (nx && nx[0] && nx[1] && nx[0].length && nx[1].length)
+        ? esc(nx[0].join(' + ')) + '  v  ' + esc(nx[1].join(' + '))
+        : '—';
+      return `<div class="tv-court${king ? ' king' : ''}">
+        <div class="hd"><span class="no">${king ? icon('crown') + ' ' : ''}${ordinal(i)}</span>
+          <span class="tier">${esc(c.tag || '')}</span></div>
+        <div class="tv-body">${team(0)}<div class="tv-vs">versus</div>${team(1)}</div>
+        <div class="tv-next"><b>Next</b><span class="tv-nx">${nxt}</span></div>
+      </div>`;
+    }).join('');
+
+    const q = (s.queue || []).map(esc);
+    const qb = document.getElementById('tv-queue');
+    if(qb) qb.textContent = q.length ? q.join('  ·  ') : 'Nobody waiting';
+  }
+};
+
+/* ═══════════════════════════════════════════════════
    STORY CARD — 1080x1920 for Instagram
    ═══════════════════════════════════════════════════ */
 function rrect(x, a, b, w, h, r){
@@ -14288,6 +14467,9 @@ function shareCanvas(c, name, title){
      screen or ask anybody to sign in */
   const seen = (params.get('r') || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
   if(seen){ Recap.start(seen); return; }
+  /* a screen showing the board and nothing else */
+  const cast = (params.get('tv') || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+  if(cast){ Cast.start(cast); return; }
 
   Clock.setDefault(S.mins * 60);
   if(S.active && !S.roundStart) S.roundStart = Date.now();
