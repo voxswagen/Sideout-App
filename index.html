@@ -175,6 +175,12 @@ button{cursor:pointer;border:none;background:none;padding:0}
   align-items:center;gap:4px;border-radius:var(--r-s);flex:0 0 auto}
 .burger:hover{background:var(--card-2)}
 .burger span{display:block;width:19px;height:2px;background:var(--ink);border-radius:2px}
+/* Beside the avatar on the app bar. That bar is on light chrome rather than
+   over the blue header, so it takes the page's own ink instead of white. */
+.ab-bell{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;
+  border-radius:50%;color:var(--ink-2);font-size:17px;cursor:pointer;
+  transition:background .15s,color .15s}
+.ab-bell:hover{background:var(--card-2);color:var(--court)}
 .ab-face{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%}
 .ab-face .av{width:34px;height:34px}
 .scrim{position:fixed;inset:0;z-index:44;background:rgba(11,22,40,.5);opacity:0;
@@ -1886,11 +1892,6 @@ textarea:focus{border-color:var(--court)}
   <button class="icon-btn" id="open-btn" onclick="openResume()" aria-label="Open a session"
     title="Open a session already running"><span class="lic" data-ic="folder"></span></button>
   <button class="icon-btn" onclick="toggleTheme()" title="Light or dark"><span class="lic" data-ic="moon"></span></button>
-  <!-- only for somebody who is on a list: with nothing joined there is
-       nothing it could ever say, and an empty bell is just clutter -->
-  <button class="icon-btn bell" id="bell-btn" onclick="Notices.open()"
-    title="What has happened on your sessions" aria-label="Notices" hidden>
-    <span class="lic" data-ic="bell"></span><i class="bell-n" id="bell-n" hidden></i></button>
   <button class="acct-btn" id="acct-btn" onclick="accountMenu()" aria-label="Your account" hidden></button>
 </div></header>
 
@@ -1906,6 +1907,12 @@ textarea:focus{border-color:var(--court)}
     <span></span><span></span><span></span>
   </button>
   <div class="ab-title" id="ab-title">Sideout Society</div>
+  <!-- This bar is the one that is up on Home. The session bar above it is
+       hidden there, which is where the bell was and why it could never be
+       seen in the one place it belongs. -->
+  <button class="ab-bell bell" id="bell-btn" onclick="Notices.open()"
+    title="What has happened on your sessions" aria-label="Notices" hidden>
+    <span class="lic" data-ic="bell"></span><i class="bell-n" id="bell-n" hidden></i></button>
   <button class="ab-face" id="ab-face" onclick="go('me')" aria-label="Your profile"></button>
 </header>
 <div class="scrim" id="scrim" onclick="Drawer.close()" hidden></div>
@@ -8307,8 +8314,6 @@ function leaveToHome(){
 function showOnly(name){
   navigated = true;
   paintAcctBtn();
-  /* the bell belongs to Home, so it has to be re-decided on every move */
-  try{ Notices.paint(); }catch(e){}
   SCREENS.forEach(n=>{
     const el = document.getElementById('screen-' + n);
     if(el) el.classList.toggle('on', n === name);
@@ -8325,6 +8330,11 @@ function showOnly(name){
   if(top) top.hidden = bare || ['play','players','stats','playoff','setup'].indexOf(name) < 0;
   syncNav(name);
   syncDocks();
+  /* After the classes are switched, not before. currentScreen() reads them,
+     so calling this at the top of the function asked "where am I?" and got
+     the screen being left — the bell was permanently one move behind, hiding
+     on arrival at Home and appearing everywhere else. */
+  try{ Notices.paint(); }catch(e){}
   window.scrollTo({ top: 0 });
 }
 function currentScreen(){
