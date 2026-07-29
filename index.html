@@ -1727,6 +1727,7 @@ textarea:focus{border-color:var(--court)}
 .pick{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px;
   border-radius:var(--r-s);background:var(--card-2);border:1.5px solid var(--edge);margin-bottom:6px}
 .pick:hover{border-color:var(--court)}
+.pick[disabled]{opacity:.4;pointer-events:none}
 .pick .glyph{font-size:17px}
 .field{margin:0 0 10px}
 .field .label{display:block;margin-bottom:7px}
@@ -14239,15 +14240,47 @@ function confirmReset(){
       return scored ? `<button class="pick dupr-now" onclick="closeSheet();exportDUPR()">
         <span class="glyph">${icon('upload')}</span><span><b>Send to DUPR first</b>
         <span>${scored} game${scored === 1 ? '' : 's'} with scores. The game-by-game record goes when you clear.</span></span></button>` : ''; })()}
-    <button class="pick" onclick="doReset(false)">
+    <button class="pick" onclick="doReset(false,this)">
       <span class="glyph">${icon('undo')}</span><span><b>Keep the players</b>
       <span>Same crowd next time — you start again in one tap</span></span></button>
-    <button class="pick" onclick="doReset(true)">
+    <button class="pick" onclick="doReset(true,this)">
       <span class="glyph">${icon('broom')}</span><span><b>Clear the players too</b>
       <span>Different crowd — start from an empty list</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep playing</button>`);
 }
-async function doReset(wipe){
+
+/* Two taps, one night, three copies of it on the club ladder — that is
+   what this guard is for, and it has already happened once. Clearing a
+   session waits on Live.finish(), the sheet stays up and tappable for
+   the whole of that round-trip, and nothing on screen says the first
+   tap landed. A host who saw no response and tapped again ran the
+   whole of it a second time while S was still untouched, so the second
+   run read the same scores and banked them again.
+
+   The flag is what actually prevents it. Dimming the sheet and putting
+   a spinner in the button the host pressed is the more important half:
+   nobody should feel the need to tap twice in the first place. */
+let resetting = false;
+async function doReset(wipe, btn){
+  if(resetting) return;
+  resetting = true;
+  const picks = Array.from(document.querySelectorAll('#sheet .pick'));
+  const was = btn ? btn.innerHTML : '';
+  picks.forEach(b => { b.disabled = true; });
+  if(btn) btn.innerHTML = `<span class="ld-ring"></span>Clearing the session…`;
+  try{
+    await runReset(wipe);
+  } finally {
+    /* Put the sheet back the way it was. On the way through this is
+       wasted work — the sheet is already closed — but if the finish
+       call fails the host is still looking at it and needs the
+       buttons to work for a second go. */
+    resetting = false;
+    picks.forEach(b => { b.disabled = false; });
+    if(btn) btn.innerHTML = was;
+  }
+}
+async function runReset(wipe){
   /* Read the night before anything is wiped, but do not make the
      host wait on the network to clear the courts — the write is
      sent afterwards and reports back on its own. */
