@@ -9897,6 +9897,10 @@ async function doResetPastSession(code){
   state.active = false; state.started = null; state.snap = null;
   state.next = null; state.planRound = -1; state.roundStart = null;
   state.ended = false; state.endedAt = null;
+  /* Reopening a night that was called off makes it a night again, so
+     the notice goes with it. Otherwise the session comes back up
+     still telling everyone watching that it is not going ahead. */
+  state.cancelled = false; state.cancelNote = '';
 
   /* Off the ladder before it comes back on screen, so nobody sees a
      session that is live and banked at the same time. */
@@ -14283,8 +14287,17 @@ async function doReset(wipe, btn){
 async function runReset(wipe){
   /* Read the night before anything is wiped, but do not make the
      host wait on the network to clear the courts — the write is
-     sent afterwards and reports back on its own. */
-  const keep = (Live.ready() && S.log.length)
+     sent afterwards and reports back on its own.
+
+     A night that was called off is never banked, however many games
+     were on the board when it stopped. Calling off is what a host
+     does when the night did not really happen — courts flooded, half
+     the crowd stuck on the road — and those part-played scores must
+     not follow people onto the ladder. Calling off already avoids
+     this on its own, because it puts the session down rather than
+     clearing it; the hole is a called-off night that gets reopened
+     and then cleared, which until now banked it like any other. */
+  const keep = (Live.ready() && S.log.length && !S.cancelled)
     ? { rows: Club.rowsForArchive(), title: sessionTitle(), code: S.liveCode,
         rated: Club.rateNight() } : null;
   if(S.live) await Live.finish();
@@ -14295,7 +14308,12 @@ async function runReset(wipe){
      whole point of pinning it in the group chat. */
   const weekly = S.repeat === 'weekly' && !!S.liveCode;
   const keptCode = S.liveCode, keptPin = S.pin;
+  /* Called off comes off too. It is a fact about the night just
+     cleared, not about the sheet the host is being handed back —
+     leaving it set made the next session render as "Called off"
+     before it had even been given a date. */
   S.live = false; S.ended = false; S.endedAt = null; S.liveCode = null; S.pin = null;
+  S.cancelled = false; S.cancelNote = '';
   S.courts=[]; S.queue=[]; S.pool=[]; S.bracket=null; S.round=0; S.games=0; S.log=[]; S.active=false; S.snap=null; S.started=null;
   Spin.stop();
   Clock.reset(); closeSheet(); renderAll(); renderLadder(); go('setup'); save();
