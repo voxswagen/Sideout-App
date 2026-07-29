@@ -9418,8 +9418,13 @@ async function pastSession(code){
   openSheet(`<h3>Session ended</h3><div class="ld-block"><span class="ld-ball"></span><p>Reading the night\u2026</p></div>`);
   let rows = [];
   try{
+    /* removed_at has to be asked for by hand here. Every sideout_* function
+       filters it for you, but this reads the table straight and so gets the
+       put-aside rows too — a night that was reset, or one banked twice by a
+       double tap, came back showing every copy. */
     rows = await Live.api('results?club=eq.' + encodeURIComponent(CONFIG.club || 'sideout')
       + '&code=eq.' + encodeURIComponent(code)
+      + '&removed_at=is.null'
       + '&select=name,wins,games,pf,pa,crowns,played_at,title&order=wins.desc');
   }catch(e){
     openSheet(`<h3>Session ended</h3>
@@ -9861,8 +9866,12 @@ async function doResetPastSession(code){
        them. */
     let rows = [];
     try{
+      /* Put-aside rows excluded, same as the sheet above. Rebuilding a
+         roster from them would seat every player once per time the night
+         was banked. */
       rows = await Live.api('results?club=eq.' + encodeURIComponent(CONFIG.club || 'sideout')
         + '&code=eq.' + encodeURIComponent(code)
+        + '&removed_at=is.null'
         + '&select=name,member,title') || [];
     }catch(e){}
     if(!rows.length){
