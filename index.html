@@ -1699,6 +1699,17 @@ textarea:focus{border-color:var(--court)}
 .clock.hot{color:var(--fault);animation:blink 1s infinite}
 .clock.off{color:var(--ink-3)}
 @keyframes blink{50%{opacity:.45}}
+/* Adding half a minute is a common courtside call — a rally that will not
+   end, a court still finishing its last point — and until now it meant
+   leaving the dock for Manage. These sit beside the play and reset buttons
+   but deliberately read as smaller and quieter than them: nudging the
+   clock is a lesser act than starting or resetting it, and the dock has
+   only so much room before the Next round button gets squeezed. */
+.clock-nudge{display:flex;flex-direction:column;gap:3px}
+.clock-nudge button{width:26px;height:19px;border-radius:6px;background:transparent;
+  border:1px solid var(--edge);color:var(--ink-3);font-size:12px;line-height:1;
+  display:grid;place-items:center;padding:0}
+.clock-nudge button:hover{background:var(--kitchen);border-color:var(--court);color:var(--court)}
 .clock-btns{display:flex;gap:6px}
 .clock-btns button{width:38px;height:38px;border-radius:50%;background:var(--card-2);
   border:1.5px solid var(--edge-2);display:grid;place-items:center;font-size:13px;color:var(--ink-2)}
@@ -1728,6 +1739,17 @@ textarea:focus{border-color:var(--court)}
   border-radius:var(--r-s);background:var(--card-2);border:1.5px solid var(--edge);margin-bottom:6px}
 .pick:hover{border-color:var(--court)}
 .pick[disabled]{opacity:.4;pointer-events:none}
+/* The four slots read as a scoreline — A & B on one side, C & D on the
+   other — so the pairing being built is legible at a glance rather than
+   something you work out from the order you tapped. */
+.lu-slots{display:flex;align-items:center;gap:6px;margin:12px 0 14px}
+.lu-slot{flex:1;min-width:0;padding:8px 6px;border-radius:var(--r-s);text-align:center;
+  background:var(--card-2);border:1.5px dashed var(--edge)}
+.lu-slot.set{border-style:solid;border-color:var(--court);background:var(--kitchen)}
+.lu-slot i{display:block;font-style:normal;font-size:9px;letter-spacing:.14em;color:var(--ink-3)}
+.lu-slot span{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lu-v{flex:0 0 auto;font-size:11px;color:var(--ink-3);padding:0 2px}
+.pick.lu-p.on{border-color:var(--court);background:var(--kitchen)}
 .pick .glyph{font-size:17px}
 .field{margin:0 0 10px}
 .field .label{display:block;margin-bottom:7px}
@@ -1750,6 +1772,11 @@ body.casting{overflow:hidden}
 .tv-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,9vw,124px);letter-spacing:.04em;line-height:1;
   color:var(--ball);font-variant-numeric:tabular-nums}
 .tv-clock.hot{color:#FF6B5E;animation:blink 1s infinite}
+/* Nought is the loudest reading on the board — from the back of a hall it
+   has to be obvious the round is over without reading the digits. */
+.tv-clock.done{color:#FFE14D}
+.tv-up{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.4vw,58px);letter-spacing:.1em;
+  line-height:1;color:#FFE14D;animation:blink 1.1s infinite}
 .warn-box{display:flex;flex-direction:column;gap:5px;margin:12px 0 4px;padding:12px 14px;
   border-radius:var(--r-s);background:var(--kitchen);border:1px solid var(--court)}
 .warn-box b{font-size:14px;color:var(--court)}
@@ -2523,6 +2550,8 @@ body.casting{overflow:hidden}
   <div class="panel">
     <h2>Results <button class="undo" onclick="undoLast()">Undo last</button></h2>
     <div class="log" id="log"></div>
+    <button class="btn btn-quiet btn-sm" style="width:100%;margin-top:10px"
+      onclick="AddGame.open()">Add a game by hand</button>
   </div>
   <div class="panel">
     <h2>Playoff</h2>
@@ -2684,6 +2713,10 @@ body.casting{overflow:hidden}
 <div class="dock" id="dock">
   <div class="dock-in">
     <div class="clock off" id="clock">8:00</div>
+    <div class="clock-nudge" id="clock-nudge">
+      <button onclick="Clock.nudge(30)" title="Half a minute more" aria-label="Add 30 seconds">+</button>
+      <button onclick="Clock.nudge(-30)" title="Half a minute less" aria-label="Take off 30 seconds">−</button>
+    </div>
     <div class="clock-btns">
       <button id="clock-toggle" onclick="Clock.toggle()" title="Start or pause">▶</button>
       <button onclick="Clock.reset()" title="Reset the clock">↺</button>
@@ -2707,7 +2740,10 @@ body.casting{overflow:hidden}
     <div style="flex:1"><img id="tv-mark" alt="Sideout Society" style="height:29px;display:block;margin-bottom:5px">
       <div class="tv-title" id="tv-title"></div>
       <div class="s" id="tv-sub">Round 1 · King of the Court</div></div>
-    <div class="tv-clock" id="tv-clock">8:00</div>
+    <div style="text-align:right">
+      <div class="tv-clock" id="tv-clock">8:00</div>
+      <div class="tv-up" id="tv-up" hidden>Time's up</div>
+    </div>
     <button class="icon-btn" onclick="TV.close()" style="background:rgba(255,255,255,.12)">✕</button>
   </div>
   <div class="tv-grid" id="tv-grid"></div>
@@ -3021,11 +3057,7 @@ const Live = {
          about three seconds after the organizer taps it */
       cancelled: !!S.cancelled, cancelNote: (S.cancelNote || '').trim() || null,
       table: S.order.filter(id => P(id) && P(id).g > 0)
-        .sort((a,b)=>{ const p=P(a),q=P(b);
-          if(q.crowns!==p.crowns) return q.crowns-p.crowns;
-          if(q.w!==p.w) return q.w-p.w;
-          if(p.l!==q.l) return p.l-q.l;
-          return (q.pf-q.pa)-(p.pf-p.pa); })
+        .sort(nightOrder)
         /* g, pf and pa ride along so the server can bank this night
            on its own if the host never gets round to ending it */
         .map(id=>{ const p=P(id); return { n:p.name, g:p.g, w:p.w, l:p.l, c:p.crowns,
@@ -3229,6 +3261,7 @@ const Live = {
           P(id).out = true; P(id).left = true;
           S.courts.forEach(c =>{ c.teams = c.teams.map(t => t.filter(x => x !== id)); });
           S.queue = S.queue.filter(x => x !== id);
+          poolsSync();
           fillGaps();
         }
         gone.push(nmv);
@@ -4488,6 +4521,49 @@ function toast(msg){
   clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('on'), 2600);
 }
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+/* ── one order for the night's table ────────────────────
+   The same evening was being ranked four different ways: the standings on
+   the manage screen led with crowns, the sheet behind a finished card
+   ordered on wins alone, the recap and the story card came back from the
+   server on wins then points difference, and the club ladder used a fifth.
+   Three of those were on screen within two taps of each other, so the same
+   player was second, fourth and fifth depending on where you looked.
+
+   Wins, then points difference, then games played, then name:
+
+   Wins first because that is what people count out loud, and it is already
+   what the club ladder and the season table use — changing those would
+   rewrite history, so the night's table is the one that moves.
+
+   Points difference second. It is the standard tiebreak in every league
+   anybody here has played in, and it is the only one that says anything
+   about *how* the wins were got.
+
+   Games played third, more before fewer. Level on wins and level on
+   difference means the one who did it while getting on court more often
+   had the harder evening.
+
+   Crowns are not in the order at all. They only exist in King's Court, so
+   ranking on them made the top of the table meaningless in every other
+   format — a player with one crown and two wins sat above one with six
+   wins. They are still shown beside the name, which is where a thing that
+   applies to one format in eight belongs.
+
+   Takes either a player id or a row with the same fields, so the live
+   table, the finished-card sheet, the recap and the canvas cards can all
+   call it.                                                              */
+function nightOrder(a, b){
+  const p = (typeof a === 'string' ? P(a) : a) || {};
+  const q = (typeof b === 'string' ? P(b) : b) || {};
+  const pw = +(p.w != null ? p.w : p.wins) || 0, qw = +(q.w != null ? q.w : q.wins) || 0;
+  if(qw !== pw) return qw - pw;
+  const pd = (+p.pf || 0) - (+p.pa || 0), qd = (+q.pf || 0) - (+q.pa || 0);
+  if(qd !== pd) return qd - pd;
+  const pg = +(p.g != null ? p.g : p.games) || 0, qg = +(q.g != null ? q.g : q.games) || 0;
+  if(qg !== pg) return qg - pg;
+  return String(p.name || '').localeCompare(String(q.name || ''), undefined, { sensitivity:'base' });
+}
+
 function activeIds(){ return S.order.filter(id => P(id) && !P(id).out); }
 function onCourtIds(){ return S.courts.flatMap(c => c.teams.flat()).filter(Boolean); }
 
@@ -4953,6 +5029,9 @@ function syncRoundEndUI(){
   const cil = document.getElementById('opt-instant-live');
   if(cil) cil.checked = S.instant;
   document.getElementById('clock-toggle').hidden = !S.timed;
+  /* Nothing to nudge when the round ends on a score rather than a clock. */
+  const cn = document.getElementById('clock-nudge');
+  if(cn) cn.hidden = !S.timed;
   Clock.paint();
 }
 
@@ -4990,7 +5069,25 @@ function addPlayer(name, level, force){
     at: Date.now(), w:0, l:0, g:0, pf:0, pa:0, crowns:0, streak:0, out:false };
   S.order.push(id);
   if(!name){ input.value=''; input.focus(); }
+  /* A latecomer in a pool format has to be given a pool, or they are on
+     the roster and in no fixture list — on the list all night and never
+     called. Every other format picks them up from the queue by itself.
+
+     Only when a pool actually took somebody is the rest of the screen
+     redrawn. This is called in a loop by the club picker, the waiting list
+     and the demo roster, and before a session starts there are no pools to
+     put anybody in — so the usual case stays the two cheap renders it has
+     always been. The beat is debounced, so a run of names is still one
+     write however many there are. */
+  const pooled = poolsSync();
   renderRoster(); renderLadder(); save();
+  if(pooled && pooled.length){
+    renderAll(); TV.paint();
+    if(S.live) Live.beat();
+    /* Typed into the box, not one of a batch — a batch would say this once
+       per name and only the last would be read. */
+    if(!name) toast(n + ' is in on ' + ordinal(pooled[0]) + '.');
+  }
   return id;
 }
 /* Taking somebody off is easy to do by accident on a phone, and the
@@ -5074,7 +5171,10 @@ function removePlayer(id, quiet){
   S.order = S.order.filter(x => x !== id);
   S.queue = S.queue.filter(x => x !== id);
   S.courts.forEach(c => c.teams = c.teams.map(t => t.filter(x => x !== id)));
-  if(!quiet){ renderRoster(); renderLadder(); renderAll(); save(); }
+  /* Out of the pools as well, or their court carries on being dealt games
+     for somebody who has gone home. */
+  poolsSync();
+  if(!quiet){ renderRoster(); renderLadder(); renderAll(); TV.paint(); save(); }
   if(S.waiting.length && !capReached()) fillFromWait();
 }
 function confirmClearRoster(){
@@ -6346,11 +6446,125 @@ function courtMenu(i){
     <button class="pick" onclick="shuffleCourt(${i})">
       <span class="glyph">${icon('shuffle')}</span><span><b>Shuffle the sides</b><span>Same four players, new pairings</span></span></button>
     <button class="pick" onclick="swapPickOut(${i})">
-      <span class="glyph">${icon('swap')}</span><span><b>Swap a player</b><span>Trade with the queue or another court</span></span></button>
+      <span class="glyph">${icon('swap')}</span><span><b>Swap a player</b><span>${
+        (S.mode === 'wars' || S.mode === 'river') && S.tiers
+          ? 'Trade with someone resting in this pool'
+          : 'Trade with the queue or another court'}</span></span></button>
+    <button class="pick" onclick="Lineup.open(${i})">
+      <span class="glyph">${icon('profile')}</span><span><b>Pick the four</b><span>Choose who plays here next, and who partners who</span></span></button>
     <button class="pick" onclick="benchFromCourt(${i})">
       <span class="glyph">${icon('chair')}</span><span><b>Take someone off</b><span>Send them to the front of the queue</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
 }
+
+/* Set a court by hand.
+
+   The formats are good at deciding who plays whom, and most nights that is
+   the whole point of them. But an organizer sometimes knows something the
+   schedule cannot: two who came together and have not been on at the same
+   time, somebody who has to leave at nine and wants one more, a pairing
+   that would make the round. Until now the only way to get it was to keep
+   tapping Swap until the court happened to look right.
+
+   Whoever is standing on another court is deliberately not offered. Taking
+   them would leave that court three-handed and needing its own repair,
+   which is a second decision hiding inside the first — that is what Swap a
+   player is for, and it trades rather than takes. So the choice here is
+   this court's own four plus whoever is sitting down.
+
+   In the pool formats the choice is narrower still: this pool only. The
+   pools are the format, a lineup drawn from two of them would be undone by
+   the next round dealing from the pools again, and moving somebody between
+   pools is its own deliberate act on the pools panel.                   */
+const Lineup = {
+  ci: null,
+  slots: [null, null, null, null],
+
+  open(i){
+    this.ci = i;
+    const four = (S.courts[i].teams.flat().filter(Boolean)).slice(0, 4);
+    this.slots = [0,1,2,3].map(k => four[k] || null);
+    this.paint();
+  },
+
+  /* This court's four, plus everyone resting — and in a pool format,
+     only the ones who belong to this court's pool. */
+  available(){
+    const pooled = (S.mode === 'wars' || S.mode === 'river') && S.tiers;
+    const here = S.courts[this.ci].teams.flat().filter(Boolean);
+    let ids = here.concat(waitingIds().filter(id => here.indexOf(id) < 0));
+    if(pooled){
+      const mine = (S.tiers[this.ci] || []);
+      ids = ids.filter(id => mine.indexOf(id) >= 0);
+    }
+    return ids.filter(id => P(id) && !P(id).out);
+  },
+
+  tap(id){
+    const at = this.slots.indexOf(id);
+    if(at >= 0){ this.slots[at] = null; this.paint(); return; }
+    const free = this.slots.indexOf(null);
+    if(free < 0){ toast('All four spots are taken — tap one to clear it.'); return; }
+    this.slots[free] = id;
+    this.paint();
+  },
+  clear(k){ this.slots[k] = null; this.paint(); },
+
+  paint(){
+    const i = this.ci;
+    const pooled = (S.mode === 'wars' || S.mode === 'river') && S.tiers;
+    const slot = (k, letter) =>{
+      const id = this.slots[k];
+      return `<button class="lu-slot${id ? ' set' : ''}" onclick="Lineup.clear(${k})"
+        title="${id ? 'Tap to clear' : 'Pick somebody below'}">
+        <i>${letter}</i><span>${id ? esc(nm(id)) : '—'}</span></button>`;
+    };
+    const chosen = this.slots.filter(Boolean);
+    const list = this.available().map(id =>{
+      const on = this.slots.indexOf(id) >= 0;
+      const p = P(id);
+      return `<button class="pick lu-p${on ? ' on' : ''}" onclick="Lineup.tap('${id}')">
+        <span class="glyph">${on ? '✓' : icon('profile')}</span>
+        <span><b>${esc(p.name)}</b><span>${p.w || 0}W · ${p.l || 0}L · ${p.g || 0} game${(p.g||0)===1?'':'s'}</span></span></button>`;
+    }).join('');
+
+    openSheet(`<h3>${ordinal(i)} — pick the four</h3>
+      <p class="sub">Tap four names. The first two are one team, the next two the other.${
+        pooled ? ' Only this pool is offered — moving somebody between pools is done on the pools panel.' : ''}</p>
+      <div class="lu-slots">
+        ${slot(0,'A')}${slot(1,'B')}<span class="lu-v">v</span>${slot(2,'C')}${slot(3,'D')}
+      </div>
+      ${list || '<p class="hint">Nobody available to put on this court.</p>'}
+      <button class="btn btn-go" style="margin-top:10px" ${chosen.length === 4 ? '' : 'disabled'}
+        onclick="Lineup.apply()">${chosen.length === 4 ? 'Put them on' : `Pick ${4 - chosen.length} more`}</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="courtMenu(${i})">Back</button>`);
+  },
+
+  apply(){
+    const four = this.slots.filter(Boolean);
+    if(four.length !== 4){ toast('Pick all four first.'); return; }
+    const i = this.ci, c = S.courts[i];
+
+    /* Anybody bumped off this court simply rests. In the pool formats that
+       is all that is needed — they are still in the pool and the next round
+       deals them back in. Everywhere else they go to the front of the queue
+       so they are first on next time, which is what being stood down for
+       somebody else ought to be worth. */
+    const before = c.teams.flat().filter(Boolean);
+    const bumped = before.filter(id => four.indexOf(id) < 0);
+    S.queue = S.queue.filter(id => four.indexOf(id) < 0);
+    if(!((S.mode === 'wars' || S.mode === 'river') && S.tiers)){
+      bumped.forEach(id =>{ if(S.queue.indexOf(id) < 0) S.queue.unshift(id); });
+    }
+
+    c.teams = [[four[0], four[1]], [four[2], four[3]]];
+    c.win = null;
+
+    invalidatePlan(); closeSheet(); renderAll(); TV.paint(); save();
+    if(S.live) Live.beat();
+    toast(ordinal(i) + ': ' + nm(four[0]) + ' & ' + nm(four[1]) + ' v ' + nm(four[2]) + ' & ' + nm(four[3]) + '.');
+  }
+};
 function shuffleCourt(i){
   /* only three pairings exist for four players — make sure we land on a new one */
   const key = t => t.map(x => x.slice().sort().join('|')).sort().join('#');
@@ -6382,32 +6596,90 @@ function swapPickOut(i){
       <span class="glyph">${icon('profile')}</span><span><b>${esc(nm(id))}</b><span>${P(id).w}W · ${P(id).l}L · ${P(id).g} games</span></span></button>`).join('')}
     <button class="btn btn-quiet" style="margin-top:8px" onclick="courtMenu(${i})">Back</button>`);
 }
+/* Who can come on for somebody.
+
+   The pool formats have no shared queue — S.queue is empty by design and
+   everybody rests inside their own pool — so reading S.queue here offered
+   nothing but the players standing on the other courts. On Court Wars that
+   is the wrong answer twice over: the people you actually want are the ones
+   sitting down in this very pool, and taking somebody off another court
+   pulls them out of a pool they belong to, which the next round silently
+   undoes when it deals from the pools again.
+
+   So: this pool's resting players first, because that is the swap being
+   asked for nine times in ten. Then the other courts, still offered but
+   named for what they are, and now made to stick — see doSwap. */
 function swapPickIn(outId){
-  const waiting = S.queue.filter(id => P(id) && !P(id).out);
+  const pooled = (S.mode === 'wars' || S.mode === 'river') && S.tiers;
+  const mine = pooled ? poolOf(outId) : null;
+  const on = new Set(onCourtIds());
+
+  const rest = waitingIds().filter(id => id !== outId);
+  const near = pooled ? rest.filter(id => poolOf(id) === mine) : rest;
+  const far  = pooled ? rest.filter(id => poolOf(id) !== mine) : [];
+
   const elsewhere = [];
-  S.courts.forEach((c,ci)=>{
+  S.courts.forEach((c, ci) =>{
     if(c.teams.flat().includes(outId)) return;
-    c.teams.flat().forEach(id => elsewhere.push([id, ci]));
+    c.teams.flat().forEach(id => { if(id) elsewhere.push([id, ci]); });
   });
+
+  const row = (id, glyph, note) => `<button class="pick" onclick="doSwap('${outId}','${id}')">
+    <span class="glyph">${glyph}</span><span><b>${esc(nm(id))}</b><span>${note}</span></span></button>`;
+  const label = t => `<div class="label" style="margin:12px 0 6px">${t}</div>`;
+
   openSheet(`<h3>Bring on</h3>
-    <p class="sub">${esc(nm(outId))} steps off — who takes the spot?</p>
-    ${waiting.length ? '<div class="label" style="margin:10px 0 6px">Waiting</div>' : ''}
-    ${waiting.map(id => `<button class="pick" onclick="doSwap('${outId}','${id}')">
-      <span class="glyph">⏳</span><span><b>${esc(nm(id))}</b><span>${P(id).g} games</span></span></button>`).join('')}
-    ${elsewhere.length ? '<div class="label" style="margin:12px 0 6px">On another court</div>' : ''}
-    ${elsewhere.map(([id,ci]) => `<button class="pick" onclick="doSwap('${outId}','${id}')">
-      <span class="glyph">${icon('swap')}</span><span><b>${esc(nm(id))}</b><span>${ordinal(ci)}</span></span></button>`).join('')}
-    ${(!waiting.length && !elsewhere.length) ? '<p class="hint">Nobody available to swap with.</p>' : ''}
+    <p class="sub">${esc(nm(outId))} steps off${pooled && mine != null
+      ? ` ${esc(ordinal(mine).toLowerCase())}` : ''} — who takes the spot?</p>
+    ${near.length ? label(pooled ? 'Resting in this pool' : 'Waiting') : ''}
+    ${near.map(id => row(id, pooled ? icon('chair') : '⏳',
+      `${P(id).w || 0}W · ${P(id).g || 0} game${(P(id).g || 0) === 1 ? '' : 's'}`)).join('')}
+    ${far.length ? label('Resting in another pool') : ''}
+    ${far.map(id => row(id, icon('swap'), ordinal(poolOf(id)))).join('')}
+    ${elsewhere.length ? label('On another court now') : ''}
+    ${elsewhere.map(([id, ci]) => row(id, icon('swap'), ordinal(ci))).join('')}
+    ${(!near.length && !far.length && !elsewhere.length)
+      ? '<p class="hint">Nobody available to swap with.</p>' : ''}
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
 }
 function doSwap(outId, inId){
   const a = locate(outId), b = locate(inId);
-  if(!a || !b){ closeSheet(); return; }
-  if(a.ci !== undefined){ S.courts[a.ci].teams[a.t][a.k] = inId; S.courts[a.ci].win = null; }
-  else S.queue[a.q] = inId;
-  if(b.ci !== undefined){ S.courts[b.ci].teams[b.t][b.k] = outId; S.courts[b.ci].win = null; }
-  else S.queue[b.q] = outId;
+  const pooled = (S.mode === 'wars' || S.mode === 'river') && S.tiers;
+  const pa = pooled ? poolOf(outId) : null, pb = pooled ? poolOf(inId) : null;
+
+  if(a){
+    if(a.ci !== undefined){ S.courts[a.ci].teams[a.t][a.k] = inId; S.courts[a.ci].win = null; }
+    else S.queue[a.q] = inId;
+  }
+  if(b){
+    if(b.ci !== undefined){ S.courts[b.ci].teams[b.t][b.k] = outId; S.courts[b.ci].win = null; }
+    else S.queue[b.q] = outId;
+  }
+  /* Somebody resting in a pool has no court slot and no queue place, so
+     locate() finds nothing for them and the lines above are a no-op —
+     putting them on court is entirely the pool exchange below. */
+
+  /* A swap across pools has to move the pool membership too, or the next
+     round deals from the pools and puts everyone back where they were.
+     Trading rather than moving keeps both pools the size they were, and
+     both redraw because their lists are built from exactly their members.
+     Within one pool nothing is redrawn: the pool is unchanged and this is
+     an override for the game on court, not a new schedule. */
+  if(pooled && pa != null && pb != null && pa !== pb){
+    S.tiers[pa] = S.tiers[pa].map(x => x === outId ? inId : x);
+    S.tiers[pb] = S.tiers[pb].map(x => x === inId ? outId : x);
+    if(S.mode === 'wars'){
+      [pa, pb].forEach(i =>{
+        S.warPlan[i] = Wars.plan(S.tiers[i]);
+        S.warAt[i] = 0;
+        S.warDone[i] = false;
+      });
+      S.warAsked = false;
+    }
+  }
+
   invalidatePlan(); closeSheet(); renderAll(); TV.paint(); save();
+  if(S.live) Live.beat();
   toast(nm(inId) + ' in for ' + nm(outId) + '.');
 }
 function benchFromCourt(i){
@@ -7570,6 +7842,69 @@ function warsMove(id, to){
   renderAll(); TV.paint(); save();
   if(S.live) Live.beat();
   toast(nm(id) + ' moved to ' + ordinal(to) + '.');
+}
+
+/* Keep the pools honest about who is actually here.
+
+   The pool formats are the only ones where the roster and the courts are
+   two different lists. Everywhere else a new name lands in the queue and
+   gets on court within a round or two on its own. In Court Wars a player
+   belongs to a pool, the pool draws a fixture list from exactly its own
+   members, and a name that never made it into a pool never plays — which
+   is what happened to everybody who arrived after the first round. The
+   reverse is worse: somebody taken off the list stayed in the pool and in
+   its fixture list, so the court kept being dealt a game for a person who
+   had gone home.
+
+   Newcomers go to the smallest pool. That is the one with the longest
+   rests and the shortest list, so it both evens the pools up and gets the
+   newcomer on court soonest.
+
+   A pool that changed shape has to redraw, because the list is built from
+   exactly who is in it — but a court in the middle of a game is left
+   alone and picks the new list up at the next round. Yanking four people
+   off mid-rally to satisfy a schedule is not a trade worth making. */
+function poolsSync(){
+  if(!S.active || !S.tiers) return;
+  if(S.mode !== 'wars' && S.mode !== 'river') return;
+
+  const here = new Set(activeIds());
+  const changed = new Set();
+
+  S.tiers.forEach((pool, i) =>{
+    const kept = (pool || []).filter(id => here.has(id));
+    if(kept.length !== (pool || []).length) changed.add(i);
+    S.tiers[i] = kept;
+  });
+
+  const placed = new Set(S.tiers.flat());
+  activeIds().forEach(id =>{
+    if(placed.has(id)) return;
+    let small = 0;
+    S.tiers.forEach((pool, i) =>{ if((pool || []).length < (S.tiers[small] || []).length) small = i; });
+    S.tiers[small].push(id);
+    placed.add(id);
+    changed.add(small);
+  });
+
+  if(!changed.size) return;
+
+  if(S.mode === 'river'){ fillClimb(); return; }
+
+  changed.forEach(i =>{
+    S.warPlan[i] = Wars.plan(S.tiers[i]);
+    S.warAt[i] = 0;
+    S.warDone[i] = false;
+    /* Reported already, or not a playable four — safe to re-deal now. A
+       live game keeps its players and takes the new list next round. */
+    const c = S.courts[i];
+    const mid = c && c.win === null && c.teams.flat().filter(Boolean).length === 4;
+    if(!mid) Wars.fillCourt(i);
+  });
+  /* the pools have changed shape, so the finished-early question is worth
+     asking again when they next fall out of step */
+  S.warAsked = false;
+  return Array.from(changed);
 }
 
 function warsPartlyDoneSheet(finished, midway){
@@ -9426,6 +9761,10 @@ async function pastSession(code){
       + '&code=eq.' + encodeURIComponent(code)
       + '&removed_at=is.null'
       + '&select=name,wins,games,pf,pa,crowns,played_at,title&order=wins.desc');
+    /* Wins alone is what the query can express; the table is then put in
+       the night's own order so this sheet, the recap and the story card
+       all agree on who came second. */
+    rows = (rows || []).slice().sort(nightOrder);
   }catch(e){
     openSheet(`<h3>Session ended</h3>
       <p class="sub">Could not read that night. ${esc(e.detail || e.message || '')}</p>
@@ -9467,6 +9806,9 @@ async function pastSession(code){
     <button class="btn btn-go" style="margin-top:10px"
       onclick="location.href='?r=${encodeURIComponent(code)}'">${
         navIcon('eye')}View the full night</button>
+    <button class="btn btn-quiet" style="margin-top:8px"
+      onclick="Recap.cardFor('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
+        navIcon('instagram')}Story card for Instagram</button>
     <button class="btn btn-quiet" style="margin-top:8px"
       onclick="Recap.share('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
         navIcon('share')}Share this night</button>
@@ -11297,6 +11639,7 @@ function sitOut(id){
   invalidatePlan();
   P(id).out = true;
   S.queue = S.queue.filter(x => x !== id);
+  poolsSync();
   fillGaps(); renderAll(); TV.paint(); save(); closeSheet();
   toast(nm(id) + ' is sitting out.');
 }
@@ -11305,7 +11648,10 @@ function sitIn(id){
   invalidatePlan();
   P(id).out = false;
   if(!onCourtIds().includes(id) && !S.queue.includes(id)) S.queue.push(id);
-  renderAll(); save();
+  /* Back into a pool as well — sitting out took them out of one, and the
+     queue they were just put in is not used by the pool formats. */
+  poolsSync();
+  renderAll(); TV.paint(); save();
   toast(nm(id) + ' is back in the rotation.');
 }
 /* ── TOURNAMENT SETTINGS ─────────────────────────────── */
@@ -11625,6 +11971,120 @@ function applyFormat(m){
   setMode(m); closeSheet(); Clock.reset(); renderAll(); TV.paint(); save();
   toast(MODE_NAME[m] + ' from here.');
 }
+/* A game the app never saw.
+
+   Courts get played that the rotation did not deal. Two came early and had
+   a game before the first round; a court carried on while the organizer
+   was signing somebody in; a result was tapped as a win for the wrong side
+   and undone, and by then the round had moved on. The record is meant to
+   be what happened on the night, and until now the only games it could
+   hold were the ones it had dealt itself.
+
+   This banks one exactly the way a reported court does — same win, loss,
+   games and points on the four players, same entry in the log, so it can
+   be scored, have its winner swapped or be undone afterwards like any
+   other. It does not touch the courts: nobody is moved, no round turns,
+   nothing is dealt. This is bookkeeping about a game already finished.  */
+const AddGame = {
+  slots: [null, null, null, null],
+  win: 0,
+  ws: null, ls: null,
+
+  open(){
+    this.slots = [null, null, null, null];
+    this.win = 0;
+    this.ws = null; this.ls = null;
+    this.paint();
+  },
+
+  tap(id){
+    const at = this.slots.indexOf(id);
+    if(at >= 0){ this.slots[at] = null; this.paint(); return; }
+    const free = this.slots.indexOf(null);
+    if(free < 0){ toast('All four spots are taken — tap one to clear it.'); return; }
+    this.slots[free] = id;
+    this.paint();
+  },
+  clear(k){ this.slots[k] = null; this.paint(); },
+  side(w){ this.win = w; this.paint(); },
+  score(which, v){
+    const n = v === '' ? null : Math.max(0, Math.min(99, parseInt(v, 10) || 0));
+    if(which === 'w') this.ws = n; else this.ls = n;
+  },
+
+  paint(){
+    const slot = (k, letter) =>{
+      const id = this.slots[k];
+      return `<button class="lu-slot${id ? ' set' : ''}" onclick="AddGame.clear(${k})"
+        title="${id ? 'Tap to clear' : 'Pick somebody below'}">
+        <i>${letter}</i><span>${id ? esc(nm(id)) : '—'}</span></button>`;
+    };
+    const chosen = this.slots.filter(Boolean);
+    const list = S.order.filter(id => P(id)).map(id =>{
+      const on = this.slots.indexOf(id) >= 0;
+      const p = P(id);
+      return `<button class="pick lu-p${on ? ' on' : ''}" onclick="AddGame.tap('${id}')">
+        <span class="glyph">${on ? '✓' : icon('profile')}</span>
+        <span><b>${esc(p.name)}</b><span>${p.w || 0}W · ${p.l || 0}L · ${p.g || 0} game${(p.g||0)===1?'':'s'}</span></span></button>`;
+    }).join('');
+
+    openSheet(`<h3>Add a game</h3>
+      <p class="sub">For a game that was played but never went through the app. It goes on
+        the record and the table; the courts are left exactly as they are.</p>
+      <div class="lu-slots">
+        ${slot(0,'A')}${slot(1,'B')}<span class="lu-v">v</span>${slot(2,'C')}${slot(3,'D')}
+      </div>
+      ${chosen.length === 4 ? `
+        <div class="label" style="margin:0 0 6px">Who won</div>
+        <div class="seg" style="margin-bottom:12px">
+          <button class="${this.win === 0 ? 'on' : ''}" onclick="AddGame.side(0)">${esc(nm(this.slots[0]))} &amp; ${esc(nm(this.slots[1]))}</button>
+          <button class="${this.win === 1 ? 'on' : ''}" onclick="AddGame.side(1)">${esc(nm(this.slots[2]))} &amp; ${esc(nm(this.slots[3]))}</button>
+        </div>
+        <div class="label" style="margin:0 0 6px">Score <span style="opacity:.6">— optional</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <input type="number" inputmode="numeric" min="0" max="99" placeholder="win"
+            value="${this.ws == null ? '' : this.ws}" oninput="AddGame.score('w',this.value)" style="flex:1;min-width:0">
+          <span style="color:var(--ink-3)">–</span>
+          <input type="number" inputmode="numeric" min="0" max="99" placeholder="lost"
+            value="${this.ls == null ? '' : this.ls}" oninput="AddGame.score('l',this.value)" style="flex:1;min-width:0">
+        </div>
+        <p class="hint tight">Leave both blank to record the win without a score.</p>` : ''}
+      ${list}
+      <button class="btn btn-go" style="margin-top:10px" ${chosen.length === 4 ? '' : 'disabled'}
+        onclick="AddGame.apply()">${chosen.length === 4 ? 'Add it to the record' : `Pick ${4 - chosen.length} more`}</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
+  },
+
+  apply(){
+    const four = this.slots.filter(Boolean);
+    if(four.length !== 4){ toast('Pick all four first.'); return; }
+    /* Both or neither. One number on its own says nothing and would put a
+       points difference on the table built from a score nobody entered. */
+    const scored = this.ws != null && this.ls != null;
+    const ws = scored ? this.ws : null, ls = scored ? this.ls : null;
+    if(scored && ws === ls){ toast('A game cannot be drawn — check the score.'); return; }
+
+    const w = this.win === 0 ? [four[0], four[1]] : [four[2], four[3]];
+    const l = this.win === 0 ? [four[2], four[3]] : [four[0], four[1]];
+
+    w.forEach(id =>{ const p = P(id); if(p){ p.w++; p.g++; if(scored){ p.pf += ws; p.pa += ls; } } });
+    l.forEach(id =>{ const p = P(id); if(p){ p.l++; p.g++; if(scored){ p.pf += ls; p.pa += ws; } } });
+    S.games++;
+
+    /* Marked as belonging to the round it was added in, and to no court —
+       c is -1 so the log shows it as added rather than pretending it came
+       off a court that was playing something else at the time. */
+    S.log.unshift({
+      r: S.round || 1, c: -1, court: false, king: false, added: true,
+      win: w.map(nm), lose: l.map(nm), winIds: w.slice(), loseIds: l.slice(), ws, ls
+    });
+
+    closeSheet(); renderAll(); renderLadder(); TV.paint(); save();
+    if(S.live) Live.beat();
+    toast(nm(w[0]) + ' & ' + nm(w[1]) + ' beat ' + nm(l[0]) + ' & ' + nm(l[1]) + '.');
+  }
+};
+
 /* Rebuild the ladder from the table: best record starts on Court 1. */
 function seedByRecord(n){
   const ranked = shuffle(activeIds()).sort((a,b)=>{
@@ -11672,12 +12132,7 @@ function changeCourtsLive(d){
    ═══════════════════════════════════════════════════ */
 function renderStats(){
   const ids = S.order.filter(id => P(id));
-  const rows = ids.slice().sort((a,a2)=>{
-    const x = P(a), y = P(a2);
-    if(y.crowns !== x.crowns) return y.crowns - x.crowns;
-    if(y.w !== x.w) return y.w - x.w;
-    return x.l - y.l;
-  });
+  const rows = ids.slice().sort(nightOrder);
   document.getElementById('lb').innerHTML = rows.length && S.games ? rows.map((id,i)=>{
     const p = P(id);
     return `<div class="lb-row${i<3?' podium':''}">
@@ -11715,13 +12170,7 @@ function renderLog(){
 
   const all = S.logAll || q;
   const list = all ? hits : hits.slice(0, LOG_RECENT);
-  const rows = list.map(({e,k}) =>
-    `<div class="log-row"><span class="rd">${e.court ? `C${e.c+1} · G${e.r}` : `R${e.r} · C${e.c+1}`}</span>
-      <span class="txt"><b>${esc(e.win.join(' & '))}</b> beat <s>${esc(e.lose.join(' & '))}</s></span>
-      <button class="lg-sc${e.ws==null?' none':''}" onclick="editLogScore(${k})">${e.ws==null?'+':e.ws+'\u2013'+e.ls}</button>
-      ${e.king ? '<span>' + icon('crown') + '</span>' : ''}
-      <button class="swapw" onclick="swapResult(${k})" title="Swap the winner" aria-label="Swap the winner">⇄</button>
-    </div>`).join('');
+  const rows = list.map(({e,k}) => logRow(e, k)).join("");
 
   const tools = S.log.length > LOG_RECENT
     ? `<input type="search" class="ros-q log-q" placeholder="Search ${S.log.length} results by player"
@@ -11735,13 +12184,47 @@ function renderLog(){
     `<div class="empty"><span class="glyph">${icon('search')}</span>No games with \u201c${esc(S.logQ)}\u201d in them.</div>`}</div>` + more;
 }
 /* Same reason as the roster: redraw the rows, leave the input alone. */
+/* One definition. The panel and the live redraw had a copy each and had
+   already drifted apart in their escaping; a game added by hand needed a
+   third thing said in both places, which was the point to stop. */
 function logRow(e, k){
-  return `<div class="log-row"><span class="rd">${e.court ? `C${e.c+1} \u00b7 G${e.r}` : `R${e.r} \u00b7 C${e.c+1}`}</span>
+  return `<div class="log-row"><span class="rd">${e.added ? 'Added'
+        : (e.court ? `C${e.c+1} \u00b7 G${e.r}` : `R${e.r} \u00b7 C${e.c+1}`)}</span>
       <span class="txt"><b>${esc(e.win.join(' & '))}</b> beat <s>${esc(e.lose.join(' & '))}</s></span>
       <button class="lg-sc${e.ws==null?' none':''}" onclick="editLogScore(${k})">${e.ws==null?'+':e.ws+'\u2013'+e.ls}</button>
       ${e.king ? '<span>' + icon('crown') + '</span>' : ''}
       <button class="swapw" onclick="swapResult(${k})" title="Swap the winner" aria-label="Swap the winner">\u21C4</button>
+      ${e.added ? `<button class="swapw" onclick="removeAddedGame(${k})"
+        title="Take this game back off" aria-label="Take this game back off">\u2715</button>` : ''}
     </div>`;
+}
+
+/* Only for games put in by hand. Undo last steps back to the previous
+   round, which is the right instrument for a round that went wrong and the
+   wrong one for a line typed in error twenty minutes ago \u2014 it would take
+   everything since with it. A game added by hand can simply be taken back
+   off, and the four players get back exactly what it gave them. */
+function removeAddedGame(k){
+  const e = S.log[k];
+  if(!e || !e.added) return;
+  openSheet(`<h3>Take this game off?</h3>
+    <p class="sub"><b>${esc(e.win.join(' & '))}</b> beat ${esc(e.lose.join(' & '))}${
+      e.ws == null ? '' : ` ${e.ws}\u2013${e.ls}`}. The win, the loss and the
+      points go back to how they were.</p>
+    <button class="btn btn-risk" onclick="doRemoveAddedGame(${k})">Take it off</button>
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep it</button>`);
+}
+function doRemoveAddedGame(k){
+  const e = S.log[k];
+  if(!e || !e.added){ closeSheet(); return; }
+  applyLogPoints(e, -1);
+  (e.winIds || []).forEach(id =>{ const p = P(id); if(p){ p.w = Math.max(0, p.w - 1); p.g = Math.max(0, p.g - 1); } });
+  (e.loseIds || []).forEach(id =>{ const p = P(id); if(p){ p.l = Math.max(0, p.l - 1); p.g = Math.max(0, p.g - 1); } });
+  S.games = Math.max(0, S.games - 1);
+  S.log.splice(k, 1);
+  closeSheet(); renderAll(); renderLadder(); TV.paint(); save();
+  if(S.live) Live.beat();
+  toast('Taken back off the record.');
 }
 function setLogQ(v){
   S.logQ = v;
@@ -11825,14 +12308,11 @@ function swapResult(k){
 /* ═══════════════════════════════════════════════════
    PLAYOFF — a doubles knockout drawn from the standings
    ═══════════════════════════════════════════════════ */
+/* The bracket says it is drawn from the standings, so it is drawn in the
+   order the standings are shown in — anything else and the top seed is
+   somebody the table has fourth. */
 function ranked(){
-  return S.order.filter(id => P(id) && P(id).g > 0).sort((a,b)=>{
-    const p = P(a), q = P(b);
-    if(q.crowns !== p.crowns) return q.crowns - p.crowns;
-    if(q.w !== p.w) return q.w - p.w;
-    if(p.l !== q.l) return p.l - q.l;
-    return q.g - p.g;
-  });
+  return S.order.filter(id => P(id) && P(id).g > 0).sort(nightOrder);
 }
 function poMax(){ return Math.floor(ranked().length / 4) * 4; }
 function bumpPlayoff(d){
@@ -12566,6 +13046,11 @@ const Recap = {
       this.nothing('There is no record of that night. It may have been reset, or the link may be wrong.');
       return;
     }
+    /* Put in the night's own order here, once, rather than at each place
+       that draws it — the board, the story card and Recap.only() all index
+       into this same array, so sorting it later would have the taps opening
+       the wrong player. */
+    if(Array.isArray(d.standings)) d.standings = d.standings.slice().sort(nightOrder);
     this.data = d;
     this.paint();
   },
@@ -12972,6 +13457,37 @@ const Recap = {
     }catch(e){ toast('Could not build the image.'); }
   },
 
+  /* The same card, for a night that is not the one on screen.
+
+     The card was only reachable from inside the recap, which meant opening
+     the night, scrolling to the bottom and coming back — for the one thing
+     people actually want from a finished session. This reads that night on
+     its own and draws it, so the button can sit on the card's own details
+     sheet next to Share this night.
+
+     The recap's own data is put back afterwards. Somebody can be reading
+     one night and make a card for another from the feed behind it, and the
+     screen they return to should be the night they were reading.        */
+  async cardFor(code, title){
+    if(!code) return;
+    toast('Reading the night…');
+    let d = null;
+    try{
+      d = await Live.rpc('sideout_recap', { p_club: CONFIG.club || 'sideout', p_code: code });
+    }catch(e){
+      toast('Could not read that night just now.');
+      return;
+    }
+    if(!d || !(d.standings || []).length){ toast('Nothing to put on a card for that night.'); return; }
+    if(Array.isArray(d.standings)) d.standings = d.standings.slice().sort(nightOrder);
+    if(title && !d.title) d.title = title;
+
+    const heldData = this.data, heldCode = this.code;
+    this.data = d; this.code = code;
+    try{ await this.card(); }
+    finally{ this.data = heldData; this.code = heldCode; }
+  },
+
   /* The share sheet where there is one, the clipboard where there is not.
      A cancelled share is not a failure and must not toast at somebody who
      simply changed their mind. */
@@ -13295,15 +13811,18 @@ const View = {
       }
       /* Running: carry the host's reading forward so it ticks smoothly
          between polls. Paused: hold it exactly where they left it. */
-      const left = c.run
+      /* Stops at nought rather than counting upwards past it, the same as
+         the big screen — a watcher was being shown a rising +0:14 for a
+         round that had finished. */
+      const raw = c.run
         ? Number(c.secs) - Math.floor((Date.now() - Number(c.at)) / 1000)
         : Number(c.secs);
-      const over = left < 0;
-      const n = Math.abs(left);
-      const t = Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
-      box.className = 'vw-clock' + (over ? ' out' : '') + (c.run ? '' : ' held');
-      box.innerHTML = `<i>Round ${s2.round}</i><b>${over ? '+' : ''}${t}</b>
-        <i>${over ? 'over' : (c.run ? 'left' : 'paused')}</i>`;
+      const left = Math.max(0, raw);
+      const done = left === 0;
+      const t = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+      box.className = 'vw-clock' + (done ? ' out' : '') + (c.run ? '' : ' held');
+      box.innerHTML = `<i>Round ${s2.round}</i><b>${t}</b>
+        <i>${done ? "time's up" : (c.run ? 'left' : 'paused')}</i>`;
     };
     draw();
     if(!this.clockTick) this.clockTick = setInterval(draw, 1000);
@@ -14363,6 +14882,22 @@ function closeSheet(){ document.getElementById('veil').classList.remove('on'); }
 const Clock = {
   secs: 480, def: 480, running: false, t: null,
   setDefault(s){ this.def = s; this.secs = s; this.paint(); },
+  /* Time on this round only — the round length in Manage is untouched, so
+     the next round still starts where the organizer set it. Whether the
+     clock is running or paused makes no difference; both get nudged, which
+     is the point of having it courtside rather than in a settings panel.
+     Pushed so the big screen and every watching phone move with it. */
+  nudge(d){
+    if(!S.timed) return;
+    const was = this.secs;
+    this.secs = Math.max(0, Math.min(3600, this.secs + d));
+    if(this.secs === was) return;
+    /* Put back above nought, so the round is no longer over — clear the
+       full-screen notice or it sits there over a clock that is running. */
+    if(this.secs > 0) dismissTimeUp();
+    this.paint();
+    this.push();
+  },
   toggle(){ if(!S.timed) return; this.running ? this.pause() : this.start(); },
   /* The clock travels in the snapshot, so starting, pausing or resetting it
      has to be published — without this the big screen and every watching
@@ -14412,12 +14947,20 @@ const Clock = {
     return m + ':' + String(s).padStart(2,'0');
   },
   paint(){
+    const done = S.timed && this.secs <= 0;
     const hot = S.timed && this.secs <= 30 && this.secs > 0;
     const c = document.getElementById('clock');
     c.textContent = this.text();
     c.className = 'clock' + (hot ? ' hot' : ((S.timed && !this.running) ? ' off' : ''));
+    /* The host's own big-screen mode writes the same element the cast
+       screen does, so nought has to read the same on both. */
     const tc = document.getElementById('tv-clock');
-    if(tc){ tc.textContent = this.text(); tc.className = 'tv-clock' + (hot ? ' hot' : ''); }
+    if(tc){
+      tc.textContent = this.text();
+      tc.className = 'tv-clock' + (done ? ' done' : (hot ? ' hot' : ''));
+    }
+    const up = document.getElementById('tv-up');
+    if(up) up.hidden = !done;
   }
 };
 let AC = null;
@@ -14669,15 +15212,34 @@ const Cast = {
 
   /* Carried forward between polls so the seconds do not sit still for three
      seconds at a time, and held where the host left it when paused. */
+  /* The board used to run straight past nought and count upwards with a
+     plus in front — 0:00, +0:01, +0:02 — which read as a stopwatch nobody
+     had started and told a hall full of people nothing. A round that is
+     over is over: the clock stops at nought and says so.
+
+     It went past nought in the first place because a watcher carries the
+     host's last reading forward between polls, and the host's pause at
+     zero only reaches here on the next beat. Clamping is what makes the
+     board right even when that beat is late. */
   clock(){
     const el = document.getElementById('tv-clock');
+    const up = document.getElementById('tv-up');
     const s = this.snap;
     if(!el) return;
-    if(!s || !s.timed || !s.clock || s.ended || !(s.round > 0)){ el.textContent = ''; return; }
+    if(!s || !s.timed || !s.clock || s.ended || !(s.round > 0)){
+      el.textContent = '';
+      el.className = 'tv-clock';
+      if(up) up.hidden = true;
+      return;
+    }
     const c = s.clock;
-    const left = c.run ? c.secs - Math.floor((Date.now() - (c.at || Date.now())) / 1000) : c.secs;
-    const over = left < 0, n = Math.abs(left);
-    el.textContent = (over ? '+' : '') + Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+    const raw = c.run ? c.secs - Math.floor((Date.now() - (c.at || Date.now())) / 1000) : c.secs;
+    const left = Math.max(0, raw);
+    const done = left === 0;
+    const hot = !done && left <= 30;
+    el.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+    el.className = 'tv-clock' + (done ? ' done' : (hot ? ' hot' : ''));
+    if(up) up.hidden = !done;
   },
 
   paint(){
@@ -14848,14 +15410,8 @@ async function makeCard(){
   track(x, 0);
   y += 56;
 
-  // ranked players
-  const rows = S.order.filter(id => P(id) && P(id).g > 0).sort((a,b)=>{
-    const p = P(a), q = P(b);
-    if(q.crowns !== p.crowns) return q.crowns - p.crowns;
-    if(q.w !== p.w) return q.w - p.w;
-    if(p.l !== q.l) return p.l - q.l;
-    return (q.pf - q.pa) - (p.pf - p.pa);
-  });
+  // ranked players — the same order as the table on screen
+  const rows = S.order.filter(id => P(id) && P(id).g > 0).sort(nightOrder);
   if(!rows.length){ toast('No completed games yet.'); return; }
 
   // champion
