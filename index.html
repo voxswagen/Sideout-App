@@ -13343,12 +13343,50 @@ const Recap = {
     g.addColorStop(0, '#061726'); g.addColorStop(.45, '#0E3A61'); g.addColorStop(1, '#050F1B');
     x.fillStyle = g; x.fillRect(0, 0, W, 1920);
 
-    let y = 108;
+    /* ── the card is a budget ────────────────────────────────────────────
+       1080 by 1920 with the wordmark and the link pinned to the bottom, so
+       every pixel the heading takes is a pixel the table does not get. A
+       title can be two words or eight and the layout has to hold either
+       way, which means working the heading out before drawing any of it
+       rather than starting at the top and hoping.
+
+       What gives way is the photograph. It is the decoration; the standings
+       are the reason somebody is posting the card at all. So the band is
+       whatever is left after the heading and a full table have been paid
+       for, down to a floor where a photo still reads as a photo.
+
+       Without this the table simply ran on into the footer: a card with a
+       cover was over by ten pixels at any title length, and a long title —
+       once titles were allowed the second line they need — put nine rows
+       through the bottom of the card by a hundred and six.             */
+    const FOOT = 1664, GAP = 10, MIN_RH = 58, CHAMP = 232 + 22, ROWS = 9;
+    const TOP_PAD = 108, LOGO_W = 380;
+
+    const heading = String(d.title || 'OPEN PLAY').toUpperCase();
+    track(x, 4);
+    const fit = fitLines(x, heading, 'Bebas Neue', 104, 42, W - PAD * 2, 2);
+    /* how far the baseline of each line sits below the one before it */
+    const steps = fit.rows.map((row, i) =>{
+      x.font = fit.size + 'px "Bebas Neue"';
+      const m = x.measureText(row);
+      return i ? Math.round(fit.size * 0.92)
+               : 26 + Math.round(m.actualBoundingBoxAscent || fit.size * 0.8);
+    });
+    track(x, 0);
+
+    const logoH = logo ? Math.round(logo.height * LOGO_W / logo.width) : 48;
+    /* wordmark, the gap under it, the date, the heading, the gap under that */
+    const headH = logoH + 42 + 62 + steps.reduce((a, b) => a + b, 0) + 54;
+    /* what a full table needs at its smallest readable row */
+    const tableH = ROWS * MIN_RH + (ROWS - 1) * GAP;
+    const bandRoom = FOOT - 34 - tableH - CHAMP - headH + 150;
+
+    let y = TOP_PAD;
 
     if(shot){
       /* cover the band rather than stretch it: a squashed photo of a court
          looks worse than a cropped one */
-      const bandH = 620;
+      const bandH = Math.max(380, Math.min(620, bandRoom));
       const r = Math.max(W / shot.width, bandH / shot.height);
       const sw = shot.width * r, sh = shot.height * r;
       x.save();
@@ -13365,11 +13403,13 @@ const Recap = {
       x.restore();
     }
 
-    if(logo){
-      const lw = 380, lh = logo.height * lw / logo.width;
-      x.drawImage(logo, (W - lw) / 2, y, lw, lh);
-      y += lh + 42;
-    } else { y += 90; }
+    /* The very same logoH the budget was worked out from. Drawing to the
+       unrounded height and budgeting with the rounded one put the table a
+       fraction of a pixel below where the sums said it would be, which was
+       enough to trip the row-dropping backstop and lose a name off the
+       bottom of a card that actually had room for it. */
+    if(logo) x.drawImage(logo, (W - LOGO_W) / 2, y, LOGO_W, logoH);
+    y += logoH + 42;
 
     const when = d.played_at ? new Date(d.played_at) : null;
     const stamp = when
@@ -13395,14 +13435,12 @@ const Recap = {
        off the edge of the card — "SOS: UP AND DOWN THE RIVER" by 87
        pixels. Tracking goes on first, and a title too long for one line is
        carried over two rather than shrunk until nobody can read it. */
-    const title = String(d.title || 'OPEN PLAY').toUpperCase();
+    /* Drawn to the steps measured at the top, so where the heading ends is
+       exactly where the budget said it would. */
     track(x, 4);
-    const fit = fitLines(x, title, 'Bebas Neue', 104, 42, W - PAD * 2, 2);
-    x.fillStyle = '#fff';
+    x.fillStyle = '#fff'; x.font = fit.size + 'px "Bebas Neue"';
     fit.rows.forEach((row, i) =>{
-      const m = x.measureText(row);
-      y += i ? Math.round(fit.size * 0.92)
-             : 26 + Math.round(m.actualBoundingBoxAscent || fit.size * 0.8);
+      y += steps[i];
       x.fillText(row, W / 2, y);
     });
     track(x, 0);
@@ -13439,16 +13477,24 @@ const Recap = {
 
     y += cH + 22;
 
-    /* Ten on the card, so the chasing pack is nine. The row height is worked
-       out from the space actually left rather than fixed: at a fixed 100 the
-       footer was pushed past 1870 and straight through the wordmark at 1852,
-       which is what was ruining the layout. Reserving the foot first and
-       dividing what remains cannot overlap however many rows there are. */
-    const FOOT = 1664;
-    const rest = rows.slice(1, 10);
-    const gap = 10;
+    /* Ten on the card, so the chasing pack is nine. The row height comes from
+       the space actually left rather than being fixed — but it has a floor,
+       because a row too short to read is no use to anybody, and a floor is
+       only honest if something else gives when it is reached. Before, nothing
+       did: the height stopped shrinking at 58 and the rows simply carried on
+       past the footer and drew over it.
+
+       So the last row comes off instead. Eight names above the line beat nine
+       through it, and the budget worked out at the top of this function means
+       it should almost never come to that — the band gives way first. This is
+       the backstop for the case it cannot cover, a photograph so short it is
+       already at its floor. */
+    let rest = rows.slice(1, 1 + ROWS);
+    const room = () => (FOOT - 34 - y - (rest.length - 1) * GAP) / rest.length;
+    while(rest.length > 3 && room() < MIN_RH) rest = rest.slice(0, -1);
+    const gap = GAP;
     const rH = rest.length
-      ? Math.max(58, Math.min(96, Math.floor((FOOT - 34 - y - (rest.length - 1) * gap) / rest.length)))
+      ? Math.max(MIN_RH, Math.min(96, Math.floor(room())))
       : 0;
 
     rest.forEach((p, i) =>{
