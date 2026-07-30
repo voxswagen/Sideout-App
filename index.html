@@ -13381,10 +13381,30 @@ const Recap = {
     track(x, 0);
     y += 62;
 
+    /* Two things were wrong here and both showed up on the same line of
+       type. fillText draws from the baseline, so a heading reaches UP from
+       y by its own height — and a fixed 62px step down from the date was
+       less than that height, so the title came down on top of the date.
+       Twelve pixels of overlap on any title short enough to stay at full
+       size, which is most of them. It steps by what the type actually
+       measures now.
+
+       The width was wrong for a different reason in the same place: the
+       tracking was applied after the fitting had finished measuring, so
+       the 4px between every letter was never counted and a long title ran
+       off the edge of the card — "SOS: UP AND DOWN THE RIVER" by 87
+       pixels. Tracking goes on first, and a title too long for one line is
+       carried over two rather than shrunk until nobody can read it. */
     const title = String(d.title || 'OPEN PLAY').toUpperCase();
-    const tSize = fitFont(x, title, '', 'Bebas Neue', 104, W - PAD * 2);
-    track(x, 4); x.fillStyle = '#fff'; x.font = tSize + 'px "Bebas Neue"';
-    x.fillText(title, W / 2, y);
+    track(x, 4);
+    const fit = fitLines(x, title, 'Bebas Neue', 104, 42, W - PAD * 2, 2);
+    x.fillStyle = '#fff';
+    fit.rows.forEach((row, i) =>{
+      const m = x.measureText(row);
+      y += i ? Math.round(fit.size * 0.92)
+             : 26 + Math.round(m.actualBoundingBoxAscent || fit.size * 0.8);
+      x.fillText(row, W / 2, y);
+    });
     track(x, 0);
     y += 54;
 
@@ -15365,6 +15385,36 @@ function rrect(x, a, b, w, h, r){
   x.arcTo(a,b+h,a,b,r); x.arcTo(a,b,a+w,b,r); x.closePath();
 }
 function track(x, px){ try{ x.letterSpacing = px + 'px'; }catch(e){} }
+/* Fit a heading to a width by breaking it over a line or two, and only
+   shrinking when that is not enough. fitFont on its own has to take a long
+   title all the way down to keep it on one line, and a session called
+   "PICKLEBALL BINGO / GAME OF THRONES CHALLENGE" ends up too small to read
+   across a room. Two lines at a readable size is the better answer.
+
+   Measures at whatever letter-spacing is already set, which is the whole
+   point: the caller sets the tracking first and gets a size that accounts
+   for it. */
+function fitLines(x, text, family, start, floor, maxW, max){
+  const words = String(text).split(/\s+/).filter(Boolean);
+  for(let size = start; size >= floor; size -= 3){
+    x.font = size + 'px "' + family + '"';
+    const rows = [];
+    let line = '', tooWide = false;
+    for(const w of words){
+      const next = line ? line + ' ' + w : w;
+      if(x.measureText(next).width <= maxW){ line = next; continue; }
+      if(line) rows.push(line);
+      /* a single word wider than the card cannot be broken, so shrink */
+      if(x.measureText(w).width > maxW){ tooWide = true; break; }
+      line = w;
+    }
+    if(tooWide) continue;
+    if(line) rows.push(line);
+    if(rows.length <= max) return { size, rows };
+  }
+  x.font = floor + 'px "' + family + '"';
+  return { size: floor, rows: [String(text)] };
+}
 function fitFont(x, text, weight, family, start, maxW){
   let size = start;
   do{
