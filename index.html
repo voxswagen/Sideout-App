@@ -809,6 +809,12 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .pool-p:hover{border-color:var(--court)}
 .pool-p span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pool-p i{font-style:normal;font-size:11px;color:var(--ink-3)}
+/* Two or more games behind the busiest player. Marked rather than sorted,
+   because where somebody sits in their pool is the format's business and
+   moving them up the list would say something the format does not mean. */
+.pool-p.thin{border-color:var(--fault)}
+.pool-p.thin i{color:var(--fault)}
+.pool-n{margin:0 0 7px;font-size:10px;color:var(--ink-3)}
 .pstats{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}
 .ps{flex:1 1 60px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;
   border-radius:var(--r-s);background:var(--card-2);border:1px solid var(--edge)}
@@ -7776,17 +7782,46 @@ function renderPools(){
   if(!pooled) return;
 
   const on = new Set(onCourtIds());
+
+  /* Games played, not wins, because that is the thing this panel is used to
+     settle. A pool is one court and one court plays one game a round, so
+     five people on a court get on four times in five rounds and eight get
+     on half the time — the smaller pool always plays more, and no amount of
+     shuffling the fixture list changes that. It is arithmetic, and the only
+     answer to it is moving somebody, which is exactly what this panel is
+     for. So it has to say who is behind rather than leave the organizer to
+     notice it from the complaints. */
+  const all = activeIds().map(id => (P(id) && P(id).g) || 0);
+  const most = Math.max(0, ...all), least = Math.min(...(all.length ? all : [0]));
+
   const body = S.tiers.map((pool, i) =>{
     const p = S.mode === 'wars' ? Wars.progress(i) : null;
     const names = (pool || []).map(id =>{
       if(!P(id)) return '';
       const here = on.has(id);
-      return `<button class="pool-p${here ? ' on' : ''}"
-        onclick="poolPlayerSheet('${id}')" title="${here ? 'On court now' : 'Resting'}">
-        <span>${esc(nm(id))}</span><i>${here ? 'on court' : (P(id).w || 0) + 'W'}</i></button>`;
+      const g = P(id).g || 0;
+      /* Only the people actually worth moving: at the bottom of the night
+         and a clear couple of games off the top. Marking everybody below
+         average would paint half the panel red on an evening where the
+         spread is normal, and a warning that shows most of the time is not
+         a warning. */
+      const behind = (most - g) >= 2 && g <= least + 1;
+      return `<button class="pool-p${here ? ' on' : ''}${behind ? ' thin' : ''}"
+        onclick="poolPlayerSheet('${id}')" title="${
+          esc(nm(id))} — ${g} game${g === 1 ? '' : 's'}, ${P(id).w || 0} won${
+          here ? ', on court now' : ''}${
+          behind ? `, ${most - g} behind the busiest tonight` : ''}">
+        <span>${esc(nm(id))}</span><i>${g}g</i></button>`;
     }).join('');
+    const games = (pool || []).map(id => (P(id) && P(id).g) || 0);
+    const range = games.length
+      ? (Math.min(...games) === Math.max(...games)
+          ? Math.min(...games) + ' each'
+          : Math.min(...games) + '–' + Math.max(...games) + ' games')
+      : '';
     return `<div class="pool">
       <h4>${ordinal(i)}${p && p.of ? ` <span>${Math.min(p.at + 1, p.of)}/${p.of}</span>` : ''}</h4>
+      <p class="pool-n">${(pool || []).length} players · ${range}</p>
       ${names || '<p class="hint tight">Nobody here yet.</p>'}
     </div>`;
   }).join('');
@@ -7794,7 +7829,7 @@ function renderPools(){
   document.getElementById('pools-body').innerHTML = body;
   const note = document.getElementById('pools-note');
   if(note) note.textContent = S.mode === 'wars'
-    ? 'Tap anybody to move them. Their new court draws a fresh list.'
+    ? 'Numbers are games played. A smaller pool plays more — move somebody across to even it up.'
     : 'Up & Down the River rebuilds these every round from the standings, so a move here only lasts the round.';
 }
 
@@ -8037,7 +8072,7 @@ const Wars = {
         }
       }
     }
-    return this.order(games);
+    return this.order(games, ids);
   },
 
   /* Equal games is not equal rest, and only one of those is felt. The games
@@ -8052,8 +8087,31 @@ const Wars = {
      goes from a seven-game wait to three, and from seventeen back-to-back
      games to one. Pools of four and five cannot be helped: with only one
      court there is nobody else to put on. */
-  order(games){
+  /* A list is drawn far more often than it is finished. A reorder — forced
+     from Manage or automatic when every pool has been through — throws the
+     current one away and draws a new one, and so does moving anybody
+     between pools. Until now each new list opened as though nobody had
+     played anything, so whoever had been unlucky in the last list was just
+     as likely to be left out at the start of the next. Over an evening
+     that compounded: measured across sixteen rounds it left one player on
+     fourteen games and another on nine.
+
+     A full list is fair on its own — every pool size gives everybody the
+     same number of games give or take one. So the fix is not to change
+     what is in the list but where each player comes in it: open on the
+     people furthest behind by seeding them as though they had been sitting
+     out that many games already. Somebody three games short is treated as
+     three games more rested than the busiest player and gets on first.
+
+     At the start of a night everyone is on nought, the seeding is flat and
+     this does exactly what it did before.                              */
+  order(games, ids){
     const last = new Map();
+    if(ids && ids.length){
+      let most = 0;
+      ids.forEach(id =>{ const p = P(id); const g = (p && p.g) || 0; if(g > most) most = g; });
+      ids.forEach(id =>{ const p = P(id); const g = (p && p.g) || 0; last.set(id, -1 - (most - g)); });
+    }
     const left = games.slice();
     const out = [];
     while(left.length){
