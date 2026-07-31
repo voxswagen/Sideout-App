@@ -3000,19 +3000,48 @@ const Live = {
       try{ Push.announce(code, 'join'); }catch(e){}
     }
   },
+  /* Read the newcomers. Deliberately does NOT mark them taken.
+
+     It used to, in the same breath as reading them, and that is how people
+     went missing: the row was ticked off before anything had been done with
+     it, so every step afterwards was running on borrowed time. Refreshing
+     the club roster for a member who signed up a minute ago, adding them to
+     the list, publishing — if any of that failed, or the host's phone locked
+     before it finished, the row was already marked claimed and would never
+     be offered again. Two people were lost from one night that way, one of
+     them sixteen seconds after creating her account, which is exactly the
+     case that needs the extra refresh and so has the most that can go wrong.
+
+     Taken now means "safely on the published roster", which is what the
+     column was always meant to mean. See ackJoiners. */
   async takeJoiners(code){
     if(this.mode() === 'local'){
       const k = 'sideout_join_' + code;
-      const list = JSON.parse(localStorage.getItem(k) || '[]');
-      localStorage.setItem(k, '[]');
-      return list;
+      return JSON.parse(localStorage.getItem(k) || '[]');
     }
-    const rows = await this.api('joiners?code=eq.' + code + '&taken=is.false&select=id,name,level,dupr,member,kind');
-    if(rows && rows.length){
-      const ids = rows.map(r => r.id).join(',');
-      await this.api('joiners?id=in.(' + ids + ')', { method:'PATCH', body: JSON.stringify({ taken:true }) });
+    return (await this.api('joiners?code=eq.' + code +
+      '&taken=is.false&select=id,name,level,dupr,member,kind')) || [];
+  },
+  /* Tick them off, once they are actually on the board and published. If
+     this never runs the rows simply come round again on the next pass four
+     seconds later, and collect() is written so that seeing somebody twice
+     costs nothing — a name already on the list is skipped. Offering a
+     newcomer twice is a non-event; losing them is not. */
+  async ackJoiners(code, rows){
+    if(!rows || !rows.length) return;
+    if(this.mode() === 'local'){
+      const k = 'sideout_join_' + code;
+      const done = new Set(rows.map(r => r.id).filter(v => v != null));
+      const left = JSON.parse(localStorage.getItem(k) || '[]')
+        .filter(r => r.id == null || !done.has(r.id));
+      /* rows written before ids existed cannot be told apart, so clear */
+      localStorage.setItem(k, JSON.stringify(rows.some(r => r.id == null) ? [] : left));
+      return;
     }
-    return rows || [];
+    const ids = rows.map(r => r.id).filter(v => v != null);
+    if(!ids.length) return;
+    await this.api('joiners?id=in.(' + ids.join(',') + ')',
+      { method:'PATCH', body: JSON.stringify({ taken:true }) });
   },
 
   /* ── host side ─────────────────────────────────────── */
@@ -3226,10 +3255,15 @@ const Live = {
     if(!rows.length) return;
 
     /* Someone who signed up thirty seconds ago will not be in the
-       cached roster yet, so refresh once before reading faces. */
-    if(rows.some(r => (r.member && !Club.find(r.member)) || r.kind === 'claim')) await Club.load(true);
+       cached roster yet, so refresh once before reading faces. A failure
+       here is not worth losing the join over — they go on with whatever
+       name and level they sent, and pick up their photo next time. */
+    if(rows.some(r => (r.member && !Club.find(r.member)) || r.kind === 'claim')){
+      try{ await Club.load(true); }catch(e){}
+    }
 
     const added = [], gone = [], waited = [];
+    let claimed = false;
     rows.forEach(r=>{
       const nmv = (r.name || '').trim().slice(0,40);
       if(!nmv) return;
@@ -3248,6 +3282,7 @@ const Live = {
             /* mixed doubles can place them without anyone being asked */
             if(m.sex && !P(id).sex) P(id).sex = m.sex;
           }
+          claimed = true;
           renderRoster(); renderPlayers(); renderStats(); renderLadder(); TV.paint(); save();
         }
         return;
@@ -3302,12 +3337,45 @@ const Live = {
       added.push(nmv);
     });
     if(gone.length) fillFromWait();
-    if(added.length || gone.length || waited.length){
+    const moved = added.length || gone.length || waited.length;
+    if(moved){
       invalidatePlan(); renderAll(); renderLadder(); TV.paint(); save();
-      if(added.length) toast(added.join(', ') + ' joined.');
-      if(waited.length) toast(waited.join(', ') + ' \u2014 session full, added to the waiting list.');
-      if(gone.length) toast(gone.join(', ') + (gone.length > 1 ? ' have' : ' has') + ' dropped out.');
     }
+
+    /* Published before anybody is ticked off, and only ticked off if the
+       publish landed.
+
+       This never published at all. It put the newcomer into the state on
+       the host's phone, wrote that to local storage and stopped \u2014 leaving
+       them to reach the server on the back of some later write that might
+       be minutes away, or never, if the phone locked first. Meanwhile the
+       join had already added them to the published roster on its own way
+       in, so they showed up on everybody's screen and in the notice \u2014 and
+       then the host's next publish, built from a state that had lost them,
+       took them straight back off it again. That is the shape of it: a
+       name in the notifications, no name on the session.
+
+       Waiting for the write also means a host with no signal keeps the
+       rows, and gets the same people offered again in four seconds rather
+       than quietly dropping them. */
+    if(moved || claimed){
+      try{
+        await this.saveAll();
+        await this.ackJoiners(this.code, rows);
+      }catch(e){
+        /* left unclaimed on purpose \u2014 the next pass will pick them up */
+        return;
+      }
+    } else {
+      /* nothing changed \u2014 a name already on the list, or somebody leaving
+         who was never on it. Tick them off anyway or they come back round
+         every four seconds for the rest of the night. */
+      try{ await this.ackJoiners(this.code, rows); }catch(e){}
+    }
+
+    if(added.length) toast(added.join(', ') + ' joined.');
+    if(waited.length) toast(waited.join(', ') + ' \u2014 session full, added to the waiting list.');
+    if(gone.length) toast(gone.join(', ') + (gone.length > 1 ? ' have' : ' has') + ' dropped out.');
   },
   beat(){
     if(!S.live || !this.code || this.adopting) return;
