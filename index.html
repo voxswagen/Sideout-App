@@ -2184,6 +2184,14 @@ body.casting{overflow:hidden}
       </div>
       <p class="hint tight" id="cap-hint" style="margin-top:6px">Leave it empty and anyone with the link can join.</p>
     </div>
+    <div class="field">
+      <span class="label">Joining</span>
+      <div class="seg" id="approve-seg">
+        <button class="on" data-a="0" onclick="setApprove(false)">Straight in</button>
+        <button data-a="1" onclick="setApprove(true)">I approve each one</button>
+      </div>
+      <p class="hint tight" id="approve-hint" style="margin-top:7px"></p>
+    </div>
     </div>
     <div class="field">
       <span class="label">Where <span style="opacity:.6">— optional</span></span>
@@ -2514,8 +2522,8 @@ body.casting{overflow:hidden}
     <div id="account-box"></div>
   </div>
   <div class="panel" id="wait-panel" hidden>
-    <h2>Waiting list <span class="count" id="wait-count"></span></h2>
-    <p class="hint tight" style="margin-bottom:10px">In the order they asked. The top of the list comes in
+    <h2 id="wait-head">Waiting list <span class="count" id="wait-count"></span></h2>
+    <p class="hint tight" style="margin-bottom:10px" id="wait-hint">In the order they asked. The top of the list comes in
       automatically whenever someone drops out.</p>
     <div class="roster" id="wait-list"></div>
   </div>
@@ -3053,7 +3061,8 @@ const Live = {
       startsAt: S.startsAt || null, endsAt: S.endsAt || null,
       venue: (S.venue || '').trim(), started: !!S.active,
       cover: S.cover || null,
-      cap: S.cap || 0, waiting: S.waiting.map(w => ({ n: w.name, m: w.mid || null })),
+      cap: S.cap || 0, approve: !!S.approve,
+      waiting: S.waiting.map(w => ({ n: w.name, m: w.mid || null })),
       repeat: S.repeat === 'weekly' ? 'weekly' : null,
       listed: !!S.listed,
       date: longDate(sessionWhen()),
@@ -3312,7 +3321,10 @@ const Live = {
          is the same member, not merely the same letters. */
       const clash = S.order.find(id => P(id).name.toLowerCase() === nmv.toLowerCase());
       if(clash && (!r.member || P(clash).mid === r.member)) return;
-      if(capReached()){
+      /* Two roads to the same list: the session is full, or the organizer
+         has said they want to see everybody first. The list, the panel and
+         Bring in are the ones that were already there. */
+      if(S.approve || capReached()){
         if(waitAdd({ name: nmv, level: r.level || 'int',
                      dupr: r.dupr == null ? null : cleanDupr(r.dupr), mid: r.member || null })){
           waited.push(nmv);
@@ -3374,7 +3386,9 @@ const Live = {
     }
 
     if(added.length) toast(added.join(', ') + ' joined.');
-    if(waited.length) toast(waited.join(', ') + ' \u2014 session full, added to the waiting list.');
+    if(waited.length) toast(waited.join(', ') + (S.approve
+      ? ' \u2014 waiting for you to bring them in.'
+      : ' \u2014 session full, added to the waiting list.'));
     if(gone.length) toast(gone.join(', ') + (gone.length > 1 ? ' have' : ' has') + ' dropped out.');
   },
   beat(){
@@ -3432,7 +3446,7 @@ let mem = null; // fallback when localStorage is unavailable
 function blank(){
   return {
     v:3, players:{}, order:[], courts:[], queue:[], bracket:null,
-    nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', cap:0, waiting:[], repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
+    nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', cap:0, waiting:[], approve:false, repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
     next:null, planRound:-1,
     round:0, games:0, active:false, started:null,
     /* called off is its own state: ended, but with nothing banked and a
@@ -3675,6 +3689,29 @@ function syncListed(){
     ? 'Everyone in the club sees this on their home page and can join from there.'
     : 'Only people you send the link to. It will not be listed anywhere.';
 }
+/* Whether joining is a request or a done thing.
+
+   The waiting list already existed for a full session — arrive when there
+   are no places and you go in line rather than being turned away. This is
+   the same list reached a different way: with approval on, everybody joins
+   into it and the organizer brings people in by hand, which is what a club
+   with guests, a fee to settle or a level it wants to keep an eye on
+   actually needs. Off, and nothing changes at all — straight in, and the
+   list is still there for when the session fills up. */
+function setApprove(v){
+  S.approve = !!v;
+  syncApprove(); save(); if(S.live) Live.beat();
+}
+function syncApprove(){
+  document.querySelectorAll('#approve-seg button').forEach(b =>{
+    b.classList.toggle('on', (b.dataset.a === '1') === !!S.approve);
+  });
+  const h = document.getElementById('approve-hint');
+  if(h) h.textContent = S.approve
+    ? 'Everyone who joins waits on the list until you bring them in. They are told they are waiting.'
+    : 'Anyone with the link is in straight away' + (S.cap > 0
+        ? ', until the session is full — then they go on the waiting list.' : '.');
+}
 function setRepeat(v){
   S.repeat = v === 'weekly' ? 'weekly' : 'none';
   syncRepeat(); save(); if(S.live) Live.beat();
@@ -3763,8 +3800,14 @@ function waitPromote(i, quiet){
   if(!quiet){ renderAll(); save(); if(S.live) Live.beat(); toast(w.name + ' is in.'); }
   return id;
 }
-/* Called whenever a place frees up. */
+/* Called whenever a place frees up.
+
+   Not when the organizer is approving people. A place coming free is not
+   the same as a decision about who takes it, and letting the list drain
+   itself would quietly undo the whole point of the setting the moment
+   somebody dropped out. */
 function fillFromWait(){
+  if(S.approve) return 0;
   let moved = 0;
   while(S.waiting.length && !capReached()){
     if(!waitPromote(0, true)) break;
@@ -4706,7 +4749,11 @@ function go(name){
   /* the two anyone can reach */
   if(name === 'home'){
     showOnly('home'); paintHome();
-    Feed.load().then(()=>{ if(currentScreen() === 'home') paintHome(); });
+    /* Painted from the cache above so it is there instantly, then checked
+       against the server — arriving on Home is exactly when you want to
+       know who has joined since you last looked. */
+    Feed.load(true).then(()=>{ if(currentScreen() === 'home') paintHome(); });
+    Feed.watch();
     return;
   }
   if(name === 'me'){ showOnly('me'); paintMe(); return; }
@@ -5091,6 +5138,7 @@ function syncRoundEndUI(){
   if(st) syncStartTime();
   paintVenue();
   syncRepeat();
+  syncApprove();
   syncListed();
   try{ Cover.paint(); }catch(e){}
   const dw = document.getElementById('detail-wrap');
@@ -6448,6 +6496,14 @@ function renderPlayers(){
     wp.hidden = !S.waiting.length;
     const wc = document.getElementById('wait-count');
     if(wc) wc.textContent = S.waiting.length + ' waiting';
+    /* The same list, but it means something different depending on how
+       people got onto it, and the panel is where the organizer acts on it. */
+    const wh = document.getElementById('wait-head');
+    if(wh) wh.childNodes[0].nodeValue = S.approve ? 'Asking to join ' : 'Waiting list ';
+    const whint = document.getElementById('wait-hint');
+    if(whint) whint.textContent = S.approve
+      ? 'In the order they asked. Nobody comes in until you bring them in.'
+      : 'In the order they asked. The top of the list comes in automatically whenever someone drops out.';
     const wl = document.getElementById('wait-list');
     if(wl) wl.innerHTML = S.waiting.map((w, i)=>{
       const m = w.mid ? Club.find(w.mid) : null;
@@ -9602,7 +9658,7 @@ function untilText(t){
   return 'in ' + Math.round(days / 7) + ' weeks';
 }
 const Feed = {
-  up: null, past: null, filter: 'all', sort: 'soon', month: null,
+  up: null, past: null, filter: 'all', sort: 'soon', month: null, t: null,
 
   async load(force){
     if(!Live.ready()) return;
@@ -9614,6 +9670,27 @@ const Feed = {
       ]);
       this.up = u || []; this.past = p || [];
     }catch(e){ this.up = this.up || []; this.past = this.past || []; }
+  },
+
+  /* Home went stale and stayed stale. The feed is cached the first time it
+     is read and load() returns early ever after, so the count on a card —
+     "3 in" — was however many there were when the app was opened. Somebody
+     joining showed up on the session screen within three seconds and on
+     Home not at all, which reads as the join being slow when it was the
+     card that was old.
+
+     So Home keeps its cache to paint instantly and then goes and checks.
+     Twenty seconds while it is actually the screen you are looking at: a
+     roster fills up in the hour before a session and that is the hour this
+     matters. Nothing runs when Home is not on screen or the phone is put
+     away, which is most of the time. */
+  watch(){
+    clearInterval(this.t);
+    this.t = setInterval(()=>{
+      if(document.hidden || currentScreen() !== 'home') return;
+      if(!Live.ready()) return;
+      this.load(true).then(()=>{ if(currentScreen() === 'home') paintHome(); });
+    }, 20000);
   },
   ms(v){
     if(v == null) return null;
@@ -14067,15 +14144,24 @@ const View = {
     if(myWait >= 0){
       const nth = n => n + (['th','st','nd','rd'][(n % 100 - 20) % 10] || ['th','st','nd','rd'][n % 100] || 'th');
       this.pending = null;
+      /* Two ways onto this list and they end differently: a place coming
+         free, or the organizer saying yes. Telling somebody they are in as
+         soon as someone drops out, when they are actually waiting to be
+         approved, is a promise the session will not keep. */
+      const byHand = !!(this.snap && this.snap.approve);
       box.innerHTML = `<div class="vw-me wait">${avatar(wl[myWait].n, this.faceOf(wl[myWait].m), 'sm')}
-        <span><b>${nth(myWait + 1)} on the waiting list.</b>
-          You come in as soon as someone drops out.</span></div>
+        <span><b>${byHand ? 'Waiting to be let in.' : nth(myWait + 1) + ' on the waiting list.'}</b>
+          ${byHand
+            ? 'The organizer brings people in one at a time — you will see it here.'
+            : 'You come in as soon as someone drops out.'}</span></div>
         <button class="btn btn-quiet vw-drop" onclick="View.askLeave()">Take me off the list</button>`;
       return;
     }
     if(this.pending){
       box.innerHTML = `<div class="vw-me wait">${avatar(this.pending.name, this.pending.photo, 'sm')}
-        <span>You are on as <b>${esc(this.pending.name)}</b> \u2014 the list updates in a moment.</span></div>
+        <span>${(this.snap && this.snap.approve)
+          ? `Asked to join as <b>${esc(this.pending.name)}</b> \u2014 waiting for the organizer.`
+          : `You are on as <b>${esc(this.pending.name)}</b> \u2014 the list updates in a moment.`}</span></div>
         <button class="btn btn-quiet vw-drop" onclick="View.askLeave()">Cancel that \u2014 take me off</button>`;
       return;
     }
@@ -14090,7 +14176,10 @@ const View = {
       return;
     }
     const left = s3.cap > 0 ? s3.cap - (s3.roster || []).length : 0;
-    box.innerHTML = `<button class="btn btn-go vw-cta" onclick="View.openJoin()">Join this session</button>
+    /* Say which it is before they tap, not after. */
+    box.innerHTML = `<button class="btn btn-go vw-cta" onclick="View.openJoin()">${
+        s3.approve ? 'Ask to join' : 'Join this session'}</button>
+      ${s3.approve ? '<p class="hint tight" style="text-align:center;margin:7px 0 0">The organizer lets people in one at a time.</p>' : ''}
       ${left > 0 && left <= 4 ? `<p class="hint tight" style="text-align:center;margin:7px 0 0">Only ${left} place${left > 1 ? 's' : ''} left.</p>` : ''}`;
   },
 
@@ -15914,6 +16003,16 @@ function shareCanvas(c, name, title){
   /* accept the British spelling too, so older links keep working */
   const wantsOrganize = params.has('organize') || params.has('organise')
     || /^#?\/?organi[sz]e$/i.test(location.hash || '');
+  /* Used once and then taken off the address, the same as a scanned code.
+     Organizing is something you asked for a moment ago, not a preference
+     about where the app lives. Tapping "Organize an open play" pushes
+     ?organize so the back button works, and it stayed there — so the next
+     time the app was opened, or resumed from the background, it read the
+     old request off its own address bar and went straight to the setup
+     screen again. Home is the front page; you get to setup by asking. */
+  if(wantsOrganize){
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  }
   /* a reset link brings its own session in the fragment; deal with
      that before anything else decides which screen to show */
   if(recoveryFromLink()) return;
