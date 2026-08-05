@@ -286,7 +286,12 @@ button{cursor:pointer;border:none;background:none;padding:0}
 .nav button[aria-selected="true"]{color:var(--court-ink);border-bottom-color:var(--court)}
 
 .screen{display:none;padding:16px 0 8px;animation:rise .28s ease}
-.screen.on{display:block}
+/* At least a screen tall, so the page scrolls the same amount everywhere.
+   Groups, Games and Shop are short: on a short page Safari keeps its toolbar
+   out, on a long one it tucks it away, and the fixed tab bar sits at a
+   different height in each — which is the bar "going up a little" when you
+   move between them. */
+.screen.on{display:block;min-height:calc(100dvh - var(--dock-h) - 60px)}
 @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
 /* ═════════ PANELS ═════════ */
@@ -1319,6 +1324,70 @@ input.bad{border-color:var(--fault)!important}
      row still fits at the larger size */
   .tel select{ padding-left:6px;padding-right:4px }
 }
+
+/* ── a picture, big ─────────────────────────────────────────────────── */
+#lbox{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:24px;
+  background:rgba(6,16,26,.92);opacity:0;transition:opacity .18s ease;cursor:zoom-out}
+#lbox.on{opacity:1}
+#lbox[hidden]{display:none}
+#lbox img{max-width:100%;max-height:100%;border-radius:var(--r);display:block;
+  box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#lbox button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;
+  width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;
+  background:rgba(255,255,255,.16);color:#fff;font-size:22px;line-height:1}
+body.lboxed{overflow:hidden}
+.mk-shots img,.ch-img{cursor:zoom-in}
+
+/* ── the conversation, in three bands ──────────────────────────────────
+   The header and the box you type in used to scroll away with the messages,
+   so a long conversation had no way back and nothing to type into until you
+   had scrolled to the bottom of it. */
+.ch-wrap{display:flex;flex-direction:column;height:calc(100dvh - 190px);min-height:300px}
+#vw-chat .ch-wrap,#past-body .ch-wrap{height:calc(100dvh - 300px)}
+.ch-wrap .ch-top{flex:0 0 auto;margin-bottom:8px}
+.ch-wrap .ch-stream{flex:1 1 auto;min-height:0;height:auto}
+.ch-foot{flex:0 0 auto;background:var(--paper);padding-top:2px}
+.ch-clip{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--card-2);color:var(--ink-2);display:grid;place-items:center}
+.ch-clip .ic{width:18px;height:18px}
+
+/* what a message is answering */
+.ch-re{display:block;margin-bottom:5px;padding:5px 8px;border-radius:8px;
+  background:rgba(0,0,0,.06);border-left:2px solid var(--court);
+  font-size:12.5px;line-height:1.35;opacity:.85}
+.ch-m.me .ch-re{background:rgba(255,255,255,.16);border-left-color:rgba(255,255,255,.5)}
+.ch-re i{display:block;font-style:normal;font-weight:700;font-size:11px;margin-bottom:1px}
+.ch-img{display:block;max-width:220px;width:100%;border-radius:10px;margin-bottom:5px}
+.ch-replying,.ch-attach{display:flex;align-items:center;gap:9px;margin-bottom:7px;
+  padding:8px 10px;border-radius:var(--r-s);background:var(--card-2);
+  border:1px solid var(--edge);font-size:12.5px}
+.ch-replying span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-replying i{display:block;font-style:normal;font-weight:700;font-size:11px;color:var(--court-ink)}
+.ch-attach img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.ch-replying button,.ch-attach button{flex:0 0 auto;width:26px;height:26px;border-radius:50%;
+  border:0;cursor:pointer;background:var(--card);color:var(--ink-2);font-size:16px;line-height:1}
+
+/* reactions, and the way to leave one */
+.ch-rx{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.ch-rx button{padding:2px 7px;border-radius:99px;cursor:pointer;font-size:12px;
+  background:var(--card-2);border:1px solid var(--edge)}
+.ch-rx button.on{background:var(--kitchen);border-color:var(--court)}
+.ch-m.me .ch-rx button{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff}
+.ch-more{flex:0 0 auto;align-self:flex-end;width:26px;height:26px;border-radius:50%;
+  border:0;cursor:pointer;background:none;color:var(--ink-3);font-size:14px;line-height:1;
+  opacity:0;transition:opacity .14s}
+.ch-m:hover .ch-more,.ch-m:focus-within .ch-more{opacity:1}
+@media (pointer: coarse){ .ch-more{opacity:.55} }
+.ch-picker{display:flex;gap:8px;justify-content:center;margin:6px 0 14px}
+.ch-picker button{width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:21px;
+  background:var(--card-2);border:1px solid var(--edge)}
+.ch-picker button.on{background:var(--kitchen);border-color:var(--court)}
+
+/* letting somebody in off the waiting list, from the session's own page */
+.vw-ok{flex:0 0 auto;padding:7px 13px;border-radius:99px;cursor:pointer;
+  background:var(--court);border:0;color:var(--on-accent,#fff);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase}
 
 /* ── the shop ───────────────────────────────────────────────────────────
    A grid of two, because a paddle is a picture first and a price second, and
@@ -3022,8 +3091,8 @@ body.casting{overflow:hidden}
 <!-- ══════════════ GROUPS ══════════════ -->
   <section class="screen" id="screen-groups">
     <div class="seg" id="groups-seg" style="margin-bottom:12px">
-      <button class="on" data-g="mine" onclick="Groups.setTab('mine')">My groups</button>
-      <button data-g="all" onclick="Groups.setTab('all')">All groups</button>
+      <button class="on" data-g="all" onclick="Groups.setTab('all')">All groups</button>
+      <button data-g="mine" onclick="Groups.setTab('mine')">My groups</button>
     </div>
     <input type="search" class="ros-q" id="groups-q" placeholder="Find a group"
       autocomplete="off" oninput="Groups.find(this.value)" style="margin-bottom:12px">
@@ -5450,7 +5519,15 @@ const Auth = {
   keep: true,
   signedIn(){ return !!(this.session && this.session.access_token); },
   email(){ return this.session && this.session.user ? this.session.user.email : ''; },
-  role(){ return (this.me && this.me.role) || 'player'; },
+  /* No session, no role. `me` is kept in memory and in local storage so the
+     shell can greet you on the first paint, and it outlives signing out and a
+     token expiring — which meant somebody who was no longer signed in still
+     answered "owner" here, and every organizer-only door in the app opened
+     for them. */
+  role(){
+    if(this.on() && !this.signedIn()) return 'player';
+    return (this.me && this.me.role) || 'player';
+  },
   isOwner(){ return this.role() === 'owner'; },
   isOrganizer(){ const r = this.role(); return r === 'organizer' || r === 'owner'; },
 
@@ -7061,9 +7138,23 @@ function renderLadder(){
    was never shared, and the organizer usually has not thought about it until
    somebody asks why they cannot see it. Said once, before the first round,
    with the fix one tap away. */
-function startSession(anyway){
+function startSession(anyway, confirmed){
   const ids = activeIds();
   if(ids.length < 4){ toast('You need at least four players.'); return; }
+
+  /* Asked, because it is the one button on the screen that cannot be undone by
+     tapping it again: starting draws the first round and the night is running.
+     It sits under a list people scroll, which is exactly where a thumb lands
+     by accident. */
+  if(!confirmed){
+    openSheet(`<h3>Start the session?</h3>
+      <p class="sub">${ids.length} on the list. The first round is drawn straight away and
+        everybody watching the link sees the courts.</p>
+      <button class="btn btn-go" onclick="closeSheet();startSession(${anyway ? 'true' : 'false'}, true)">
+        Yes, start it</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not yet</button>`);
+    return;
+  }
 
   if(!anyway && !S.live && Live.ready()){
     openSheet(`<h3>Start without putting it online?</h3>
@@ -7076,7 +7167,7 @@ function startSession(anyway){
       </div>
       <button class="btn btn-go" onclick="closeSheet();goLiveThenStart()">Put it online first</button>
       <button class="btn btn-quiet" style="margin-top:8px"
-        onclick="closeSheet();startSession(true)">Start anyway — just us here</button>
+        onclick="closeSheet();startSession(true, true)">Start anyway — just us here</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not yet</button>`);
     return;
   }
@@ -7106,7 +7197,8 @@ async function goLiveThenStart(){
   }catch(e){
     toast('Could not put it online, so it is running here for now.');
   }
-  startSession(true);
+  /* Already confirmed — they tapped through the sheet to get here. */
+  startSession(true, true);
 }
 
 function seed(ids, n){
@@ -8055,7 +8147,7 @@ function renderPlayers(){
         <span class="nm"><span class="nmn">${esc(w.name)}${staffTag(w.mid)}</span>
           <em>asked ${timeAgo(w.at, true)}</em></span>
         ${duprBadge(w.dupr, true)}
-        <button class="lvl int" onclick="waitPromote(${i})">Bring in</button>
+        <button class="lvl int" onclick="waitPromote(${i})">Approve</button>
         <button class="x" onclick="waitDrop(${i})" aria-label="Remove ${esc(w.name)}">\u2715</button>
       </div>`;
     }).join('');
@@ -8934,7 +9026,10 @@ const Theme = {
    you watch a spinner to find out who is in a group you are already in is
    the wrong answer twice over.                                          */
 const Groups = {
-  tab: 'mine',           /* mine | all */
+  /* All of them first. "My groups" is a filter on a list you have to have
+     seen to know is there — opening on it means somebody in one club never
+     learns the others exist. */
+  tab: 'all',            /* all | mine */
   q: '',                 /* what is typed in the search box */
   pane: 'details',       /* details | sessions | board */
   list: null,            /* the groups, as last read */
@@ -9112,7 +9207,7 @@ const Groups = {
   },
 
   setTab(t){
-    this.tab = t === 'all' ? 'all' : 'mine';
+    this.tab = t === 'mine' ? 'mine' : 'all';
     document.querySelectorAll('#groups-seg button').forEach(b =>
       b.classList.toggle('on', b.dataset.g === this.tab));
     this.paint();
@@ -9823,7 +9918,7 @@ const Board = {
   won: 'all',            /* all | won | lost, on My matches */
   games: null,           /* the game-by-game record, once read */
   all: false,            /* whether the whole list is showing */
-  scope: '',             /* '' is the whole club, otherwise a group id */
+  scope: '',             /* '' is all clubs, otherwise a group id */
 
   setTab(t){
     this.tab = ['mine','matches','table'].indexOf(t) >= 0 ? t : 'table';
@@ -10007,7 +10102,7 @@ function paintBoard(){
   if(pick){
     const mine = (Groups.list || []).filter(g => g.mine);
     pick.hidden = !mine.length;
-    const want = `<option value="">The whole club</option>` +
+    const want = `<option value="">All clubs</option>` +
       mine.map(g => `<option value="${g.id}"${Board.scope === g.id ? ' selected' : ''}>${esc(g.name)}</option>`).join('');
     if(pick.innerHTML !== want) pick.innerHTML = want;
   }
@@ -12451,8 +12546,15 @@ function addScanned(id){
 function canOrganize(){
   if(!Auth.on()) return true;          /* local mode: the phone is the organizer */
   if(Auth.isOrganizer()) return true;
-  /* Never strand somebody in the middle of a session they started. */
-  if(S.active || S.live) return true;
+  /* Never strand somebody in the middle of a night they are running — but only
+     while they are actually signed in.
+     This used to be `S.active || S.live` on its own, and S lives in local
+     storage: anybody whose token had quietly expired, or who had signed out
+     with an old session still on the phone, was treated as an organizer and
+     handed the whole app — tabs, screens and a sign-in button sitting in the
+     middle of it. Nothing is lost by sending them to the front page; the
+     session is still on the device and comes back the moment they sign in. */
+  if(Auth.signedIn() && (S.active || S.live)) return true;
   return false;
 }
 const SCREENS = ['landing','auth','home','groups','group','player','games','board','me','members','roles','audit','setup','play','players','stats','playoff','past','results','market','chats'];
@@ -12655,6 +12757,9 @@ function gateScreens(){
     go('home');
     return;
   }
+  /* Signed out, or a token that has run out: the front page, not the app with
+     the tabs still along the bottom and a "sign in" button in the middle of
+     it. Somebody looking at a shell they cannot use assumes it is broken. */
   showOnly('landing');
 }
 /* The landing CTA. Local mode goes straight in; with accounts on you
@@ -13022,7 +13127,7 @@ const Feed = {
           ? `<div class="ld-block"><span class="ld-ball"></span><p>Looking for what\u2019s on\u2026</p></div>`
           : `<p class="conn">${this.filter === 'all'
                ? (canOrganize()
-                  ? 'Nothing listed yet. Set one up and it will show here for the whole club.'
+                  ? 'Nothing listed yet. Set one up and it will show here for all clubs.'
                   : 'Nothing listed yet. Your organizer may still be sending links directly.')
                : 'Nothing matches that filter.'}</p>`}
       ${past.length ? `<h2 style="margin-top:22px">Already played</h2>
@@ -13151,7 +13256,7 @@ function todayStrip(){
 function pastCardMenu(code, title, hasCover){
   if(!canOrganize() || !code) return;
   openSheet(`<h3>${esc(title || 'That night')}</h3>
-    <p class="sub">The picture on this card is the one the whole club sees.</p>
+    <p class="sub">The picture on this card is the one all clubs sees.</p>
     <button class="btn btn-quiet"
       onclick="closeSheet();PastPic.pick('${esc(code)}')">${icon('camera')} ${
         hasCover ? 'Change the picture' : 'Add a picture'}</button>
@@ -13258,7 +13363,16 @@ const Chat = {
   },
 
   /* Who to message. The club roster, minus yourself. */
-  pick(){
+  async pick(){
+    /* The roster is loaded seven hundred milliseconds after boot and nothing
+       here waited for it, so anybody who went straight to Messages was told
+       "nobody else in the club yet" and could not start a conversation at
+       all. That is what people meant by "I cannot message". */
+    if(!(Club.list || []).length && Live.ready()){
+      openSheet('<h3>Message who?</h3><div class="ld-block"><span class="ld-ball"></span>'
+        + '<p>Reading the club\u2026</p></div>');
+      try{ await Club.load(); }catch(e){}
+    }
     const me = (Auth.me || {}).id;
     const rows = (Club.list || []).filter(m => m.id !== me);
     openSheet(`<h3>Message who?</h3>
@@ -13366,7 +13480,7 @@ const Chat = {
     this.tick();
   },
   leave(){
-    this.at = null;
+    this.at = null; this.replyTo = null; this.pending = null;
     clearInterval(this.t); this.t = null;
     this.load(true).then(()=>{ if(currentScreen() === 'chats') this.paint(); });
     this.paint();
@@ -13412,26 +13526,47 @@ const Chat = {
     if(!box) return;
     const draft = keepInput ? (document.getElementById('ch-in') || {}).value : '';
 
-    /* One name per run of messages from the same person, and a date once a
-       day. A name above every line turns six words into a wall. */
+    /* One name per run of messages from the same person, and a date rule once
+       a day. A name above every line turns six words into a wall. */
     let last = null, lastDay = null;
     const body = this.msgs.map(m =>{
       const t = m.created_at ? new Date(m.created_at) : null;
       const day = t ? t.toDateString() : '';
       const rule = day !== lastDay ? `<div class="ch-day">${t ? esc(longDate(t.getTime())) : ''}</div>` : '';
       lastDay = day;
-      const runOn = last === m.member;
+      const runOn = last === m.member && !m.reply_to;
       last = m.member;
+      const re = m.reply_to && m.reply_name
+        ? `<span class="ch-re"><i>${esc(m.reply_name)}</i>${esc(m.reply_body || '')}</span>` : '';
+      const pic = m.image
+        ? `<img class="ch-img" src="${m.image}" alt="" loading="lazy" decoding="async"
+             onclick="Lightbox.show(this.src)">` : '';
+      const rk = Object.keys(m.reactions || {});
+      const reacts = rk.length
+        ? `<span class="ch-rx">${rk.map(e2 =>
+            `<button class="${m.my_reaction === e2 ? 'on' : ''}"
+              onclick="Chat.react('${esc(m.id)}','${esc(e2)}')">${esc(e2)}${
+              m.reactions[e2] > 1 ? ' ' + m.reactions[e2] : ''}</button>`).join('')}</span>` : '';
       return rule + `<div class="ch-m${m.mine ? ' me' : ''}${runOn ? ' run' : ''}">
         ${m.mine || runOn ? '' : avatar(m.name, m.photo, 'sm')}
         <span class="ch-b">
           ${m.mine || runOn ? '' : `<i>${esc(m.name)}</i>`}
-          <span>${esc(m.body).replace(/\n/g, '<br>')}</span>
+          ${re}${pic}
+          ${m.body ? `<span>${esc(m.body).replace(/\n/g, '<br>')}</span>` : ''}
           <em>${t ? esc(clockText(t.getTime())) : ''}</em>
-        </span></div>`;
+          ${reacts}
+        </span>
+        <button class="ch-more" aria-label="Reply or react"
+          onclick="Chat.msgMenu('${esc(m.id)}')">\u00b7\u00b7\u00b7</button>
+      </div>`;
     }).join('');
 
-    box.innerHTML = `<div class="ch-top"${this.inline ? ' hidden' : ''}>
+    /* Three bands: the header, the stream, the box you type in. The header
+       and the composer used to scroll away with the conversation, so on a
+       long one there was no way back and nothing to type into until you had
+       scrolled to the bottom. Only the middle moves now. */
+    box.innerHTML = `<div class="ch-wrap">
+      <div class="ch-top"${this.inline ? ' hidden' : ''}>
         <button class="ch-back" onclick="Chat.leave()" aria-label="All messages">&lsaquo;</button>
         <b>${esc(this.title)}</b>
         ${this.who ? `<button class="ch-prof" onclick="Player.open('${esc(this.who)}','chats')"
@@ -13441,18 +13576,87 @@ const Chat = {
       </div>
       <div class="ch-stream" id="ch-stream">${this.msgs.length ? body
         : `<div class="empty">${this.kind === 'session'
-            ? 'Nothing said yet. Somebody has to go first — usually it is “who is bringing balls”.'
+            ? 'Nothing said yet. Somebody has to go first.'
             : 'Say hello.'}</div>`}</div>
-      <form class="ch-send" onsubmit="event.preventDefault();Chat.send()">
-        <input type="text" id="ch-in" maxlength="2000" autocomplete="off"
-          placeholder="Message" value="${esc(draft || '')}">
-        <button type="submit" aria-label="Send">${icon('upload')}</button>
-      </form>`;
+      <div class="ch-foot">
+        ${this.replyTo ? `<div class="ch-replying">
+          <span><i>Replying to ${esc(this.replyTo.name)}</i>${esc(this.replyTo.body)}</span>
+          <button onclick="Chat.cancelReply()" aria-label="Cancel">\u00d7</button></div>` : ''}
+        ${this.pending ? `<div class="ch-attach">
+          <img src="${this.pending}" alt="">
+          <button onclick="Chat.dropPhoto()" aria-label="Remove">\u00d7</button></div>` : ''}
+        <form class="ch-send" onsubmit="event.preventDefault();Chat.send()">
+          <button type="button" class="ch-clip" onclick="Chat.addPhoto()"
+            aria-label="Send a photo">${icon('camera')}</button>
+          <input type="text" id="ch-in" maxlength="2000" autocomplete="off"
+            placeholder="Message" value="${esc(draft || '')}">
+          <button type="submit" aria-label="Send">${icon('upload')}</button>
+        </form>
+      </div>
+    </div>`;
 
     const st = document.getElementById('ch-stream');
     if(st) st.scrollTop = st.scrollHeight;
     if(keepInput){ const el = document.getElementById('ch-in'); if(el) el.focus(); }
   },
+
+  /* What to do with one message. A sheet rather than a long-press, because a
+     long-press is undiscoverable and this has to work for somebody who has
+     never used it before. */
+  replyTo: null, pending: null,
+  EMOJI: ['\ud83d\udc4d', '\ud83d\ude02', '\ud83d\udd25', '\ud83c\udfd3', '\u2764\ufe0f', '\ud83d\ude2e'],
+  msgMenu(id){
+    const m = this.msgs.find(x => String(x.id) === String(id));
+    if(!m) return;
+    openSheet(`<h3>${esc(m.name)}</h3>
+      <p class="sub">${esc((m.body || (m.image ? 'a photo' : '')).slice(0, 120))}</p>
+      <div class="ch-picker">${this.EMOJI.map(e2 =>
+        `<button class="${m.my_reaction === e2 ? 'on' : ''}"
+          onclick="Chat.react('${esc(id)}','${esc(e2)}')">${e2}</button>`).join('')}</div>
+      <button class="btn btn-go" onclick="Chat.reply('${esc(id)}')">Reply to this</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
+  },
+  reply(id){
+    const m = this.msgs.find(x => String(x.id) === String(id));
+    if(!m) return;
+    this.replyTo = { id: m.id, name: m.name, body: (m.body || 'a photo').slice(0, 90) };
+    closeSheet();
+    this.paintRoom(true);
+  },
+  cancelReply(){ this.replyTo = null; this.paintRoom(true); },
+
+  async react(id, emoji){
+    closeSheet();
+    try{
+      await Live.rpc('sideout_chat_react',
+        { p_club: CONFIG.club || 'sideout', p_msg: id, p_emoji: emoji });
+    }catch(e){ toast('Could not add that just now.'); return; }
+    /* A reaction does not move the conversation on, so the since-poll would
+       never see it. The whole thread is re-read once instead. */
+    this.msgs = []; this.since = null;
+    await this.pull(true);
+  },
+
+  addPhoto(){
+    let f = document.getElementById('ch-file');
+    if(!f){
+      f = document.createElement('input');
+      f.type = 'file'; f.accept = 'image/*'; f.id = 'ch-file';
+      f.className = 'filepick';
+      document.body.appendChild(f);
+    }
+    f.value = '';
+    f.onchange = async ()=>{
+      const file = f.files && f.files[0];
+      if(!file) return;
+      try{
+        this.pending = await shrinkImage(file, 1100, .74);
+        this.paintRoom(true);
+      }catch(e){ toast('That picture could not be read.'); }
+    };
+    f.click();
+  },
+  dropPhoto(){ this.pending = null; this.paintRoom(true); },
 
   /* Off your list, not off the record. What somebody said to you is theirs as
      much as yours, and a button that wipes both sides is a button people press
@@ -13478,14 +13682,24 @@ const Chat = {
   async send(){
     const el = document.getElementById('ch-in');
     const body = String((el || {}).value || '').trim();
-    if(!body || !this.at) return;
+    if((!body && !this.pending) || !this.at) return;
+    const reply = this.replyTo ? this.replyTo.id : null;
+    const image = this.pending;
+    const held = this.replyTo;
     if(el) el.value = '';
+    this.replyTo = null; this.pending = null;
     try{
       await Live.rpc('sideout_chat_send',
-        { p_club: CONFIG.club || 'sideout', p_chat: this.at, p_body: body });
+        { p_club: CONFIG.club || 'sideout', p_chat: this.at, p_body: body,
+          p_reply: reply, p_image: image });
     }catch(e){
+      /* Put back exactly what they had, so a failed send is not also a lost
+         message and a lost photo. */
       if(el) el.value = body;
-      toast('That did not send. Try again.');
+      this.replyTo = held; this.pending = image;
+      toast('That did not send \u2014 '
+        + String(e.detail || e.message || '').slice(0, 60));
+      this.paintRoom(true);
       return;
     }
     await this.pull();
@@ -13516,6 +13730,34 @@ function chatWhen(t){
    sort the rest out at the courts on Thursday like you were going to anyway.
    Pretending otherwise would mean holding somebody's money, which is a
    different product and a different set of laws. */
+/* A picture, big. Tapping a photo and getting nothing is the one interaction
+   everybody expects to work, and a paddle for sale is bought or not bought on
+   whether you can see the face of it. */
+const Lightbox = {
+  show(src){
+    if(!src) return;
+    let el = document.getElementById('lbox');
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'lbox';
+      el.onclick = ()=> Lightbox.close();
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<img src="' + src + '" alt="">'
+      + '<button aria-label="Close">\u00d7</button>';
+    el.hidden = false;
+    requestAnimationFrame(()=> el.classList.add('on'));
+    document.body.classList.add('lboxed');
+  },
+  close(){
+    const el = document.getElementById('lbox');
+    if(!el) return;
+    el.classList.remove('on');
+    document.body.classList.remove('lboxed');
+    setTimeout(()=>{ el.hidden = true; }, 200);
+  }
+};
+
 const Market = {
   rows: null, cat: 'all', q: '', mine: false, sold: false, draft: null,
 
@@ -13625,13 +13867,19 @@ const Market = {
     const tel = String(r.seller_phone || '').replace(/[^\d+]/g, '');
     openSheet(`<h3>${esc(r.title)}</h3>
       ${pics.length ? `<div class="mk-shots">${pics.map(u =>
-        `<img src="${u}" alt="" loading="lazy" decoding="async">`).join('')}</div>` : ''}
+        `<img src="${u}" alt="" loading="lazy" decoding="async"
+          onclick="Lightbox.show(this.src)">`).join('')}</div>` : ''}
       <p class="mk-big">${esc(this.money(r))}${r.sold ? ' <i class="mk-sold in">Sold</i>' : ''}</p>
       <p class="sub">${esc(this.CONDNAME[r.condition] || r.condition)}
         · ${esc((this.CATS.find(c => c[0] === r.category) || [,'Other'])[1])}</p>
       ${r.blurb ? `<p class="mk-blurb">${esc(r.blurb).replace(/\n/g, '<br>')}</p>` : ''}
       <div class="mk-seller">${avatar(r.seller_name, r.seller_photo, 'sm')}
         <span><b>${esc(r.seller_name || '')}</b><span>Selling this</span></span></div>
+      ${!r.mine && Auth.isOwner && Auth.isOwner() ? `
+        <button class="btn btn-quiet" style="margin-bottom:8px"
+          onclick="Market.remove('${esc(r.id)}')">Take this down</button>
+        <p class="hint tight" style="margin:-4px 0 10px">You are an owner of the club,
+          so you can remove anything that should not be up.</p>` : ''}
       ${r.mine ? `
         <button class="btn btn-go" onclick="Market.edit('${esc(r.id)}')">Edit this listing</button>
         <button class="btn btn-quiet" style="margin-top:8px"
@@ -14614,7 +14862,7 @@ async function doResetPastSession(code){
 /* One list, everybody on it. The old screen showed only the staff,
    which is why it needed an "add somebody from the roster" step to
    reach anyone else \u2014 a search to find a person you were always
-   allowed to promote. Show the whole club and the step disappears. */
+   allowed to promote. Show all clubs and the step disappears. */
 /* What was done to the club, and by whom. Deliberately not everything
    that ever happened \u2014 a log of every score entered would bury the
    four entries somebody actually came here to find. */
@@ -16302,7 +16550,7 @@ function startTournament(){
      setup, and the closeSheet() on the next line would shut the warning
      before it could be read — leaving the fixtures drawn and the session
      never started. */
-  if(!S.active) startSession(true);
+  if(!S.active) startSession(true, true);
   closeSheet(); renderAll(); renderTour(); save(); if(S.live) Live.beat();
   go('play');
   toast(T.fixtures.length + ' pool games drawn.');
@@ -18480,6 +18728,19 @@ const View = {
     else fallbackCopy(txt);
   },
 
+  /* Lets somebody in off the waiting list. Only reachable when this device is
+     the one running the session, which is the only place the list exists. */
+  approve(i){
+    if(!(canOrganize() && S.live && S.liveCode === this.code)) return;
+    const w = S.waiting[i];
+    if(!w) return;
+    if(typeof waitPromote === 'function') waitPromote(i);
+    if(this.snap){
+      this.snap.waiting = (this.snap.waiting || []).filter((_, k) => k !== i);
+      this.paintPeople(this.snap);
+    }
+  },
+
   /* Confirmed, waiting, withdrew \u2014 in that order of usefulness. Someone who
      has pulled out still matters, because you want to know your partner has
      dropped, but they go to the bottom and greyed rather than mixed in with
@@ -18512,11 +18773,19 @@ const View = {
       <button class="${this.pTab === 'wait' ? 'on' : ''}" onclick="View.setPTab('wait')"
         >Waiting (${pend.length})</button></div>`;
 
+    /* Approving from here, but only from the phone that is running the night:
+       the waiting list lives in that device's session, and an organizer
+       reading the page from somewhere else has nothing to move. Rather than
+       show a button that cannot work, the others are told who decides. */
+    const hosting = canOrganize() && S.live && S.liveCode === this.code;
+
     let list;
     if(this.pTab === 'wait'){
       list = pend.length
         ? `<div class="vw-plist">${pend.map((w, i) =>
-            row({ n:w.n, m:w.m }, '', `<span class="mark">#${i + 1}</span>`)).join('')}</div>`
+            row({ n:w.n, m:w.m }, '', hosting
+              ? `<button class="vw-ok" onclick="View.approve(${i})">Approve</button>`
+              : `<span class="mark">#${i + 1}</span>`)).join('')}</div>`
         : `<div class="vw-empty"><p>Nobody is waiting.</p>
            <p class="sub">${s2.approve
              ? 'Requests to join land here for the host to approve.'
@@ -19323,10 +19592,12 @@ function renderLive(){
     <div class="live-qr" id="live-qr"></div>
     <p class="live-url">${esc(url)}</p>
     <button class="btn btn-go" style="width:100%" onclick="shareJoinCard()">Send the invite \u2014 QR and link</button>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-quiet" style="flex:1" onclick="copyLink()">Just the link</button>
-      <button class="btn btn-quiet" style="flex:1" onclick="confirmOffline()">Take it offline</button>
-    </div>
+    <!-- The link on its own has gone from this row. The link is printed just
+         above, the QR is above that, and "Send the invite" already copies it —
+         three ways to do one thing on a sheet that also holds the PIN, the
+         code and the big screen. -->
+    <button class="btn btn-quiet" style="width:100%;margin-top:8px"
+      onclick="confirmOffline()">Take it offline</button>
     <hr class="rule">
     <label class="label" style="display:block;margin-bottom:6px">On a big screen</label>
     <p class="hint tight" style="margin-bottom:8px">Open this on the TV or a laptop and leave it. It follows
@@ -20730,6 +21001,10 @@ function shareCanvas(c, name, title){
   if(wantsOrganize) startOrganizing(); else gateScreens();
   Auth.boot().then(()=>{
     paintAccount();
+    /* Auth.boot checks the stored token against the server. If it has expired
+       the session is gone, and gateScreens takes it from there — which is the
+       front page. Before this, an expired token left somebody inside the app
+       looking at empty screens. */
     if(wantsOrganize) startOrganizing(); else gateScreens();
     renderAll();
     /* after Auth, because it needs to know who you are before it can know

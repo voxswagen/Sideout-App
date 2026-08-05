@@ -188,3 +188,8 @@ grant execute on function public.sideout_listing_photos(text,uuid) to anon, auth
 grant execute on function public.sideout_listing_save(text,uuid,text,text,numeric,text,text,text,jsonb,boolean,text) to authenticated;
 grant execute on function public.sideout_listing_sold(text,uuid,boolean) to authenticated;
 grant execute on function public.sideout_listing_delete(text,uuid) to authenticated;
+
+
+-- Photos open full size from the listing sheet, and an owner of the club can
+-- take anything down — sideout_listing_delete already allowed it; there was
+-- simply no button.
