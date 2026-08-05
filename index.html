@@ -1303,6 +1303,23 @@ input.bad{border-color:var(--fault)!important}
   background:var(--fault);color:#fff;font-family:'Barlow Condensed',sans-serif;
   font-weight:800;font-size:9.5px;line-height:15px;text-align:center}
 
+@media (pointer: coarse){
+  /* !important, and deliberately.
+     This is not a style preference losing an argument with a more specific
+     rule — it is a platform behaviour. Safari on iOS magnifies the whole page
+     the moment you focus a field whose type is under 16px, and never zooms
+     back out, which is why moving around the app left everything enormous.
+     Any single-class rule anywhere in twenty thousand lines beats a bare
+     `select`, so the only way to be sure no field is left at 15px is to say
+     so outright. 15px zooms exactly as 13px does; the threshold is 16, not
+     "small". */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),
+  select, textarea{ font-size:16px !important }
+  /* the dial code gives up padding rather than type, so the two-column phone
+     row still fits at the larger size */
+  .tel select{ padding-left:6px;padding-right:4px }
+}
+
 /* ── the shop ───────────────────────────────────────────────────────────
    A grid of two, because a paddle is a picture first and a price second, and
    a single column of full-width cards makes eight listings feel like eighty. */
@@ -1351,6 +1368,10 @@ input.bad{border-color:var(--fault)!important}
 .mk-seller b{display:block;font-size:14.5px}
 .mk-seller span span{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
 
+/* Off screen rather than display:none. Safari on iOS refuses to open a file
+   picker for an input it is not rendering, so every photo button in the app
+   did nothing on a phone and worked perfectly on a laptop. */
+.filepick{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0}
 .mk-adds{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .mk-add{position:relative;width:76px;height:76px;border-radius:var(--r-s);flex:0 0 auto;
   background:var(--card-2) center/cover no-repeat;border:1px solid var(--edge)}
@@ -3352,7 +3373,7 @@ body.casting{overflow:hidden}
           <span id="cover-sub">Your courts, the club, anything. Without one the card
             shows a drawn court.</span></span>
       </button>
-      <input type="file" id="cover-file" accept="image/*" hidden onchange="Cover.chosen(this)">
+      <input type="file" id="cover-file" accept="image/*" class="filepick" onchange="Cover.chosen(this)">
     </div>
     <button class="linky" id="detail-link" onclick="toggleDetails()">+ Add details — fee, what to bring, anything else</button>
     <div id="detail-wrap" hidden>
@@ -9435,7 +9456,7 @@ const Groups = {
     let f = document.getElementById('gf-file');
     if(!f){
       f = document.createElement('input');
-      f.type = 'file'; f.accept = 'image/*'; f.id = 'gf-file'; f.hidden = true;
+      f.type = 'file'; f.accept = 'image/*'; f.id = 'gf-file'; f.className = 'filepick';
       document.body.appendChild(f);
     }
     f.onchange = ()=>{
@@ -12014,7 +12035,7 @@ function editProfile(keep){
       ${avatar(me.alias || me.name, ProfilePic.pending || me.photo, 'xl')}
       <span class="mem-photo-cta">Change picture</span>
     </div>
-    <input type="file" id="pf-file" accept="image/*" hidden onchange="ProfilePic.chosen(this)">
+    <input type="file" id="pf-file" accept="image/*" class="filepick" onchange="ProfilePic.chosen(this)">
     <div class="field"><span class="label">Full name</span>
       <input type="text" id="pf-name" value="${esc(me.name || '')}" maxlength="40"
         oninput="checkProfile('name')">
@@ -13704,7 +13725,7 @@ const Market = {
     let f = document.getElementById('mk-file');
     if(!f){
       f = document.createElement('input');
-      f.type = 'file'; f.accept = 'image/*'; f.id = 'mk-file'; f.hidden = true;
+      f.type = 'file'; f.accept = 'image/*'; f.id = 'mk-file'; f.className = 'filepick';
       document.body.appendChild(f);
     }
     f.value = '';
@@ -13744,8 +13765,12 @@ const Market = {
         p_condition: d.condition || 'used', p_photos: d.photos || [],
         p_show_phone: !!d.show_phone, p_thumb: d.thumb || null });
     }catch(e){
-      this.editSheet(/sign in/i.test(e.detail || e.message || '')
-        ? 'Sign in first.' : 'Could not save that just now.');
+      /* The server's own words. "Could not save that just now" is true of a
+         dead network, a stale schema cache and a photo too big to send, and
+         being told which is the difference between a bug report and a shrug. */
+      const msg = String(e.detail || e.message || '');
+      this.editSheet(/sign in/i.test(msg) ? 'Sign in first.'
+        : msg ? 'Could not save it — ' + msg : 'Could not save that just now.');
       return;
     }
     closeSheet();
@@ -14268,7 +14293,7 @@ const PastPic = {
     let f = document.getElementById('past-file');
     if(!f){
       f = document.createElement('input');
-      f.type = 'file'; f.accept = 'image/*'; f.id = 'past-file'; f.hidden = true;
+      f.type = 'file'; f.accept = 'image/*'; f.id = 'past-file'; f.className = 'filepick';
       f.addEventListener('change', ()=> PastPic.chosen(f));
       document.body.appendChild(f);
     }
@@ -18742,7 +18767,7 @@ const View = {
             : `<span class="av xl ini" style="--avh:${avHue(this.editName || '')}">${esc(initials(this.editName || '') || '+')}</span>`}
           <span class="mem-photo-cta">${photo ? 'Change photo' : 'Add a photo'}</span>
         </label>
-        <input type="file" id="edit-file" accept="image/*" hidden onchange="View.onEditPhoto(this)">
+        <input type="file" id="edit-file" accept="image/*" class="filepick" onchange="View.onEditPhoto(this)">
       </div>
       <div class="field"><span class="label">Your name</span>
         <input type="text" id="edit-name" autocomplete="name" value="${esc(this.editName || '')}"
@@ -19038,7 +19063,7 @@ const View = {
             : `<span class="av xl ini" style="--avh:${avHue(nm2)}">${esc(initials(nm2) || '+')}</span>`}
           <span class="mem-photo-cta">${this.newPhoto ? 'Change photo' : 'Add a photo'}</span>
         </label>
-        <input type="file" id="mem-file" accept="image/*" hidden onchange="View.onPhoto(this)">
+        <input type="file" id="mem-file" accept="image/*" class="filepick" onchange="View.onPhoto(this)">
       </div>
       <div class="field"><span class="label">Your name</span>
         <input type="text" id="mem-name" placeholder="Name" autocomplete="name"
