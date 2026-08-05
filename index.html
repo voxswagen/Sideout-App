@@ -1384,6 +1384,15 @@ body.lboxed{overflow:hidden}
 .ch-picker button.on{background:var(--kitchen);border-color:var(--court)}
 
 /* letting somebody in off the waiting list, from the session's own page */
+/* Quiet on purpose. Taking somebody off is a thing you do occasionally and
+   never by accident, so it stays a plain outline until you go near it — a red
+   button against every name would make the list look like a hit list. */
+.vw-x{flex:0 0 auto;width:32px;height:32px;border-radius:99px;cursor:pointer;
+  display:grid;place-items:center;background:none;color:var(--ink-3);
+  border:1px solid var(--edge)}
+.vw-x .ic{width:15px;height:15px}
+.vw-x:hover{border-color:#E4572E;color:#E4572E;background:rgba(228,87,46,.08)}
+
 .vw-ok{flex:0 0 auto;padding:7px 13px;border-radius:99px;cursor:pointer;
   background:var(--court);border:0;color:var(--on-accent,#fff);
   font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
@@ -4691,17 +4700,7 @@ const Live = {
         const id = (r.member && S.order.find(x => P(x).mid === r.member))
           || S.order.find(x => P(x).name.toLowerCase() === nmv.toLowerCase());
         if(!id) return;
-        /* Nothing played yet means they can just go. Once there are
-           results on the board, sit them out so the night's record
-           still adds up. */
-        if(P(id).g === 0) removePlayer(id, true);
-        else {
-          P(id).out = true; P(id).left = true;
-          S.courts.forEach(c =>{ c.teams = c.teams.map(t => t.filter(x => x !== id)); });
-          S.queue = S.queue.filter(x => x !== id);
-          poolsSync();
-          fillGaps();
-        }
+        dropFromSession(id);
         gone.push(nmv);
         return;
       }
@@ -6972,6 +6971,25 @@ function removePlayer(id, quiet){
   if(!quiet){ renderRoster(); renderLadder(); renderAll(); TV.paint(); save(); }
   if(S.waiting.length && !capReached()) fillFromWait();
 }
+/* Taking somebody off tonight. Two different things wear the same word: if
+   they have not played, they can simply go and the night is as if they never
+   arrived; once there are results on the board, deleting them would leave
+   games in the log played by nobody, so they are sat out and marked as having
+   left instead and the night's record still adds up. Both the join feed and
+   the organizer's own tap come through here, because getting that rule
+   slightly different in two places is how a night stops balancing.
+   Returns what actually happened, so the caller can say so. */
+function dropFromSession(id){
+  if(!P(id)) return null;
+  if(P(id).g === 0){ removePlayer(id, true); return 'removed'; }
+  P(id).out = true; P(id).left = true;
+  S.courts.forEach(c =>{ c.teams = c.teams.map(t => t.filter(x => x !== id)); });
+  S.queue = S.queue.filter(x => x !== id);
+  poolsSync();
+  fillGaps();
+  return 'left';
+}
+
 function confirmClearRoster(){
   openSheet(`<h3>Clear the player list?</h3>
     <p class="sub">All ${S.order.length} names go. Nothing else is affected.</p>
@@ -8644,9 +8662,14 @@ function renderImport(){
       <span class="imp-tx"><b>${esc(m ? (m.alias || m.name) : x.n)}</b>
         <span>${esc(sub)}${m && normName(m.alias || m.name) !== normName(x.n)
           ? ' \u00b7 pasted as \u201c' + esc(x.n) + '\u201d' : ''}</span></span>
-      ${x.hits.length || x.mid
-        ? `<button class="imp-link" onclick="linkImport(${i})">${x.mid ? 'Change' : 'Link'}</button>`
-        : ''}
+      <!-- On every row, including the ones with no match at all. Half the
+           names on a pasted list are what people are called rather than what
+           they registered as — Kat goes down as Pusa — and matching on letters
+           will never find that. Only the organizer knows, so the door to say
+           so has to be open on every row, not just the ones the app already
+           had a guess about. -->
+      <button class="imp-link" onclick="linkImport(${i})">${
+        x.mid ? 'Change' : 'Link'}</button>
     </div>`;
   };
 
@@ -8662,6 +8685,9 @@ function renderImport(){
       their rating and their record.</p>
     ${ask ? `<div class="warn-box"><b>${ask} could be somebody you already have.</b>
       <span>Tap Link to say who, or leave it and a second record is made.</span></div>` : ''}
+    ${fresh ? `<p class="hint tight">Anything marked new can still be linked —
+      tap Link beside it. Nicknames rarely match what somebody registered
+      under, and only you know that Pusa is Kat.</p>` : ''}
     <div class="imp-list">${importList.map(rowOf).join('')}</div>
     <p class="imp-note">${note}</p>
     <button class="btn btn-go" onclick="commitImport()">Add ${keep.length} player${
@@ -8674,28 +8700,47 @@ function renderImport(){
 function linkImport(i){
   const x = importList[i];
   if(!x) return;
-  const rows = (x.hits.length ? x.hits : (Club.list || [])).slice(0, 60);
+  const all = Club.list || [];
+  /* Suggestions first where there are any, but the whole club underneath them
+     either way \u2014 a nickname shares no letters with the name somebody
+     registered under, so the list this opens on cannot be the answer on its
+     own. The search is the point of the screen, which is why it is above the
+     names rather than tucked in a corner. */
+  const rows = (x.hits.length
+    ? x.hits.concat(all.filter(m => !x.hits.some(h => h.id === m.id)))
+    : all).slice(0, 60);
   openSheet(`<h3>Who is \u201c${esc(x.n)}\u201d?</h3>
-    <p class="sub">Linking keeps their photo, rating and everything they have played.</p>
+    <p class="sub">${x.hits.length
+      ? 'Linking keeps their photo, rating and everything they have played.'
+      : `Nothing in the club is spelled like this, which usually means it is
+         what people call them rather than what they signed up as. Search for
+         their real name \u2014 linking keeps their photo, rating and everything
+         they have played.`}</p>
     <input type="search" class="in" id="imp-q" placeholder="Search the club"
       autocomplete="off" oninput="linkImportFind(${i}, this.value)" style="margin-bottom:10px">
-    <div id="imp-picks">${importPicks(i, rows)}</div>
+    <div id="imp-picks">${importPicks(i, rows, all.length)}</div>
     <button class="btn btn-quiet" style="margin-top:8px"
       onclick="setImportLink(${i}, null)">Nobody \u2014 add as a new player</button>`);
 }
-function importPicks(i, rows){
+function importPicks(i, rows, total){
   if(!rows.length) return '<div class="empty">Nobody matching.</div>';
+  /* Sixty at a time, and it says so. A club of two hundred silently cut to the
+     first sixty looks exactly like the person you want having left. */
+  const more = total && total > rows.length
+    ? `<p class="hint tight">Showing ${rows.length} of ${total} — search to
+       narrow it down.</p>` : '';
   return rows.map(m => `<button class="pr pr-go" onclick="setImportLink(${i}, '${esc(m.id)}')">
     ${avatar(m.alias || m.name, m.photo, 'sm')}
-    <span class="nm"><span class="nmn">${esc(m.alias || m.name)}</span></span>
-    ${duprBadge(m.dupr, true)}</button>`).join('');
+    <span class="nm"><span class="nmn">${esc(m.alias || m.name)}</span>${
+      normName(m.alias) !== normName(m.name) ? `<em class="when">${esc(m.name)}</em>` : ''}</span>
+    ${duprBadge(m.dupr, true)}</button>`).join('') + more;
 }
 function linkImportFind(i, q){
   const n = normName(q);
-  const rows = (Club.list || []).filter(m =>
-    !n || normName(m.alias).includes(n) || normName(m.name).includes(n)).slice(0, 60);
+  const all = (Club.list || []).filter(m =>
+    !n || normName(m.alias).includes(n) || normName(m.name).includes(n));
   const box = document.getElementById('imp-picks');
-  if(box) box.innerHTML = importPicks(i, rows);
+  if(box) box.innerHTML = importPicks(i, all.slice(0, 60), all.length);
 }
 function setImportLink(i, mid){
   const x = importList[i];
@@ -18994,6 +19039,74 @@ const View = {
     }
   },
 
+  /* The snapshot deliberately carries no internal player ids \u2014 it is published
+     to watchers and they have no use for them. So a row has to be matched back
+     to the running session: by club record where there is one, and by name
+     otherwise, which is sound because addPlayer will not let two people share
+     a name on one night \u2014 the second Mike becomes "Mike 2". The count is still
+     checked rather than assumed, so a session state that came from somewhere
+     else and does have a clash takes nobody off instead of the wrong person. */
+  localId(r){
+    if(r.m){
+      const byMid = S.order.find(id => P(id) && P(id).mid === r.m);
+      if(byMid) return byMid;
+    }
+    const n = String(r.n || '').toLowerCase();
+    const same = S.order.filter(id => P(id) && String(P(id).name).toLowerCase() === n);
+    return same.length === 1 ? same[0] : null;
+  },
+
+  /* Taking somebody off from the view page. Only from the phone running the
+     night \u2014 the roster lives in that device's session, so an organizer reading
+     the page from anywhere else has nothing to take anybody off. */
+  confirmDrop(n, m){
+    if(!(canOrganize() && S.live && S.liveCode === this.code)) return;
+    const id = this.localId({ n, m });
+    if(!id){
+      openSheet(`<h3>Two people called ${esc(n)}</h3>
+        <p class="sub">There is more than one of them on tonight's list and
+        neither is linked to a club record, so the app cannot tell which you
+        mean. Take the right one off on Manage, where the list is in the order
+        they arrived.</p>
+        <button class="btn btn-quiet" onclick="closeSheet()">Right you are</button>`);
+      return;
+    }
+    const p = P(id);
+    const played = (p.g || 0) > 0;
+    openSheet(`<h3>Take ${esc(p.name)} off?</h3>
+      <p class="sub">${played
+        ? `They have played ${p.g} game${p.g === 1 ? '' : 's'}, so those stay on
+           the night's record and they are marked as having left. They come off
+           court and out of the queue straight away.`
+        : `They have not played yet, so they come off the list entirely \u2014 the
+           night carries on as though they had not put their name down.`}${
+        S.waiting && S.waiting.length && !played
+          ? ' The next person waiting takes the place.' : ''}</p>
+      <button class="btn btn-risk" onclick="View.drop('${esc(id)}')">Take them off</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep them on</button>`);
+  },
+  drop(id){
+    if(!(canOrganize() && S.live && S.liveCode === this.code)) return;
+    const p = P(id);
+    if(!p){ closeSheet(); return; }
+    const name = p.name;
+    const what = dropFromSession(id);
+    closeSheet();
+    renderRoster(); renderLadder(); renderAll(); TV.paint(); save();
+    if(S.live) Live.beat();
+    toast(what === 'left' ? name + ' marked as having left.' : name + ' taken off the list.');
+    /* The page is repainted from the local session rather than waiting on the
+       next poll, or the row you just tapped sits there for another few seconds
+       looking as though nothing happened. */
+    if(this.snap){
+      this.snap.roster = (this.snap.roster || []).map(r =>
+        (r.m && p.mid && r.m === p.mid) || (!r.m && !p.mid && r.n === name)
+          ? (what === 'left' ? Object.assign({}, r, { s:'left' }) : null)
+          : r).filter(Boolean);
+      this.paintPeople(this.snap);
+    }
+  },
+
   /* Confirmed, waiting, withdrew \u2014 in that order of usefulness. Someone who
      has pulled out still matters, because you want to know your partner has
      dropped, but they go to the bottom and greyed rather than mixed in with
@@ -19046,7 +19159,12 @@ const View = {
     } else {
       list = inPlay.length
         ? `<div class="vw-plist">
-            ${inPlay.map(r => row(r, '', `<span class="mark in">${icon('check')}</span>`)).join('')}
+            ${inPlay.map(r => row(r, '', hosting
+              ? `<button class="vw-x" title="Take ${esc(r.n)} off"
+                   aria-label="Take ${esc(r.n)} off"
+                   onclick="View.confirmDrop('${esc(String(r.n).replace(/'/g, "\\'"))}', ${
+                     r.m ? `'${esc(r.m)}'` : 'null'})">${icon('leave')}</button>`
+              : `<span class="mark in">${icon('check')}</span>`)).join('')}
             ${gone.length ? `<h3>${gone.length} withdrew</h3>` + gone.map(r =>
               row(r, 'gone', '<span class="mark">left</span>')).join('') : ''}
           </div>`
