@@ -1324,7 +1324,8 @@ input.bad{border-color:var(--fault)!important}
 .mk-card:hover{border-color:var(--court)}
 .mk-card.gone{opacity:.62}
 .mk-pic{position:relative;display:grid;place-items:center;aspect-ratio:1/1;
-  background:var(--card-2) center/cover no-repeat;color:var(--ink-3)}
+  background:var(--card-2);color:var(--ink-3);overflow:hidden}
+.mk-pic img{width:100%;height:100%;object-fit:cover;display:block;grid-area:1/1}
 .mk-pic .ic{width:26px;height:26px}
 .mk-sold{position:absolute;left:8px;top:8px;padding:4px 9px;border-radius:99px;
   background:var(--brand-navy);color:#fff;font-style:normal;
@@ -1340,8 +1341,8 @@ input.bad{border-color:var(--fault)!important}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .mk-shots{display:flex;gap:8px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px}
-.mk-shots span{flex:0 0 auto;width:132px;height:132px;border-radius:var(--r-s);
-  background:var(--card-2) center/cover no-repeat;border:1px solid var(--edge)}
+.mk-shots img{flex:0 0 auto;width:132px;height:132px;border-radius:var(--r-s);
+  object-fit:cover;display:block;background:var(--card-2);border:1px solid var(--edge)}
 .mk-big{margin:0 0 2px;font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;
   letter-spacing:.03em;color:var(--court-ink)}
 .mk-blurb{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
@@ -8869,11 +8870,32 @@ const Theme = {
   saved(){ try{ return localStorage.getItem(this.key) || null; }catch(e){ return null; } },
   /* Read back before the first paint, so a club's app does not flash the
      default blue on every launch while the groups list is still in flight. */
+  /* A one-off reset, run once per device.
+     The colour is remembered on the phone precisely so it survives a bad
+     network — which also means clearing it on the server does not reach a
+     phone that already has one. This clears what is stored, once, and then
+     never again: the flag stays set, so anybody who picks a colour after
+     this keeps it.
+
+     Bump the stamp if the club's look ever has to be reset for everybody
+     again; it is the only thing that makes it happen. */
+  RESET: '2026-08-05',
+  resetOnce(){
+    try{
+      if(localStorage.getItem('sideout_theme_reset') === this.RESET) return;
+      localStorage.removeItem(this.key);
+      localStorage.removeItem('sideout_theme_group');
+      localStorage.removeItem('sideout_theme_seen');
+      localStorage.setItem('sideout_theme_reset', this.RESET);
+    }catch(e){}
+  },
+
   boot(){
-    /* Unconditional now. With green as the default there is something to
-       apply even on a device that has never chosen anything, and skipping
-       it left that phone on the old CSS blue until something else happened
-       to repaint. */
+    /* Unconditional. With green as the default there is something to apply
+       even on a device that has never chosen anything, and skipping it left
+       that phone on the old CSS blue until something else happened to
+       repaint. */
+    this.resetOnce();
     try{ this.apply(this.saved()); }catch(e){}
   }
 };
@@ -13543,10 +13565,10 @@ const Market = {
     }
 
     box.innerHTML = head + `<div class="mk-grid">${this.rows.map(r =>{
-      const pic = (r.photos || [])[0];
+      const pic = r.thumb || (r.photos || [])[0];
       return `<button class="mk-card${r.sold ? ' gone' : ''}" onclick="Market.open('${esc(r.id)}')">
-        <span class="mk-pic"${pic ? ` style="background-image:url(${pic})"` : ''}>
-          ${pic ? '' : icon('camera')}
+        <span class="mk-pic">
+          ${pic ? `<img src="${pic}" alt="" loading="lazy" decoding="async">` : icon('camera')}
           ${r.sold ? '<i class="mk-sold">Sold</i>' : ''}</span>
         <span class="mk-tx">
           <b>${esc(r.title)}</b>
@@ -13567,14 +13589,22 @@ const Market = {
     try{ el.focus(); el.setSelectionRange(this.q.length, this.q.length); }catch(e){}
   },
 
-  open(id){
+  async open(id){
     const r = (this.rows || []).find(x => String(x.id) === String(id));
     if(!r) return;
-    const pics = (r.photos || []);
+    /* Full size, for this one listing only. The board never carries them —
+       fifty listings at 140KB each is seven megabytes to look at a grid. */
+    if(!r.photos && r.n_photos){
+      try{
+        r.photos = await Live.rpc('sideout_listing_photos',
+          { p_club: CONFIG.club || 'sideout', p_id: id }) || [];
+      }catch(e){ r.photos = r.thumb ? [r.thumb] : []; }
+    }
+    const pics = (r.photos || (r.thumb ? [r.thumb] : []));
     const tel = String(r.seller_phone || '').replace(/[^\d+]/g, '');
     openSheet(`<h3>${esc(r.title)}</h3>
       ${pics.length ? `<div class="mk-shots">${pics.map(u =>
-        `<span style="background-image:url(${u})"></span>`).join('')}</div>` : ''}
+        `<img src="${u}" alt="" loading="lazy" decoding="async">`).join('')}</div>` : ''}
       <p class="mk-big">${esc(this.money(r))}${r.sold ? ' <i class="mk-sold in">Sold</i>' : ''}</p>
       <p class="sub">${esc(this.CONDNAME[r.condition] || r.condition)}
         · ${esc((this.CATS.find(c => c[0] === r.category) || [,'Other'])[1])}</p>
@@ -13597,9 +13627,15 @@ const Market = {
   },
 
   /* ── selling ──────────────────────────────────────────────────────── */
-  edit(id){
+  async edit(id){
     if(!Auth.signedIn()){ AuthUI.open(()=> go('market'), 'in'); return; }
     const r = id ? (this.rows || []).find(x => String(x.id) === String(id)) : null;
+    if(r && !r.photos && r.n_photos){
+      try{
+        r.photos = await Live.rpc('sideout_listing_photos',
+          { p_club: CONFIG.club || 'sideout', p_id: id }) || [];
+      }catch(e){ r.photos = r.thumb ? [r.thumb] : []; }
+    }
     this.draft = {
       id: id || null,
       title: (r && r.title) || '',
@@ -13609,6 +13645,7 @@ const Market = {
       category: (r && r.category) || 'paddle',
       condition: (r && r.condition) || 'used',
       photos: (r && r.photos) ? r.photos.slice() : [],
+      thumb: (r && r.thumb) || null,
       show_phone: r ? !!r.seller_phone || true : true
     };
     this.editSheet();
@@ -13680,6 +13717,11 @@ const Market = {
            the whole shop slow for everybody. */
         const url = await shrinkImage(file, 900, .72);
         this.draft.photos.push(url);
+        /* The board only ever shows the first picture, small. Making the
+           thumbnail here means the grid is a few kilobytes a card instead of
+           a few hundred. */
+        if(this.draft.photos.length === 1)
+          this.draft.thumb = await shrinkImage(file, 320, .62);
         this.editSheet();
       }catch(e){ this.editSheet('That picture would not load.'); }
     };
@@ -13700,7 +13742,7 @@ const Market = {
         p_blurb: d.blurb || null, p_price: price ? Number(price) : null,
         p_currency: d.currency || 'AED', p_category: d.category || 'other',
         p_condition: d.condition || 'used', p_photos: d.photos || [],
-        p_show_phone: !!d.show_phone });
+        p_show_phone: !!d.show_phone, p_thumb: d.thumb || null });
     }catch(e){
       this.editSheet(/sign in/i.test(e.detail || e.message || '')
         ? 'Sign in first.' : 'Could not save that just now.');
