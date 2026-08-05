@@ -1,13 +1,13 @@
 {
-  "name": "Sideout Society",
-  "short_name": "Sideout",
-  "description": "Open play, run properly. Fair games, a live board, a record that remembers.",
+  "name": "picksilog",
+  "short_name": "picksilog",
+  "description": "Dubai's Filipino pickleball courts, all in one place. Open play, run properly.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#3A7696",
-  "theme_color": "#071320",
+  "background_color": "#5FB63F",
+  "theme_color": "#0F2747",
   "icons": [
     {
       "src": "/icon-192.png",
