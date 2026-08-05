@@ -1419,8 +1419,9 @@ body.lboxed{overflow:hidden}
   letter-spacing:.12em;text-transform:uppercase}
 .mk-sold.in{position:static;margin-left:8px;vertical-align:3px}
 .mk-tx{padding:10px 11px 12px;min-width:0}
-.mk-tx b{display:block;font-size:14px;line-height:1.3;color:var(--ink);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mk-tx b{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;
+  font-size:14px;line-height:1.3;color:var(--ink);overflow:hidden;
+  overflow-wrap:anywhere;min-height:2.6em}
 .mk-price{display:block;margin-top:5px;font-family:'Bebas Neue',sans-serif;font-size:20px;
   line-height:1;letter-spacing:.03em;color:var(--court-ink)}
 .mk-by{display:block;margin-top:5px;font-size:11.5px;color:var(--ink-3);
@@ -1727,19 +1728,27 @@ input[type=text].ros-q:focus{border-color:var(--court);background:var(--card);
    standings, and every one of those styles its own <b> and <span>; a single
    `color` on the parent lost to the first of them that did, and the number
    came out navy on navy. */
-.dupr,.dupr b,.dupr i,.dupr em,.dupr span{color:#fff}
-.dupr i{color:rgba(255,255,255,.88)}
+/* Doubled class, deliberately.
+   This is the fourth go at the same bug. The pill is always dark, so the type
+   on it is always white — but `.dupr i` is one class and one element, and so
+   is `.pl-head i`, `.mem-card i`, `.ch-b i` and every other container that
+   styles its own italics. Equal specificity means the later rule wins, so the
+   label went dark in whichever container happened to be defined below this
+   one, and fixing the container it was reported in just moved the problem.
+   `.dupr.dupr` outranks any of them without needing !important and without
+   caring what it is nested inside. */
+.dupr.dupr,.dupr.dupr b,.dupr.dupr i,.dupr.dupr em,.dupr.dupr span{color:#fff}
 /* 10px, solid white, on the dark end of the gradient. It was 8.5px at 88%
    opacity over the pale end — legible in a mockup, four grey smudges on a
    phone, and the whole point of the badge is the word DUPR. */
-.dupr i{font-family:'Barlow Condensed',sans-serif;font-style:normal;font-weight:800;
-  font-size:10px;letter-spacing:.1em;color:#fff}
+.dupr.dupr i{font-family:'Barlow Condensed',sans-serif;font-style:normal;font-weight:800;
+  font-size:10px;letter-spacing:.1em;color:#fff;opacity:1}
 /* The small badge was 11.5px with a 7.5px label on it. Both were white and
    both were technically correct; at 7.5px, uppercase, tracked, on a gradient,
    "DUPR" renders as four grey smudges and reads as broken rather than small.
    A badge is either legible or it is decoration. */
 .dupr.sm{font-size:13px;padding:2px 8px}
-.dupr.sm i{font-size:9.5px;letter-spacing:.08em;color:#fff}
+.dupr.sm.sm i{font-size:9.5px;letter-spacing:.08em;color:#fff}
 .dupr-in{width:100%;padding:11px 12px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
   background:var(--card-2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;
   color:var(--ink);outline:none;text-align:center}
@@ -2620,6 +2629,57 @@ textarea:focus{border-color:var(--court)}
   background:var(--card-2) center/cover no-repeat;color:var(--court-ink);overflow:hidden}
 .hm-shot.none .ic{width:20px;height:20px;opacity:.8}
 .vw-off .ic{width:13px;height:13px;vertical-align:-2px;margin-right:5px}
+/* Two densities for the feed. The big card sells a night to somebody deciding
+   whether to come; the compact row answers "what is on" for somebody who
+   already knows. A club with four nights a week wants the second and was
+   scrolling past four posters to get it. */
+.fd-dense{display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;
+  padding:11px 12px;margin-bottom:8px;border-radius:var(--r-s);
+  background:var(--card);border:1px solid var(--edge)}
+.fd-dense:hover{border-color:var(--court)}
+.fd-when{flex:0 0 auto;width:52px;text-align:center}
+.fd-when b{display:block;font-family:'Bebas Neue',sans-serif;font-size:17px;line-height:1;
+  color:var(--court-ink)}
+.fd-when span{display:block;font-size:10px;margin-top:3px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.08em}
+.fd-tx{flex:1;min-width:0}
+.fd-tx b{display:block;font-size:14.5px;font-weight:600;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.fd-tx span{display:block;margin-top:2px;font-size:12px;color:var(--ink-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fd-go{flex:0 0 auto;opacity:.45;font-size:19px}
+/* the import review: a row per pasted name, saying what it was matched to */
+.imp-list{max-height:46vh;overflow-y:auto;margin:0 -2px 10px;padding:2px}
+.imp-row{display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:6px;
+  border-radius:var(--r-s);background:var(--card-2);border:1px solid var(--edge)}
+.imp-row.drop{opacity:.42}
+.imp-tick{flex:0 0 auto;width:24px;height:24px;border-radius:7px;cursor:pointer;
+  display:grid;place-items:center;background:var(--court);border:0;color:var(--on-accent,#fff)}
+.imp-row.drop .imp-tick{background:var(--card);border:1px solid var(--edge-2)}
+.imp-tick .ic{width:14px;height:14px}
+.imp-new{flex:0 0 auto;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card);border:1px dashed var(--edge-2);color:var(--ink-3)}
+.imp-new .ic{width:14px;height:14px}
+.imp-tx{flex:1;min-width:0}
+.imp-tx b{display:block;font-size:14.5px;font-weight:600;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.imp-tx span{display:block;margin-top:2px;font-size:11.5px;color:var(--ink-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-link{flex:0 0 auto;padding:6px 11px;border-radius:99px;cursor:pointer;
+  background:var(--card);border:1px solid var(--court);color:var(--court-ink);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase}
+#imp-picks{max-height:44vh;overflow-y:auto}
+#imp-picks .pr{margin-bottom:6px}
+
+.fd-view{display:flex;gap:4px;flex:0 0 auto;padding:3px;border-radius:99px;
+  background:var(--card-2);border:1px solid var(--edge)}
+.fd-view button{width:30px;height:26px;border-radius:99px;border:0;cursor:pointer;
+  background:none;color:var(--ink-3);display:grid;place-items:center}
+.fd-view button.on{background:var(--card);color:var(--court-ink);box-shadow:var(--sh-1)}
+.fd-view .ic{width:15px;height:15px}
+.hm-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
 .hm-today h2{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
 .hm-sess{display:flex;align-items:center;gap:11px;width:100%;padding:12px;margin-bottom:8px;
@@ -8518,38 +8578,166 @@ function readImport(){
   }
   renderImport();
 }
+/* Matching a pasted list against the club.
+   A name off WhatsApp is just text. If it is somebody the club already knows,
+   bringing them in as text loses their photo, their DUPR and their record —
+   and leaves a second copy of them on the ladder for ever. So every name is
+   looked up first, and anything the app cannot place is handed back to the
+   organizer to decide rather than guessed at. */
+function normName(x){
+  return String(x || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   /* José -> jose */
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+function matchClub(name){
+  const n = normName(name);
+  if(!n) return [];
+  const list = Club.list || [];
+  const exact = list.filter(m => normName(m.alias) === n || normName(m.name) === n);
+  if(exact.length) return exact;
+  /* A first name on its own is how half of these lists are written. It is only
+     offered as a suggestion — never taken automatically — because "Mike" in a
+     club of eighty is not an identification. */
+  const loose = list.filter(m =>{
+    const a = normName(m.alias), b = normName(m.name);
+    return a.split(' ')[0] === n || b.split(' ')[0] === n
+        || a.startsWith(n + ' ') || b.startsWith(n + ' ');
+  });
+  return loose;
+}
+
+function readImport(){
+  const el = document.getElementById('bulk');
+  const names = parseNameList(el ? el.value : '');
+  if(!names.length){
+    openSheet(`<h3>Nothing to add</h3>
+      <p class="sub">No new names in that \u2014 they may already be on the list.</p>
+      <button class="btn btn-quiet" onclick="openImport()">Try again</button>`);
+    return;
+  }
+  importList = names.map(n =>{
+    const hits = matchClub(n);
+    const sure = hits.length === 1
+      && (normName(hits[0].alias) === normName(n) || normName(hits[0].name) === normName(n));
+    return { n, keep:true, hits, mid: sure ? hits[0].id : null, sure };
+  });
+  renderImport();
+}
+
 function renderImport(){
-  const keep = importList.filter(x => x.keep).length;
+  const keep = importList.filter(x => x.keep);
+  const known = keep.filter(x => x.mid).length;
+  const fresh = keep.filter(x => !x.mid && !x.hits.length).length;
+  const ask = keep.filter(x => !x.mid && x.hits.length).length;
+
+  const rowOf = (x, i) =>{
+    const m = x.mid ? Club.find(x.mid) : null;
+    const sub = m
+      ? 'Club record \u00b7 ' + (m.dupr != null ? duprText(m.dupr) + ' DUPR' : 'no rating')
+      : (x.hits.length ? x.hits.length + ' possible match' + (x.hits.length === 1 ? '' : 'es')
+                       : 'New to the club');
+    return `<div class="imp-row${x.keep ? '' : ' drop'}">
+      <button class="imp-tick" onclick="toggleImport(${i})"
+        aria-label="${x.keep ? 'Leave out' : 'Put back'}">${x.keep ? icon('check') : ''}</button>
+      ${m ? avatar(m.alias || m.name, m.photo, 'sm') : `<span class="imp-new">${icon('plus')}</span>`}
+      <span class="imp-tx"><b>${esc(m ? (m.alias || m.name) : x.n)}</b>
+        <span>${esc(sub)}${m && normName(m.alias || m.name) !== normName(x.n)
+          ? ' \u00b7 pasted as \u201c' + esc(x.n) + '\u201d' : ''}</span></span>
+      ${x.hits.length || x.mid
+        ? `<button class="imp-link" onclick="linkImport(${i})">${x.mid ? 'Change' : 'Link'}</button>`
+        : ''}
+    </div>`;
+  };
+
   const note = S.mode === 'mixed'
-    ? 'You will need to tag each of them M or W before starting.'
+    ? 'You will need to tag each new one M or W before starting.'
     : (S.mode === 'levels'
-        ? 'They all come in as Intermediate — worth setting levels before you start, since this format sorts by them.'
-        : 'They all come in as Intermediate. This format sorts itself out on results, so that is usually fine.');
-  openSheet(`<h3>${keep} to add</h3>
-    <p class="sub">Tap a name to leave it out.</p>
-    <div class="imp">${importList.map((x,i)=>
-      `<span class="chip${x.keep?'':' drop'}" onclick="toggleImport(${i})">${esc(x.n)}</span>`).join('')}</div>
+        ? 'New ones come in as Intermediate \u2014 worth setting levels before you start, since this format sorts by them.'
+        : 'New ones come in as Intermediate. This format sorts itself out on results.');
+
+  openSheet(`<h3>${keep.length} to add</h3>
+    <p class="sub">${known} matched to the club${ask ? ', ' + ask + ' to check' : ''}${
+      fresh ? ', ' + fresh + ' new' : ''}. Matched players keep their photo,
+      their rating and their record.</p>
+    ${ask ? `<div class="warn-box"><b>${ask} could be somebody you already have.</b>
+      <span>Tap Link to say who, or leave it and a second record is made.</span></div>` : ''}
+    <div class="imp-list">${importList.map(rowOf).join('')}</div>
     <p class="imp-note">${note}</p>
-    <button class="btn btn-go" onclick="commitImport()">Add ${keep} player${keep===1?'':'s'}</button>
+    <button class="btn btn-go" onclick="commitImport()">Add ${keep.length} player${
+      keep.length === 1 ? '' : 's'}</button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="openImport()">Back to the list</button>`);
 }
+
+/* Saying who somebody is. The club, searchable, plus "nobody \u2014 this is a new
+   player", because sometimes the pasted name really is a guest. */
+function linkImport(i){
+  const x = importList[i];
+  if(!x) return;
+  const rows = (x.hits.length ? x.hits : (Club.list || [])).slice(0, 60);
+  openSheet(`<h3>Who is \u201c${esc(x.n)}\u201d?</h3>
+    <p class="sub">Linking keeps their photo, rating and everything they have played.</p>
+    <input type="search" class="in" id="imp-q" placeholder="Search the club"
+      autocomplete="off" oninput="linkImportFind(${i}, this.value)" style="margin-bottom:10px">
+    <div id="imp-picks">${importPicks(i, rows)}</div>
+    <button class="btn btn-quiet" style="margin-top:8px"
+      onclick="setImportLink(${i}, null)">Nobody \u2014 add as a new player</button>`);
+}
+function importPicks(i, rows){
+  if(!rows.length) return '<div class="empty">Nobody matching.</div>';
+  return rows.map(m => `<button class="pr pr-go" onclick="setImportLink(${i}, '${esc(m.id)}')">
+    ${avatar(m.alias || m.name, m.photo, 'sm')}
+    <span class="nm"><span class="nmn">${esc(m.alias || m.name)}</span></span>
+    ${duprBadge(m.dupr, true)}</button>`).join('');
+}
+function linkImportFind(i, q){
+  const n = normName(q);
+  const rows = (Club.list || []).filter(m =>
+    !n || normName(m.alias).includes(n) || normName(m.name).includes(n)).slice(0, 60);
+  const box = document.getElementById('imp-picks');
+  if(box) box.innerHTML = importPicks(i, rows);
+}
+function setImportLink(i, mid){
+  const x = importList[i];
+  if(!x) return;
+  x.mid = mid || null;
+  x.sure = !!mid;
+  renderImport();
+}
+
 function toggleImport(i){
   importList[i].keep = !importList[i].keep;
   renderImport();
 }
+
 function commitImport(){
-  const names = importList.filter(x => x.keep).map(x => x.n);
-  names.forEach(n => addPlayer(n, 'int'));
+  const rows = importList.filter(x => x.keep);
+  const added = [];
+  rows.forEach(x =>{
+    const m = x.mid ? Club.find(x.mid) : null;
+    /* Already on tonight's list under their club record: nothing to add, and
+       adding anyway is how the same person ends up on court twice. */
+    if(m && S.order.some(id => P(id) && P(id).mid === m.id)) return;
+    const id = addPlayer(m ? (m.alias || m.name) : x.n, 'int');
+    if(!id) return;
+    added.push(id);
+    if(m){
+      const p = P(id);
+      p.mid = m.id;
+      if(m.photo) p.photo = m.photo;
+      if(m.dupr != null){ p.dupr = m.dupr; p.level = duprLevel(m.dupr); }
+    }
+  });
   if(S.active){
-    names.forEach(n=>{
-      const id = S.order.find(x => P(x).name === n);
-      if(id && !S.queue.includes(id)) S.queue.push(id);
-    });
+    added.forEach(id =>{ if(!S.queue.includes(id)) S.queue.push(id); });
     invalidatePlan();
   }
+  const linked = rows.filter(x => x.mid).length;
   importList = [];
   closeSheet(); renderAll(); renderLadder(); TV.paint(); save();
-  toast(names.length + ' player' + (names.length===1?'':'s') + ' added.');
+  if(S.live) Live.beat();
+  toast(added.length + ' player' + (added.length === 1 ? '' : 's') + ' added'
+    + (linked ? ', ' + linked + ' matched to the club' : '') + '.');
 }
 
 function playerSheet(id){
@@ -9405,6 +9593,9 @@ const Groups = {
       ${info && info.blurb ? `<div class="panel"><p style="margin:0">${esc(info.blurb)}</p></div>` : ''}
       <div class="panel">
         <h2>Members <span class="label">${members.length || (info && info.membersCount) || ''}</span></h2>
+        ${this.canRole() ? `<p class="hint tight" style="margin:-4px 0 10px">Tap the
+          sliders beside somebody to make them an organizer of this club \u2014 they can
+          then run open plays under it.</p>` : ''}
         ${members.length > 7 ? `<input class="in" type="search" id="gm-find"
           placeholder="Search members" aria-label="Search members" autocomplete="off"
           value="${esc(this.mq)}" oninput="Groups.findMember(this.value)"
@@ -9758,7 +9949,9 @@ const Player = {
         ${avatar(shown, m.photo, 'xl')}
         <b>${esc(shown)}${m.official ? verifiedMark(17) : ''}</b>
         ${m.alias && m.name !== m.alias ? `<i>${esc(m.name)}</i>` : ''}
-        <span class="id-row">${m.dupr != null ? duprBadge(m.dupr) : ''}</span>
+        ${(m.dupr != null || m.rating != null)
+          ? ratingsRow(m)
+          : '<span class="id-row"></span>'}
       </div>`;
 
     if(!d){
@@ -11807,8 +12000,22 @@ function meTools(){
     meRow('accountSheet()', 'Settings', 'gear', 'Your details and your password'),
     meRow('prefsSheet()', 'Preferences', 'bell', 'This phone: notifications, look, which club')
   ];
-  const club = [];
-  if(Auth.on()) club.push(meRow("go('members')", 'Club members', 'members'));
+  /* "The club" was a section holding one row that went to the roster. Which
+     clubs somebody is actually in is the more useful answer, and it is the
+     only place the app ever said it — the roster is reachable from each club's
+     own page, where it belongs. Each row goes to that club, which is also
+     where an owner assigns its organizers. */
+  const club = ((Groups.list || []).filter(g => g.mine)).map(g =>
+    meRow(`Groups.open('${esc(g.id)}')`, g.name, 'members',
+      (g.can_organize ? 'You organize here \u00b7 ' : '')
+      + g.members + ' member' + (g.members === 1 ? '' : 's')));
+  if(Groups.list === null && Live.ready()){
+    Groups.load().then(()=>{ if(currentScreen() === 'me') paintMe(); });
+  }
+  if(!club.length){
+    club.push(meRow("go('groups')", 'Find a club', 'members',
+      Groups.list === null ? 'Reading\u2026' : 'You are not in one yet'));
+  }
 
   const org = [];
   /* Club branding has gone from here. It belongs to a club, and a club is a
@@ -11833,7 +12040,8 @@ function meTools(){
   if(Auth.signedIn()) app.push(meRow('AuthUI.confirmOut()', 'Sign out', 'leave'));
 
   return meSection('Your account', mine)
-       + meSection('The club', club)
+       + meSection(club.length && (Groups.list || []).some(g => g.mine)
+                     ? 'Your clubs' : 'Clubs', club)
        + meSection('Organizing', org)
        + meSection('This app', app);
 }
@@ -13110,6 +13318,45 @@ const Feed = {
       + keys.map(k => `<option value="${k}"${k === cur ? ' selected' : ''}>${esc(this.monthLabel(k))}</option>`).join('');
   },
 
+  /* Remembered on the device. Which of the two somebody wants depends on how
+     often their club plays, not on which screen they are looking at, so it is
+     a preference rather than a per-visit toggle. */
+  dense: (()=>{ try{ return localStorage.getItem('sideout_feed_dense') === '1'; }
+                catch(e){ return false; } })(),
+  setDense(on){
+    this.dense = !!on;
+    try{ localStorage.setItem('sideout_feed_dense', on ? '1' : '0'); }catch(e){}
+    paintHome();
+  },
+
+  /* Everything a card says, in one line: when, what, where, how full. */
+  row(r){
+    const t = Feed.ms(r.starts_at);
+    const d = t ? new Date(t) : null;
+    const full = r.cap > 0 && (r.joined || 0) >= r.cap;
+    const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
+    const p = r.venue && typeof parseVenue === 'function' ? parseVenue(r.venue) : null;
+    const bits = [];
+    if(r.cap) bits.push((r.joined || 0) + ' of ' + r.cap);
+    else bits.push((r.joined || 0) + ' in');
+    if(p && p.name) bits.push(p.name);
+    return `<button class="fd-dense" onclick="location.href='?s=' + encodeURIComponent('${esc(r.code)}')">
+      <span class="fd-when">
+        <b>${d ? esc(clockText(t).replace(/\s?(am|pm)$/i, '')) : '\u2014'}</b>
+        <span>${d ? esc(DAYS[d.getDay()].slice(0, 3)) : ''}</span>
+      </span>
+      <span class="fd-tx">
+        <b>${esc(r.title || 'Open play')}</b>
+        <span>${esc(bits.join(' \u00b7 '))}</span>
+      </span>
+      ${full ? '<span class="mk-sold" style="position:static">Full</span>'
+        : (left !== null && left <= 4
+            ? `<span class="mk-sold" style="position:static;background:var(--brand-gold);color:var(--brand-navy)">${left} left</span>`
+            : '')}
+      <i class="fd-go">\u203a</i>
+    </button>`;
+  },
+
   html(){
     const rows = this.rows();
     const past = this.past || [];
@@ -13119,10 +13366,16 @@ const Feed = {
           title="Organize an open play">+ New</button>` : ''}
         <div class="feed-tools">
           ${this.chips()}
+          <span class="fd-view">
+            <button class="${this.dense ? '' : 'on'}" onclick="Feed.setDense(false)"
+              aria-label="Big cards" title="Big cards">${icon('tv')}</button>
+            <button class="${this.dense ? 'on' : ''}" onclick="Feed.setDense(true)"
+              aria-label="A list" title="A list">${icon('manage')}</button>
+          </span>
         </div>
       </div>
 
-      ${rows.length ? rows.map(r => this.card(r)).join('')
+      ${rows.length ? rows.map(r => this.dense ? this.row(r) : this.card(r)).join('')
         : this.up === null
           ? `<div class="ld-block"><span class="ld-ball"></span><p>Looking for what\u2019s on\u2026</p></div>`
           : `<p class="conn">${this.filter === 'all'
