@@ -2803,6 +2803,42 @@ textarea:focus{border-color:var(--court)}
 /* the money row wears the money colour, so the two are told apart at a
    glance rather than by reading them */
 .pv-cash{background:var(--grass-soft)!important;color:var(--grass)!important}
+/* the courts as a list, for a night with more of them than fit on a screen */
+.ct-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.ct-count{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.ct-list{display:flex;flex-direction:column;gap:7px}
+.ct-row{border-radius:var(--r-s);background:var(--card);border:1px solid var(--edge);
+  overflow:hidden}
+.ct-row.due{border-color:var(--crown-line);background:var(--kitchen)}
+.ct-row.settled{opacity:.72}
+.ct-line{display:flex;align-items:center;gap:9px;padding:9px 8px 9px 11px}
+.ct-no{flex:0 0 auto;font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;
+  color:var(--court-ink);min-width:26px}
+.ct-tier{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.ct-sides{flex:1;min-width:0;display:flex;align-items:center;gap:7px;font-size:13px}
+.ct-sides b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  flex:1 1 0;min-width:0}
+.ct-sides b.won{color:var(--grass)}
+.ct-sides b.lost{opacity:.5;text-decoration:line-through}
+.ct-sides i{flex:0 0 auto;font-style:normal;font-size:10px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.08em}
+.ct-pick{flex:0 0 auto;display:flex;gap:5px}
+.ct-pick button{width:34px;height:32px;border-radius:9px;cursor:pointer;font:inherit;
+  font-weight:700;font-size:13px;background:var(--card-2);border:1px solid var(--edge-2);
+  color:var(--ink-2)}
+.ct-pick button.on{background:var(--grass);border-color:var(--grass);color:#fff}
+.ct-score{flex:0 0 auto;padding:7px 13px;border-radius:99px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
+  letter-spacing:.09em;text-transform:uppercase;
+  background:var(--crown);border:1px solid var(--crown);color:#12200B}
+.ct-wait{flex:0 0 auto;font-size:11px;color:var(--ink-3)}
+.ct-more{flex:0 0 auto;width:28px;height:28px;border:0;background:none;cursor:pointer;
+  color:var(--ink-3);font-size:13px;letter-spacing:.04em}
+.ct-shut{width:28px;height:28px;border:0;background:none;cursor:pointer;
+  color:var(--ink-3);font-size:19px;line-height:1}
+.ct-row.open{border-color:var(--crown-line)}
 .hm-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
 .hm-today h2{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
@@ -7929,6 +7965,90 @@ function renderAll(){
   syncRoundEndUI();
 }
 
+/* Two ways to look at the courts, remembered on the device.
+
+   Eight courts of full cards is most of a metre of scrolling, and the one
+   thing anybody is doing on this screen is recording a result the moment a
+   game ends — so on a busy night you are hunting for the court you just
+   watched finish. As a list they all fit, and the result goes in from the row.
+
+   A court that needs a number rather than a winner expands where it stands,
+   because sending somebody to another screen to type 11 and back again is
+   the scrolling problem with extra steps. */
+const CourtView = {
+  dense: (()=>{ try{ return localStorage.getItem('sideout_courts_dense') === '1'; }
+                catch(e){ return false; } })(),
+  open: null,
+  set(on){
+    this.dense = !!on;
+    this.open = null;
+    try{ localStorage.setItem('sideout_courts_dense', on ? '1' : '0'); }catch(e){}
+    renderCourts();
+  },
+  expand(i){ this.open = (this.open === i) ? null : i; renderCourts(); }
+};
+
+function courtsToggle(){
+  return `<div class="ct-tools">
+    <span class="ct-count">${S.courts.length} court${S.courts.length === 1 ? '' : 's'}</span>
+    <span class="fd-view" role="group" aria-label="How to show the courts">
+      <button class="${CourtView.dense ? '' : 'on'}" onclick="CourtView.set(false)"
+        aria-pressed="${!CourtView.dense}" aria-label="Cards" title="Cards">${icon('grid')}</button>
+      <button class="${CourtView.dense ? 'on' : ''}" onclick="CourtView.set(true)"
+        aria-pressed="${!!CourtView.dense}" aria-label="List" title="List">${icon('rows')}</button>
+    </span>
+  </div>`;
+}
+
+/* One line: which court, who is on it, and the two buttons that end it. */
+function courtRow(c, i, N){
+  const lv = S.courtLevels[i] || 'int';
+  const pair = side =>{
+    const t = c.teams[side];
+    return t.length >= 2 ? t.map(id => esc(nm(id))).join(' + ')
+                         : (t.map(id => esc(nm(id)))[0] || 'Waiting');
+  };
+  const ready = c.teams[0].length >= 2 && c.teams[1].length >= 2;
+  const due = scoreDue(c);
+
+  /* Expanded for a score, in place. */
+  if(due && CourtView.open === i){
+    return `<div class="ct-row open">
+      <div class="ct-line">
+        <span class="ct-no">${ordinal(i)}</span>
+        <span class="ct-tier">${esc(courtTag(i, N, lv))}</span>
+        <span class="spacer"></span>
+        <button class="ct-shut" onclick="CourtView.expand(${i})" aria-label="Close">&times;</button>
+      </div>
+      <div class="pitch pad">${scorePad(c, i)}</div>
+    </div>`;
+  }
+
+  const act = due
+    ? `<button class="ct-score" onclick="CourtView.expand(${i})">Score</button>`
+    : (ready
+        ? `<span class="ct-pick">
+             <button class="${c.win === 0 ? 'on' : ''}" onclick="pickWinner(${i},0)"
+               aria-label="${pair(0)} won">A</button>
+             <button class="${c.win === 1 ? 'on' : ''}" onclick="pickWinner(${i},1)"
+               aria-label="${pair(1)} won">B</button>
+           </span>`
+        : '<span class="ct-wait">short</span>');
+
+  return `<div class="ct-row${c.win !== null ? ' settled' : ''}${due ? ' due' : ''}">
+    <div class="ct-line">
+      <span class="ct-no">${ordinal(i)}</span>
+      <span class="ct-sides">
+        <b class="${c.win === 0 ? 'won' : (c.win === 1 ? 'lost' : '')}">${pair(0)}</b>
+        <i>v</i>
+        <b class="${c.win === 1 ? 'won' : (c.win === 0 ? 'lost' : '')}">${pair(1)}</b>
+      </span>
+      ${act}
+      <button class="ct-more" onclick="courtMenu(${i})" aria-label="Manage ${ordinal(i)}">&middot;&middot;&middot;</button>
+    </div>
+  </div>`;
+}
+
 function renderCourts(){
   refreshPlan();
   const box = document.getElementById('courts');
@@ -7939,7 +8059,11 @@ function renderCourts(){
   }
   const N = S.courts.length;
   const upNext = nextLineups();
-  box.innerHTML = S.courts.map((c,i) => courtCard(c,i,N,upNext[i])).join('');
+  /* The toggle only earns its place once there is enough to scroll. */
+  const tools = N >= 3 ? courtsToggle() : '';
+  box.innerHTML = tools + (CourtView.dense
+    ? `<div class="ct-list">${S.courts.map((c,i) => courtRow(c,i,N)).join('')}</div>`
+    : S.courts.map((c,i) => courtCard(c,i,N,upNext[i])).join(''));
 
   // who is sitting down — the queue, or the resting half of each pool
   const pooled = (S.mode === 'wars' || S.mode === 'river') && S.tiers;
