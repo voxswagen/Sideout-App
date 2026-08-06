@@ -15377,6 +15377,131 @@ async function pastSessionSheet(code){
 /* A night already played can still get its face back. The session it
    came from may be long gone, so this writes straight to the kept
    copy rather than to a session that no longer exists. */
+/* Money taken before a ball is hit, and by whoever is standing nearest.
+
+   People pay at the door. Until now the only way to record that was the
+   Owes/Paid pill on the roster, which lives on the one phone holding the
+   session — so the person actually taking the money usually could not mark
+   it, and it got remembered on paper or not at all.
+
+   This is the simplest thing that works and nothing more: the night's roster
+   from the published snapshot, which every phone already has, against a row
+   per person on the server saying whether they have paid. Any organizer of
+   the club, any phone, before or during the night. No session pin and nothing
+   to hand around.
+
+   What is taken here is folded into the banked record when the night ends,
+   so nobody marks the same payment twice. Afterwards, Takings is the one to
+   use — it reads the result, which by then is the record.              */
+const Dues = {
+  code: null, rows: [], show: 'all', busy: false,
+
+  async open(code){
+    this.code = code || (View && View.code);
+    if(!this.code) return;
+    this.show = 'all';
+    openSheet(`<h3>Payment record</h3><div class="ld-block"><span class="ld-ball"></span>
+      <p>Reading the night\u2026</p></div>`);
+
+    /* The roster is whoever is on the night as published. Anybody the
+       organizer has already marked comes from the server and is matched to
+       them by name, which is safe here for the same reason it is safe in
+       sideout_set_paid: addPlayer will not let two people share a name on
+       one night. */
+    const roster = ((View && View.snap && View.snap.roster) || [])
+      .filter(r => r && r.n && r.s !== 'left');
+    let marks = [];
+    try{
+      marks = await Live.rpc('sideout_paid_list',
+        { p_club: CONFIG.club || 'sideout', p_code: this.code }) || [];
+    }catch(e){
+      openSheet(`<h3>Payment record</h3>
+        <p class="sub">Only an organizer can see who has paid.</p>
+        <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
+      return;
+    }
+    const by = {};
+    marks.forEach(m =>{ by[String(m.name || '').toLowerCase().trim()] = !!m.paid; });
+
+    this.rows = roster.map(r => ({
+      name: r.n, member: r.m || null,
+      paid: !!by[String(r.n).toLowerCase().trim()]
+    }));
+    /* Anybody marked who is no longer on the roster still shows, or a payment
+       would vanish the moment somebody was taken off the list. */
+    marks.forEach(m =>{
+      const k = String(m.name || '').toLowerCase().trim();
+      if(!this.rows.some(x => String(x.name).toLowerCase().trim() === k)){
+        this.rows.push({ name: m.name, member: m.member || null, paid: !!m.paid });
+      }
+    });
+    this.paint();
+  },
+
+  summary(){
+    const n = this.rows.length, paid = this.rows.filter(r => r.paid).length;
+    if(!n) return 'Nobody on the list yet.';
+    return `${paid} of ${n} paid${(n - paid) ? ` \u00b7 <b>${n - paid}</b> to come` : ''}`;
+  },
+
+  listHTML(){
+    const want = this.show;
+    const shown = this.rows.map((r, i) => ({ r: r, i: i }))
+      .filter(x => want === 'all' || (want === 'paid' ? x.r.paid : !x.r.paid));
+    if(!shown.length){
+      return `<p class="hint tight">${want === 'paid'
+        ? 'Nobody has paid yet.' : 'Everybody has paid.'}</p>`;
+    }
+    /* the same row the banked list uses, so the two read as one thing seen
+       at two moments rather than as two features */
+    return shown.map(x => `
+      <button class="tk${x.r.paid ? ' on' : ''}" onclick="Dues.set(${x.i})">
+        <span class="paid${x.r.paid ? ' on' : ''}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5 11-11"/></svg></span>
+        <span>${esc(x.r.name)}</span>
+        <em>${x.r.paid ? 'paid' : 'owes'}</em>
+      </button>`).join('');
+  },
+
+  paint(){
+    openSheet(`<h3>Payment record</h3>
+      <p class="sub">${this.summary()}</p>
+      <div class="seg" style="margin-bottom:10px">
+        <button class="${this.show === 'all' ? 'on' : ''}" onclick="Dues.filter('all')">Everyone</button>
+        <button class="${this.show === 'owing' ? 'on' : ''}" onclick="Dues.filter('owing')">Still to pay</button>
+        <button class="${this.show === 'paid' ? 'on' : ''}" onclick="Dues.filter('paid')">Paid</button>
+      </div>
+      <div class="tk-list">${this.listHTML()}</div>
+      <button class="btn btn-quiet" style="margin-top:12px" onclick="closeSheet()">Close</button>`);
+  },
+  filter(f){ this.show = f; this.paint(); },
+
+  /* The tap is believed at once and the server told after, the same as the
+     banked list does it — waiting on the round trip before anything moves
+     is what makes this feel broken when you are stood at a door with a queue
+     behind somebody. Put back exactly as it was if the write fails. */
+  async set(i){
+    const row = this.rows[i];
+    if(!row || this.busy) return;
+    const was = row.paid;
+    row.paid = !was;
+    this.paint();
+    this.busy = true;
+    try{
+      await Live.rpc('sideout_paid_set', {
+        p_club: CONFIG.club || 'sideout', p_code: this.code,
+        p_name: row.name, p_member: row.member, p_paid: row.paid });
+    }catch(e){
+      row.paid = was;
+      this.paint();
+      toast(/organizer/i.test(e.detail || e.message || '')
+        ? 'Only an organizer can change a payment.'
+        : 'Could not change that.');
+    }
+    this.busy = false;
+  }
+};
+
 /* The same list after the fact, because somebody always settles up the
    following week. Reads and writes the banked result, not the session,
    which by then may not exist. */
@@ -19781,7 +19906,9 @@ const View = {
   staffBar(){
     if(!Auth.signedIn() || !canOrganize() || !this.code) return '';
     return `<button class="btn btn-quiet vw-manage" onclick="manageSession('${esc(this.code)}')">
-      ${icon('gear')} Manage this session</button>`;
+      ${icon('gear')} Manage this session</button>
+      <button class="btn btn-quiet vw-manage" onclick="Dues.open('${esc(this.code)}')">
+      ${icon('cash')} Payment record</button>`;
   },
   /* Only when the host is running a timed round. A score-based round
      has no clock to show, and an empty box is worse than none. */
