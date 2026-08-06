@@ -1396,11 +1396,25 @@ body.lboxed{overflow:hidden}
    The header and the box you type in used to scroll away with the messages,
    so a long conversation had no way back and nothing to type into until you
    had scrolled to the bottom of it. */
-.ch-wrap{display:flex;flex-direction:column;height:calc(100dvh - 190px);min-height:300px}
-#vw-chat .ch-wrap,#past-body .ch-wrap{height:calc(100dvh - 300px)}
-.ch-wrap .ch-top{flex:0 0 auto;margin-bottom:8px}
-.ch-wrap .ch-stream{flex:1 1 auto;min-height:0;height:auto}
-.ch-foot{flex:0 0 auto;background:var(--paper);padding-top:2px}
+/* A conversation is a frame, not a page: the name at the top and the box you
+   type in are the two fixed edges and only the middle moves. Laid out as a
+   column that fills the screen and lets the stream take what is left, so the
+   composer sits directly on the bottom nav rather than scrolling away under
+   it — which on a phone meant scrolling to the bottom of a long thread
+   before you could write anything.
+
+   Sticky rather than fixed, so it stays inside whatever box it is drawn into.
+   The same markup is used on its own screen and inside a tab on a session,
+   and a fixed element would escape the second one. */
+.ch-wrap{display:flex;flex-direction:column;min-height:0;
+  height:calc(100dvh - var(--dock-h) - env(safe-area-inset-bottom) - 74px)}
+#vw-chat .ch-wrap,#past-body .ch-wrap{height:calc(100dvh - var(--dock-h) - env(safe-area-inset-bottom) - 210px)}
+.ch-wrap .ch-top{position:sticky;top:0;z-index:6;flex:0 0 auto;margin:0 -2px 8px;
+  padding:6px 2px 8px;background:var(--paper);
+  box-shadow:0 6px 10px -10px rgba(11,44,74,.5)}
+.ch-wrap .ch-stream{flex:1 1 auto;min-height:0;height:auto;overscroll-behavior:contain}
+.ch-foot{position:sticky;bottom:0;z-index:6;flex:0 0 auto;background:var(--paper);
+  padding:6px 0 2px;box-shadow:0 -8px 12px -10px rgba(11,44,74,.5)}
 .ch-clip{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;cursor:pointer;
   background:var(--card-2);color:var(--ink-2);display:grid;place-items:center}
 .ch-clip .ic{width:18px;height:18px}
@@ -2839,6 +2853,80 @@ textarea:focus{border-color:var(--court)}
 .ct-shut{width:28px;height:28px;border:0;background:none;cursor:pointer;
   color:var(--ink-3);font-size:19px;line-height:1}
 .ct-row.open{border-color:var(--crown-line)}
+/* MY STATS ─ the record, as an answer rather than as a table of facts */
+.rq-hero{display:flex;align-items:center;gap:16px;padding:16px;margin-bottom:12px;
+  border-radius:var(--r);color:#fff;box-shadow:var(--sh-2);
+  background:radial-gradient(120% 140% at 100% 0%, rgba(123,201,67,.34) 0%, rgba(123,201,67,0) 58%),
+             linear-gradient(150deg,#173154,#0C1B2E)}
+.rq-ring-wrap{position:relative;flex:0 0 auto;width:92px;height:92px;display:grid;place-items:center}
+.rq-ring{position:absolute;inset:0;width:92px;height:92px;transform:rotate(-90deg)}
+.rq-ring circle{fill:none;stroke:rgba(255,255,255,.14);stroke-width:7}
+.rq-ring circle.on{stroke:var(--brand-green);stroke-linecap:round}
+.rq-rate{position:relative;text-align:center;line-height:1}
+.rq-rate b{display:block;font-family:'Bebas Neue',sans-serif;font-size:25px;letter-spacing:.02em}
+.rq-rate i{display:block;margin-top:2px;font-style:normal;font-size:8.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.6)}
+.rq-tot{flex:1;min-width:0}
+.rq-eyebrow{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ball);margin-bottom:5px}
+.rq-wl{display:flex;align-items:baseline;gap:3px;line-height:1}
+.rq-wl b{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em}
+.rq-wl em{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:12px;color:rgba(255,255,255,.55);margin-right:5px}
+.rq-slash{color:rgba(255,255,255,.3);font-size:20px;margin:0 3px}
+.rq-wl i{font-style:normal;margin-left:8px;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:14px}
+.rq-wl i.up{color:var(--brand-green)} .rq-wl i.down{color:var(--fault)}
+.rq-bar{display:block;height:5px;border-radius:99px;margin:9px 0 7px;
+  background:rgba(255,255,255,.14);overflow:hidden}
+.rq-bar span{display:block;height:100%;border-radius:99px;background:var(--brand-green)}
+.rq-sub{display:block;font-size:11.5px;color:rgba(255,255,255,.62)}
+
+.rq-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rq-h h2{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.rq-note{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-green);padding:0}
+.rq-pips{display:flex;gap:6px}
+.rq-pip{flex:1;height:34px;border-radius:9px;display:grid;place-items:center;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px}
+.rq-pip.w{background:var(--brand-green);color:#fff}
+.rq-pip.l{background:var(--card-2);border:1px solid var(--edge);color:var(--ink-3)}
+
+.rq-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rq-small{margin-bottom:12px}
+.rq-k{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.rq-v{display:flex;align-items:baseline;gap:6px}
+.rq-v b{font-family:'Bebas Neue',sans-serif;font-size:31px;line-height:1;color:var(--court-ink)}
+.rq-v i{font-style:normal;font-size:11.5px;color:var(--ink-2)}
+.rq-seg{display:flex;gap:3px;margin-top:9px}
+.rq-seg i{flex:1;height:4px;border-radius:99px;background:var(--edge)}
+.rq-seg i.on{background:var(--brand-green)}
+.rq-gold{background:var(--brand-gold);border-color:var(--brand-gold)}
+.rq-gold .rq-k{color:rgba(18,32,11,.62)}
+.rq-gold .rq-v b{color:#12200B} .rq-gold .rq-v i{color:rgba(18,32,11,.72)}
+
+.rq-crown{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.rq-cr{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card-2);color:var(--ink-3)}
+.rq-crown.has .rq-cr{background:var(--brand-gold);color:#12200B}
+.rq-cr .ic{width:19px;height:19px}
+.rq-ct{flex:1;min-width:0}
+.rq-ct b{display:block;font-size:14.5px}
+.rq-ct span{display:block;font-size:12px;color:var(--ink-2);margin-top:1px}
+.rq-cn{flex:0 0 auto;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--ink-3)}
+.rq-crown.has .rq-cn{color:var(--crown-ink,var(--court-ink))}
+
+.rq-row{display:flex;align-items:center;gap:10px;width:100%;padding:7px 0;cursor:pointer;
+  background:none;border:0;font-family:inherit;text-align:left}
+.rq-rn{flex:0 0 34%;min-width:0;font-size:12.5px;color:var(--ink-2);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.rq-rb{flex:1;height:9px;border-radius:99px;background:var(--edge);overflow:hidden}
+.rq-rb span{display:block;height:100%;border-radius:99px;background:var(--brand-green)}
+.rq-rr{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12.5px;
+  color:var(--ink-2);min-width:34px;text-align:right}
 .hm-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
 .hm-today h2{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
@@ -2878,6 +2966,11 @@ textarea:focus{border-color:var(--court)}
 .mx-foot b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
   letter-spacing:.06em;text-transform:uppercase}
 .mx-foot b.won{color:var(--grass)} .mx-foot b.lost{color:var(--fault)}
+/* the same card on a night's own matchups, where nothing is tappable and the
+   foot names the court instead of calling the result */
+.mx-flat{cursor:default}
+.mx-flat:hover{border-color:var(--edge)}
+.mx-flat .mx-foot b{color:var(--court-ink)}
 .mx-foot span{font-size:11.5px;color:var(--ink-2)}
 
 /* a night on My matches: the score first, because that is what the eye wants */
@@ -10560,19 +10653,103 @@ const Board = {
       return;
     }
     if(this.tab === 'mine'){
+      /* Nine numbers in a three by three grid, all the same size, is a table
+         of facts rather than a record — nothing in it says which of them is
+         the answer to "how am I doing". So: the win rate first and biggest,
+         because that is the question; then the shape of it; then the things
+         that only some nights give you.
+
+         The form strip needs the game-by-game list, which the Matches tab
+         already fetches. Asked for here too, and simply left out until it
+         arrives rather than holding the whole screen up for it. */
+      if(this.games === null) this.needGames();
       const rate = t.games ? Math.round(t.wins / t.games * 100) : 0;
-      const stat = (n, l) => `<div class="ps"><b>${n}</b><i>${l}</i></div>`;
-      box.innerHTML = `<div class="panel">
-        <div class="pstats">${stat(t.nights, t.nights === 1 ? 'night' : 'nights')}
-          ${stat(t.games, 'games')}${stat(rate + '%', 'won')}</div>
-        <div class="pstats" style="margin-top:8px">
-          ${stat(t.wins_on_the_night || 0, 'wins on the night')}
-          ${stat(t.podiums || 0, 'top three')}${stat(t.crowns || 0, 'crowns')}</div>
-        <div class="pstats" style="margin-top:8px">
-          ${stat(t.wins || 0, 'won')}${stat(t.losses || 0, 'lost')}
-          ${stat((t.wins || 0) - (t.losses || 0) >= 0 ? '+' + ((t.wins||0)-(t.losses||0))
-                                                      : ((t.wins||0)-(t.losses||0)), 'difference')}</div>
-      </div>`;
+      const diff = (t.wins || 0) - (t.losses || 0);
+      /* Labelled with the span it actually covers. "Season to date" would be
+         a nicer line and an untrue one: this is every night on the record. */
+      const f0 = t.first ? new Date(Date.parse(t.first)) : null;
+      const span = f0 ? 'Since ' + f0.getDate() + ' ' + MONTH_SHORT[f0.getMonth()] : 'All time';
+
+      /* The ring is a circle drawn as a dashed stroke: one dash as long as
+         the share that was won, one gap for the rest. No library, no canvas,
+         and it animates for free if it ever wants to. */
+      const R = 34, C = 2 * Math.PI * R;
+      const ring = `<svg class="rq-ring" viewBox="0 0 80 80" aria-hidden="true">
+        <circle cx="40" cy="40" r="${R}"></circle>
+        <circle cx="40" cy="40" r="${R}" class="on"
+          stroke-dasharray="${(C * rate / 100).toFixed(1)} ${C.toFixed(1)}"></circle>
+      </svg>`;
+
+      const form = (this.games || []).slice(0, 8).reverse();
+      const nights = this.mine.nights || [];
+      const clubNights = t.club_nights || t.nights || 0;
+
+      box.innerHTML = `
+        <div class="rq-hero">
+          <div class="rq-ring-wrap">${ring}
+            <span class="rq-rate"><b>${rate}%</b><i>win rate</i></span></div>
+          <div class="rq-tot">
+            <span class="rq-eyebrow">${esc(span)}</span>
+            <span class="rq-wl"><b>${t.wins || 0}</b><em>W</em>
+              <span class="rq-slash">/</span>
+              <b>${t.losses || 0}</b><em>L</em>
+              <i class="${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff}</i></span>
+            <span class="rq-bar"><span style="width:${rate}%"></span></span>
+            <span class="rq-sub">${t.wins || 0} won · ${t.losses || 0} lost across
+              ${t.games || 0} game${t.games === 1 ? '' : 's'}</span>
+          </div>
+        </div>
+
+        ${form.length ? `<div class="panel rq-form">
+          <div class="rq-h"><h2>Recent form</h2>
+            <span class="rq-note">Last ${form.length} game${form.length === 1 ? '' : 's'}</span></div>
+          <div class="rq-pips">${form.map(g =>
+            `<span class="rq-pip ${g.won ? 'w' : 'l'}">${g.won ? 'W' : 'L'}</span>`).join('')}</div>
+        </div>` : ''}
+
+        <div class="rq-pair">
+          <div class="panel rq-small">
+            <span class="rq-k">Nights played</span>
+            <span class="rq-v"><b>${t.nights || 0}</b><i>of ${clubNights} session${
+              clubNights === 1 ? '' : 's'}</i></span>
+            <span class="rq-seg">${new Array(Math.min(clubNights, 12)).fill(0).map((_, i) =>
+              `<i class="${i < (t.nights || 0) ? 'on' : ''}"></i>`).join('')}</span>
+          </div>
+          <div class="panel rq-small rq-gold">
+            <span class="rq-k">Top 3 finishes</span>
+            <span class="rq-v"><b>${t.podiums || 0}</b><i>night${
+              (t.podiums || 0) === 1 ? '' : 's'}</i></span>
+          </div>
+        </div>
+
+        <div class="panel rq-crown${(t.crowns || 0) ? ' has' : ''}">
+          <span class="rq-cr">${icon('trophy')}</span>
+          <span class="rq-ct">
+            <b>${(t.crowns || 0) ? ((t.crowns === 1) ? 'One crown' : t.crowns + ' crowns')
+                                 : 'No crowns yet'}</b>
+            <span>${(t.crowns || 0) ? 'Nights you took outright.'
+                                    : 'Win a night outright to earn your first one.'}</span></span>
+          <span class="rq-cn">${t.crowns || 0}</span>
+        </div>
+
+        ${nights.length ? `<div class="panel rq-by">
+          <div class="rq-h"><h2>By session</h2>
+            <button class="rq-note lnk" onclick="Board.setTab('matches')">See all</button></div>
+          ${nights.slice(0, 5).map(n =>{
+            const g = (n.wins || 0) + (n.losses || 0);
+            const pc = g ? Math.round((n.wins || 0) / g * 100) : 0;
+            const when = n.played_at ? Date.parse(n.played_at) : null;
+            /* S14, which is the night's place in the order the club has run
+               them. Worked out on the server so it never shifts. A night from
+               before the numbering falls back to its own name. */
+            return `<button class="rq-row" onclick="pastSession('${esc(n.code)}')">
+              <span class="rq-rn"${n.no ? '' : ' title="' + esc(String(n.title || '')) + '"'}>${
+                n.no ? 'S' + n.no : esc(String(n.title || 'Open play'))}</span>
+              <span class="rq-rb"><span style="width:${pc}%"></span></span>
+              <span class="rq-rr">${n.wins || 0}${'\u2013'}${n.losses || 0}</span>
+            </button>`;
+          }).join('')}
+        </div>` : ''}`;
       return;
     }
     /* Game by game now, not night by night. It used to be nights because the
@@ -13708,7 +13885,7 @@ const Feed = {
        the page the card opens anyway. */
     return `<button class="sx-res" title="View results"
       aria-label="View results for this night"
-      onclick="event.stopPropagation();pastSession('${esc(code)}', null, true)">
+      onclick="event.stopPropagation();pastSession('${esc(code)}')">
       <span>View results</span>${icon('standings')}</button>`;
   },
 
@@ -14329,7 +14506,7 @@ const Chat = {
             <b>picksilog</b></span>
           <p>${esc(m.body || '')}</p>
           ${this.code ? `<button class="btn btn-quiet" onclick="pastSession('${
-            esc(this.code)}', null, true)">${icon('standings')} View results</button>` : ''}
+            esc(this.code)}')">${icon('standings')} View results</button>` : ''}
           <em>${t ? esc(clockText(t.getTime())) : ''}</em>
         </div>`;
       }
@@ -15269,19 +15446,35 @@ const Past = {
           + '>' + esc(label) + ' ' + (key === 'court' ? o + 1 : o) + '</option>').join('')
       + '</select></label>';
 
-    const side = (names, won) => '<span class="mu-side' + (won ? ' won' : '') + '">'
-      + (names || []).map(n => '<span class="mu-n">' + esc(n) + '</span>').join('') + '</span>';
+    /* The same card My matches uses, faces and all. It was names on a line
+       with a number between them, which reads as a fixture list rather than
+       as games people played — and the ids have been in this payload the
+       whole time, so the pictures cost nothing but the asking.
+
+       Winners on the left every time, with the arrow pointing at them. On My
+       matches the left is always you and the arrow says which way it went;
+       here there is no "you", so the side carries it instead. */
+    const side = (names, ids) => '<span class="mx-side">'
+      + '<span class="mx-faces">' + (names || []).map((n, i) =>
+          avatar(n, (Club.find((ids || [])[i]) || {}).photo, 'sm')).join('') + '</span>'
+      + (names || []).map(n => '<span class="mx-n">' + esc(n) + '</span>').join('')
+      + '</span>';
 
     let last = null;
     const body = shown.map(g =>{
       const head = g.round !== last ? '<h3 class="mu-r">Round ' + g.round + '</h3>' : '';
       last = g.round;
-      const sc = (g.ws == null || g.ls == null) ? '—' : g.ws + '–' + g.ls;
-      return head + '<div class="mu">'
-        + '<span class="mu-c">Court ' + (g.court + 1) + (g.king ? ' ' + icon('crown') : '') + '</span>'
-        + '<div class="mu-in">' + side(g.win_names, true)
-        + '<span class="mu-sc">' + sc + '</span>'
-        + side(g.lose_names, false) + '</div></div>';
+      const sc = (g.ws == null || g.ls == null) ? '' : g.ws + '–' + g.ls;
+      return head + '<div class="mx mx-flat">'
+        + '<span class="mx-top">' + side(g.win_names, g.win_ids)
+        + '<span class="mx-mid">'
+        + (sc ? '<span class="mx-sc">' + sc + '</span>'
+              : '<span class="mx-sc none">played</span>')
+        + '<i class="mx-arrow">\u25C0</i></span>'
+        + side(g.lose_names, g.lose_ids) + '</span>'
+        + '<span class="mx-foot"><b>Court ' + (g.court + 1) + '</b>'
+        + '<span>' + (g.king ? icon('crown') + ' King of the court' : 'Round ' + g.round)
+        + '</span></span></div>';
     }).join('');
 
     box.innerHTML = '<div class="mu-bar">'
@@ -19146,7 +19339,51 @@ const Recap = {
         navIcon('standings')}Session details</button>
       <p class="hint tight">When, where, how it was played and how big it was
         — with the night's own photo across the top.</p>
+      <button class="btn btn-quiet" style="margin-top:8px"
+        onclick="Recap.pickHero(${code ? c : ''})">${navIcon('camera')}Session details, my own photo</button>
+      <p class="hint tight">Pick a picture and frame it. Used for this card
+        only — the night keeps whatever photo it already had.</p>
       <button class="btn btn-quiet" style="margin-top:12px" onclick="closeSheet()">Close</button>`);
+  },
+
+  /* A photograph for this card and nothing else.
+
+     The night's own cover is the right default and often the wrong picture:
+     it was framed for a feed card at 8:3 and this band is nearly 16:9, and
+     the shot somebody wants on a story is frequently one taken after the
+     cover was set. So it is framed here, at the band's own shape, and thrown
+     away once drawn — the night keeps whatever photo it already had, which
+     is what makes this safe to reach for.                                 */
+  hero: null,
+  pickHero(code, title){
+    let f = document.getElementById('hero-file');
+    if(!f){
+      f = document.createElement('input');
+      f.type = 'file'; f.accept = 'image/*'; f.id = 'hero-file'; f.className = 'filepick';
+      f.addEventListener('change', ()=> Recap.heroChosen(f));
+      document.body.appendChild(f);
+    }
+    this.heroFor = code || null;
+    this.heroTitle = title || null;
+    f.value = '';
+    f.click();
+  },
+  heroChosen(input){
+    const file = input && input.files && input.files[0];
+    input.value = '';
+    if(!file) return;
+    const code = this.heroFor, title = this.heroTitle;
+    /* the same shape the card's band is drawn at, so what is framed here is
+       exactly what lands on it */
+    Cropper.open(file, { w: 1080, h: 604,
+      title: 'Frame the picture',
+      sub: 'This goes across the top of the card. Drag it about and pinch to size.',
+      back: ()=> Recap.cardMenu(code, title) },
+      out =>{
+        Recap.hero = out;
+        if(code) Recap.cardFor(code, title, 'session');
+        else Recap.card('session');
+      });
   },
 
   /* Everything a card needs that does not depend on which of the two it is. */
@@ -19207,19 +19444,42 @@ const Recap = {
     const PAL = cardPaint();
     const m = d.meta || {};
     /* The game log lives on the session, which a club may delete long after
-       the results are banked. Nought is then what the count says and not
-       what is true, and "0 GAMES" over a night forty-two people played
-       reads as the card being broken. Unknown is left out instead. */
-    const games = (d.games || []).length;
+       the results are banked — so a night can have no log at all. That is
+       not the same as having no games, and I had the card leaving the figure
+       out on exactly the nights it mattered.
+
+       The count survives the log: every player's own game count is in the
+       results, and four of them make a game. It is the arithmetic the feed
+       and the group list have always used, and it gives 64 for a night whose
+       log is empty. The log is still preferred when it is there, because it
+       is the thing itself rather than a division. */
+    const logged = (d.games || []).length;
+    const fromRows = Math.round(
+      rows.reduce((n, r) => n + (r.games || 0), 0) / 4);
+    const games = logged || fromRows;
     const gameStat = games ? [['GAMES', games, PAL.ball]] : [];
 
     if(kind === 'session'){
       const top = rows[0];
       const face = top ? rosterFace(top.name) : null;
       const hours = cardHours(m.starts_at, m.ends_at);
+      /* Taken once. A card made straight afterwards from the same night is
+         the night's own photo again, which is the least surprising thing for
+         a one-off override to do. */
+      const heroSrc = this.hero || d.cover;
+      this.hero = null;
       drawSessionCard(x, W, Object.assign(base, {
-        cover: d.cover ? await loadImg(d.cover) : null,
-        tiles: cardTiles({ startsAt: m.starts_at, endsAt: m.ends_at,
+        cover: heroSrc ? await loadImg(heroSrc) : null,
+        /* A night whose session row has been deleted knows none of its own
+         schedule or format -- that lives in the snapshot and the snapshot is
+         gone. What survives is when it was banked and where the group plays,
+         so those two tiles are still filled and the other two are left out
+         rather than guessed at. The date only: played_at is the moment the
+         results were written, which is near enough the night and nowhere
+         near the time it started. */
+      tiles: cardTiles({ startsAt: m.starts_at || (d.played_at ? Date.parse(d.played_at) : null),
+                           dateOnly: !m.starts_at,
+                           endsAt: m.ends_at,
                            venue: base.court, courts: m.courts,
                            modeName: m.mode_name, timed: m.timed,
                            mins: m.mins, target: m.target, levels: m.levels }),
@@ -21786,18 +22046,64 @@ function cardTitle(x, W, title, topY, start){
   return base0 + (fit.rows.length - 1) * step;
 }
 
+/* A hex to something canvas can put an alpha on. Only ever fed the palette's
+   own colours, so three or six digits is the whole of it. */
+function cardRGBA(hex, a){
+  let h = String(hex || '#ffffff').replace('#', '');
+  if(h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  const n = parseInt(h.slice(0, 6), 16);
+  return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+
 /* A figure each for whatever the caller thinks is worth saying about the
-   night in one number. Two or three of them, sharing the width. */
-function cardStats(x, W, y, stats){
+   night in one number.
+
+   Boxed on the session card, because it sits under four tiles of the same
+   width and three bare numbers floating beneath them read as an afterthought
+   rather than as part of the set — the eye wants the same shape twice. Left
+   plain on the leaderboard, where they sit under a rule at the foot and there
+   is nothing above them to rhyme with.
+
+   Each box takes its tint and its edge from the figure's own colour, so the
+   gold one is gold all through rather than a gold number in a grey box. */
+function cardStats(x, W, y, stats, boxed){
   const PAD = CARD_PAD;
+  if(!stats || !stats.length) return;
+
+  if(!boxed){
+    x.textAlign = 'center';
+    stats.forEach((st, i) =>{
+      const cx = PAD + (W - PAD * 2) * (i * 2 + 1) / (stats.length * 2);
+      const big = fitFont(x, String(st[1]), '700', 'Outfit', 54, (W - PAD * 2) / stats.length - 26);
+      x.fillStyle = st[2] || '#fff'; x.font = OUTFIT('700', big);
+      x.fillText(String(st[1]), cx, y);
+      track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 22px "Barlow Condensed"';
+      x.fillText(st[0], cx, y + 32);
+      track(x, 0);
+    });
+    return;
+  }
+
+  const n = stats.length, gap = 18, H = 128;
+  const w = Math.round((W - PAD * 2 - gap * (n - 1)) / n);
+  const top = y - 84;
   x.textAlign = 'center';
   stats.forEach((st, i) =>{
-    const cx = PAD + (W - PAD * 2) * (i * 2 + 1) / (stats.length * 2);
-    const big = fitFont(x, String(st[1]), '700', 'Outfit', 54, (W - PAD * 2) / stats.length - 26);
-    x.fillStyle = st[2] || '#fff'; x.font = OUTFIT('700', big);
-    x.fillText(String(st[1]), cx, y);
-    track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 22px "Barlow Condensed"';
-    x.fillText(st[0], cx, y + 32);
+    const L = PAD + i * (w + gap);
+    const col = st[2] || '#FFFFFF';
+    const tinted = String(col).toUpperCase() !== '#FFF' && String(col).toUpperCase() !== '#FFFFFF';
+    x.fillStyle = tinted ? cardRGBA(col, .13) : 'rgba(255,255,255,.055)';
+    rrect(x, L, top, w, H, 22); x.fill();
+    x.strokeStyle = tinted ? cardRGBA(col, .5) : 'rgba(255,255,255,.14)';
+    x.lineWidth = 2;
+    rrect(x, L, top, w, H, 22); x.stroke();
+
+    const cx = L + w / 2;
+    const big = fitFont(x, String(st[1]), '700', 'Outfit', 52, w - 26);
+    x.fillStyle = col; x.font = OUTFIT('700', big);
+    x.fillText(String(st[1]), cx, top + 74);
+    track(x, 5); x.fillStyle = 'rgba(255,255,255,.5)'; x.font = '800 21px "Barlow Condensed"';
+    x.fillText(st[0], cx, top + 106);
     track(x, 0);
   });
 }
@@ -22052,7 +22358,7 @@ function drawSessionCard(x, W, o){
      player and game counts off any night whose session row had been deleted
      — the results outlive it, so those two numbers were there to be printed
      and the card left them out. */
-  const STAT_H = (o.stats && o.stats.length) ? 118 : 0;
+  const STAT_H = (o.stats && o.stats.length) ? 128 : 0;
   const CHAMP_H = o.champ ? 152 : 0;
   const NEXT_H = o.next ? 120 : 0;
   const gaps = (tilesH ? 26 : 0) + (CHAMP_H ? 26 : 0) + (NEXT_H ? 22 : 0);
@@ -22103,7 +22409,7 @@ function drawSessionCard(x, W, o){
   });
   if(tilesH) y += tilesH + 26;
 
-  if(STAT_H){ cardStats(x, W, y + 62, o.stats || []); y += STAT_H + 26; }
+  if(STAT_H){ cardStats(x, W, y + 84, o.stats || [], true); y += STAT_H + 26; }
 
   /* ── whoever came out on top ───────────────────────────────────
      One line, not a podium. Somebody reading this card wants to know what
@@ -22245,7 +22551,8 @@ async function cardFonts(){
 
 function cardTiles(o){
   const t = [];
-  if(o.startsAt) t.push(['WHEN', cardDayDate(o.startsAt), cardSpan(o.startsAt, o.endsAt)]);
+  if(o.startsAt) t.push(['WHEN', cardDayDate(o.startsAt),
+                         o.dateOnly ? '' : cardSpan(o.startsAt, o.endsAt)]);
   if(o.venue)    t.push(['WHERE', o.venue, o.courts ? (o.courts === 1 ? '1 court' : o.courts + ' courts') : '']);
   if(o.modeName) t.push(['FORMAT', o.modeName,
                          o.timed ? (o.mins + ' min rounds') : ('Games to ' + o.target)]);
