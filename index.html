@@ -2800,6 +2800,9 @@ textarea:focus{border-color:var(--court)}
 /* waiting is not an invitation, so it does not wear the invitation's green */
 .nudge-wait{border-color:var(--edge-2);background:var(--card-2)}
 .nudge-wait .nudge-ic{background:var(--ink-3)}
+/* the money row wears the money colour, so the two are told apart at a
+   glance rather than by reading them */
+.pv-cash{background:var(--grass-soft)!important;color:var(--grass)!important}
 .hm-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
 .hm-today h2{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
@@ -13575,9 +13578,13 @@ const Feed = {
      without it, every tap opened the sheet on top of the page it asked for. */
   resultsBtn(code){
     if(!code) return '';
+    /* The same screen tapping the card opens, one step further in — not a
+       URL. Sending it to ?s= was wrong twice over: that page reads the
+       session, which is a working copy a club may have deleted, and it is not
+       the page the card opens anyway. */
     return `<button class="sx-res" title="View results"
       aria-label="View results for this night"
-      onclick="event.stopPropagation();location.href='?s=' + encodeURIComponent('${esc(code)}')">
+      onclick="event.stopPropagation();pastSession('${esc(code)}', null, true)">
       <span>View results</span>${icon('standings')}</button>`;
   },
 
@@ -14197,8 +14204,8 @@ const Chat = {
           <span class="ch-note-h"><img src="${picksilogSrc()}" alt="">
             <b>picksilog</b></span>
           <p>${esc(m.body || '')}</p>
-          ${this.code ? `<button class="btn btn-quiet" onclick="location.href='?s=' + encodeURIComponent('${
-            esc(this.code)}')">${icon('standings')} View results</button>` : ''}
+          ${this.code ? `<button class="btn btn-quiet" onclick="pastSession('${
+            esc(this.code)}', null, true)">${icon('standings')} View results</button>` : ''}
           <em>${t ? esc(clockText(t.getTime())) : ''}</em>
         </div>`;
       }
@@ -14914,11 +14921,16 @@ const Past = {
   data: null, games: null, cache: {},
   court: 'all', round: 'all',
 
-  open(code, from){
+  open(code, from, toResults){
     if(!code) return;
     this.code = code;
     this.from = from || currentScreen() || 'home';
     this.tab = 'details';
+    /* Straight through to the standings when that is what was asked for.
+       The night still has to be read first @EM@ openResults needs the data to
+       title the screen @EM@ so it is a wish that load() grants, not a second
+       route in. */
+    this.wantRes = !!toResults;
     const c = this.cache[code];
     this.data = (c && c.data) || null;
     this.games = (c && c.games) || null;
@@ -14931,13 +14943,21 @@ const Past = {
 
   async load(){
     this.paint();
-    if(this.data || !Live.ready()) return;
+    if(this.data || !Live.ready()){ this.grantRes(); return; }
     let d = null;
     try{ d = await Live.rpc('sideout_recap', { p_club: CONFIG.club || 'sideout', p_code: this.code }); }
     catch(e){ d = null; }
     this.data = d;
     this.cache[this.code] = Object.assign(this.cache[this.code] || {}, { data: d });
     if(currentScreen() === 'past') this.paint();
+    this.grantRes();
+  },
+  grantRes(){
+    if(!this.wantRes) return;
+    this.wantRes = false;
+    /* Nothing to show the standings of, so stay on the night's own page,
+       which says so properly. */
+    if(this.data && currentScreen() === 'past') this.openResults();
   },
 
   async loadGames(){
@@ -15018,6 +15038,17 @@ const Past = {
       + '<span class="pv-tr">' + icon('trophy') + '</span>'
       + '<span class="pv-rt"><b>Results</b><span>Standings and every game played</span></span>'
       + '<i class="sr-go">&rsaquo;</i></button>'
+      /* Settling up, for whoever runs the club. It used to live in a sheet
+         that nothing opens any more, so the one screen about a finished
+         night had no way to the one job left to do on it — and somebody
+         always pays the following week. Beside the standings is where it
+         belongs: they are the two reasons to open a night that is over. */
+      + (canOrganize() ? '<button class="pv-results" onclick="Takings.open(&quot;'
+          + esc(this.code) + '&quot;,&quot;'
+          + esc(String((this.data && this.data.title) || 'That night').replace(/["\\]/g, '')) + '&quot;)">'
+          + '<span class="pv-tr pv-cash">' + icon('cash') + '</span>'
+          + '<span class="pv-rt"><b>Payment record</b><span>Who has settled up, and who has not</span></span>'
+          + '<i class="sr-go">&rsaquo;</i></button>' : '')
       + this.cardBtn()
       + '<div class="vw-facts">'
       + fact('Played', 'season', t ? longDate(t) : '')
@@ -15143,8 +15174,8 @@ const Past = {
    than a sheet. A finished night has a table, a list of who played and every
    game of it — that was a modal you scrolled inside, with the results the
    one thing it could not show you properly. */
-function pastSession(code, from){
-  Past.open(code, from);
+function pastSession(code, from, toResults){
+  Past.open(code, from, toResults);
 }
 
 async function pastSessionSheet(code){
