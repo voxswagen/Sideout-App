@@ -20,6 +20,13 @@
 -- Ordering matters here. The app unshifts each finished game onto the front
 -- of state.log, so the stored order runs the night backwards. Games come
 -- back round, then court, then as recorded.
+--
+-- The group and the venue ride along for the story card, which puts the
+-- group's name, its home court and its logo across the top — so a night run
+-- under Sideout Society is posted as Sideout Society rather than as whatever
+-- the whole app happens to be called. Both are null for a night filed under
+-- no group, which the card reads as "fall back to the club" rather than as
+-- an error.
 
 create or replace function public.sideout_recap(p_club text, p_code text)
 returns jsonb
@@ -76,6 +83,56 @@ as $$
       left join public.sessions s        on s.code  = r.code and s.club  = r.club
      where r.club = coalesce(p_club, 'sideout') and r.code = p_code
        and r.removed_at is null
+  ),
+  -- Where it was played, as the organizer typed it. The raw venue is a
+  -- pasted Maps link more often than not, so only the resolved name is
+  -- handed out — it is the half that is meant to be read.
+  place as (
+    select nullif(s.snapshot->>'venueName', '') as venue
+      from public.sessions s
+     where s.club = coalesce(p_club, 'sideout') and s.code = p_code
+  ),
+  -- What the night actually was: when it ran, how it was played, how many
+  -- courts and to what standard. All of it already stored — the snapshot for
+  -- the schedule and the format, state.courtLevels for the standard — and
+  -- none of it was reaching the card, which had no way to say any of it
+  -- without inventing it.
+  --
+  -- courtLevels comes out of state rather than the snapshot because the
+  -- snapshot carries each court's *tag*, which is prose written for players
+  -- ("Top table", "Matched") and not the level code. Only the derived list
+  -- travels; nothing else out of state is touched, and the rule that state
+  -- itself is never handed out still holds.
+  meta as (
+    select jsonb_build_object(
+             'starts_at', case when s.snapshot->>'startsAt' ~ '^[0-9]+$'
+                               then (s.snapshot->>'startsAt')::bigint end,
+             'ends_at',   case when s.snapshot->>'endsAt' ~ '^[0-9]+$'
+                               then (s.snapshot->>'endsAt')::bigint end,
+             'mode',      nullif(s.snapshot->>'mode', ''),
+             'mode_name', nullif(s.snapshot->>'modeName', ''),
+             'timed',     coalesce((s.snapshot->>'timed')::boolean, true),
+             'mins',      nullif(s.snapshot->>'mins', '')::int,
+             'target',    nullif(s.snapshot->>'target', '')::int,
+             'courts',    nullif(s.state->>'nCourts', '')::int,
+             'levels',    coalesce(s.state->'courtLevels', '[]'::jsonb)) as row
+      from public.sessions s
+     where s.club = coalesce(p_club, 'sideout') and s.code = p_code
+  ),
+  -- The logo is a data URL of about 20–40 kB, small beside the cover this
+  -- payload already carries, and public already through sideout_groups.
+  -- Nothing new is exposed by putting it here.
+  grp as (
+    select jsonb_build_object(
+             'id',         g.id,
+             'name',       g.name,
+             'home_court', g.home_court,
+             -- the card wears the group's colour, not the viewer's theme
+             'accent',     nullif(g.theme->>'accent', ''),
+             'photo',      g.photo) as row
+      from public.sessions s
+      join public.groups g on g.id = s.group_id
+     where s.club = coalesce(p_club, 'sideout') and s.code = p_code
   )
   select case when (select players from head) = 0 then null else
     jsonb_build_object(
@@ -83,6 +140,9 @@ as $$
       'title',     (select title     from head),
       'played_at', (select played_at from head),
       'players',   (select players   from head),
+      'venue',     (select venue     from place),
+      'meta',      (select row       from meta),
+      'group',     (select row       from grp),
       'cover',     (select img       from pic),
       'standings', (select rows      from board),
       'games',     (select rows      from games))

@@ -1299,7 +1299,61 @@ input.bad{border-color:var(--fault)!important}
 .ch-send input:focus{border-color:var(--court);outline:0}
 .ch-send button{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
   background:var(--court);color:var(--on-accent,#fff);display:grid;place-items:center}
-.ch-send button .ic{width:19px;height:19px;transform:rotate(90deg)}
+/* The quarter turn is the send arrow's alone — it is drawn pointing up and
+   wants to point right. Written as `.ch-send button .ic` it also caught the
+   camera beside it, which sat on its side in every conversation in the app. */
+/* picksilog's own line across the conversation. Not a bubble: nobody said
+   it, and giving it an author's shape would put a name on a thing the app
+   did by itself. */
+.ch-note{margin:14px auto;max-width:min(92%,340px);padding:13px 15px;text-align:center;
+  border-radius:var(--r-s);background:var(--card-2);border:1px solid var(--edge)}
+.ch-note-h{display:inline-flex;align-items:center;gap:6px;margin-bottom:6px}
+.ch-note-h img{width:18px;height:18px}
+.ch-note-h b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.ch-note p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.ch-note .btn{margin:0}
+.ch-note em{display:block;margin-top:8px;font-style:normal;font-size:10.5px;color:var(--ink-3)}
+
+/* The reaction bar, over the message it belongs to. */
+.ch-m{-webkit-touch-callout:none;position:relative;touch-action:pan-y}
+.ch-m.lit .ch-b{outline:2px solid var(--court);outline-offset:2px}
+/* Drag a message to the right to reply to it. The row's contents move and
+   the arrow underneath is uncovered, rather than the arrow riding along with
+   the bubble — which on an incoming message would have to start off the left
+   edge of the stream, where it is clipped. */
+.ch-m > *{transform:translateX(var(--sw,0px))}
+.ch-m:not(.swiping) > *{transition:transform .2s cubic-bezier(.2,.8,.3,1)}
+.ch-m::before{content:'\21A9';position:absolute;left:6px;top:50%;z-index:0;
+  transform:translateY(-50%) scale(.7);opacity:0;pointer-events:none;
+  font-size:17px;line-height:1;color:var(--ink-3);
+  transition:opacity .12s, transform .12s, color .12s}
+.ch-m.swiping::before{opacity:.5}
+.ch-m.armed::before{opacity:1;color:var(--court-ink);transform:translateY(-50%) scale(1.12)}
+.ch-pop{position:fixed;z-index:120;display:flex;align-items:center;gap:2px;padding:5px;
+  border-radius:99px;background:var(--card);border:1px solid var(--edge-2);
+  box-shadow:0 8px 26px rgba(11,44,74,.22);
+  opacity:0;transform:scale(.88) translateY(4px);transform-origin:bottom center;
+  transition:opacity .13s ease-out, transform .13s ease-out}
+.ch-pop.in{opacity:1;transform:none}
+[data-theme="night"] .ch-pop{box-shadow:0 8px 26px rgba(0,0,0,.5)}
+.ch-pop button{width:38px;height:38px;border:0;border-radius:50%;cursor:pointer;
+  background:none;font-size:21px;line-height:1;display:grid;place-items:center;
+  transition:transform .1s, background .12s}
+.ch-pop button:hover{transform:scale(1.18)}
+.ch-pop button.on{background:var(--court-soft,var(--card-2))}
+.ch-pop-sep{width:1px;height:22px;margin:0 3px;background:var(--edge-2);flex:0 0 auto}
+.ch-pop-re{color:var(--ink-2)}
+.ch-pop-re .ic{width:17px;height:17px}
+
+.ch-send button .ic{width:19px;height:19px}
+.ch-send button:disabled{opacity:.6;cursor:default}
+.ch-send input:disabled{opacity:.7}
+.ch-send button .ld-ring{width:16px;height:16px;border-width:2px}
+/* on its way, not yet gone */
+.ch-m.pending{opacity:.55}
+.ch-m.pending .ch-b em{font-style:normal;letter-spacing:.04em}
+.ch-send button[type="submit"] .ic{transform:rotate(90deg)}
 
 /* the count on the icon in the bar */
 .ab-bell.has{position:relative}
@@ -1373,15 +1427,6 @@ body.lboxed{overflow:hidden}
   background:var(--card-2);border:1px solid var(--edge)}
 .ch-rx button.on{background:var(--kitchen);border-color:var(--court)}
 .ch-m.me .ch-rx button{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);color:#fff}
-.ch-more{flex:0 0 auto;align-self:flex-end;width:26px;height:26px;border-radius:50%;
-  border:0;cursor:pointer;background:none;color:var(--ink-3);font-size:14px;line-height:1;
-  opacity:0;transition:opacity .14s}
-.ch-m:hover .ch-more,.ch-m:focus-within .ch-more{opacity:1}
-@media (pointer: coarse){ .ch-more{opacity:.55} }
-.ch-picker{display:flex;gap:8px;justify-content:center;margin:6px 0 14px}
-.ch-picker button{width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:21px;
-  background:var(--card-2);border:1px solid var(--edge)}
-.ch-picker button.on{background:var(--kitchen);border-color:var(--court)}
 
 /* letting somebody in off the waiting list, from the session's own page */
 /* Quiet on purpose. Taking somebody off is a thing you do occasionally and
@@ -1595,7 +1640,11 @@ body.lboxed{overflow:hidden}
 .feed-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
   margin-bottom:10px}
 .feed-h h2{margin:0}
-.feed-tools{display:flex;gap:6px}
+/* Centred, not stretched. The filter chips beside it are taller than the
+   view toggle, and a flex row defaults to stretch — so the pill grew to
+   match them and its two icons stayed at the top of it, leaving a band of
+   empty pill underneath that read as a mistake, because it was one. */
+.feed-tools{display:flex;align-items:center;gap:6px}
 select.mini{padding:6px 8px;border-radius:var(--r-s);border:1px solid var(--edge-2);
   background:var(--card);color:var(--ink-2);font-size:12.5px;font-family:inherit}
 .fx{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;margin-bottom:8px;
@@ -2657,6 +2706,46 @@ textarea:focus{border-color:var(--court)}
 .fd-tx span{display:block;margin-top:2px;font-size:12px;color:var(--ink-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fd-go{flex:0 0 auto;opacity:.45;font-size:19px}
+
+/* A played night as one line. The row is no longer the button — it holds
+   one, so that View results can sit beside it without being a button
+   inside a button, which is the thing the parser throws out. */
+.fd-past{gap:0;padding:0;overflow:hidden}
+.fd-past .fd-open{display:flex;align-items:center;gap:11px;flex:1;min-width:0;
+  padding:11px 4px 11px 12px;background:none;border:0;cursor:pointer;
+  font:inherit;color:inherit;text-align:left}
+.fd-past .fd-when b{font-size:19px}
+/* On a row the button loses its words and keeps its shape. Spelled out it
+   took a hundred and ten pixels off a title that had none to give, and
+   "SOS: UP AND DOWN THE RI6" is a worse row than an unlabelled button is a
+   button. The card underneath still says it in full, and both carry the
+   same title and aria-label. */
+.fd-past .sx-res{margin:0 10px 0 6px;width:38px;height:38px;padding:0;
+  border-radius:50%;justify-content:center}
+.fd-past .sx-res span{display:none}
+.fd-past .sx-res .ic{width:16px;height:16px}
+
+/* The way in to how a night finished. Quiet until you look at it, because
+   it repeats on every card in a feed people scroll fast — but it is the
+   one thing most people open a played night for, so it is on the surface
+   rather than two taps inside. */
+.sx-res{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  padding:8px 12px;border-radius:99px;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:12px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--court-ink);background:var(--card-2);border:1px solid var(--edge-2);
+  transition:background .15s, border-color .15s, color .15s}
+.sx-res:hover{background:var(--court);border-color:var(--court);color:var(--on-accent,#fff)}
+.sx-res .ic{width:13px;height:13px}
+
+/* facts on the left, the way in on the right, meeting in the middle */
+.sx-done{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sx-facts{min-width:0}
+.sx-facts .sx-line:last-child{margin-bottom:0}
+/* The body of a played card is dimmed to read as over. The button is the
+   live thing on it and must not be. */
+.sx.over .sx-body .sx-res{opacity:1}
+.sx.over .sx-done{opacity:1}
+.sx.over .sx-facts{opacity:.75}
 /* the import review: a row per pasted name, saying what it was matched to */
 .imp-list{max-height:46vh;overflow-y:auto;margin:0 -2px 10px;padding:2px}
 .imp-row{display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:6px;
@@ -2683,10 +2772,34 @@ textarea:focus{border-color:var(--court)}
 
 .fd-view{display:flex;gap:4px;flex:0 0 auto;padding:3px;border-radius:99px;
   background:var(--card-2);border:1px solid var(--edge)}
-.fd-view button{width:30px;height:26px;border-radius:99px;border:0;cursor:pointer;
-  background:none;color:var(--ink-3);display:grid;place-items:center}
+.fd-view button{width:34px;height:28px;border-radius:99px;border:0;cursor:pointer;
+  background:none;color:var(--ink-3);display:grid;place-items:center;transition:color .15s}
 .fd-view button.on{background:var(--card);color:var(--court-ink);box-shadow:var(--sh-1)}
-.fd-view .ic{width:15px;height:15px}
+.fd-view .ic{width:16px;height:16px}
+/* The one prompt on Home, for somebody who has joined nothing yet. Reads as
+   an invitation rather than a warning: nothing is wrong, there is just a
+   step they have not taken. */
+.nudge{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;
+  font-family:inherit;border:1px solid var(--grass);background:var(--grass-soft)}
+.nudge:hover{box-shadow:var(--sh-2)}
+.nudge-ic{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:var(--grass);color:#fff}
+.nudge-ic .ic{width:20px;height:20px}
+.nudge-tx{flex:1;min-width:0}
+.nudge-tx b{display:block;font-size:15px;margin-bottom:2px}
+.nudge-tx span{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+/* Said under a list, not instead of it */
+.vw-note{margin-top:12px;padding:12px 13px;border-radius:var(--r-s);
+  background:var(--card-2);border:1px solid var(--edge)}
+.vw-note p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.vw-note .btn{margin-top:10px}
+.gr-no{flex:0 0 auto;width:34px;height:34px;margin-left:6px;border-radius:50%;cursor:pointer;
+  border:1px solid var(--edge-2);background:var(--card-2);color:var(--ink-3);font-size:17px;
+  line-height:1;display:grid;place-items:center}
+.gr-no:hover{border-color:var(--fault);color:var(--fault)}
+/* waiting is not an invitation, so it does not wear the invitation's green */
+.nudge-wait{border-color:var(--edge-2);background:var(--card-2)}
+.nudge-wait .nudge-ic{background:var(--ink-3)}
 .hm-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
 .hm-today h2{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
@@ -3908,10 +4021,10 @@ body.casting{overflow:hidden}
 
   <div class="panel">
     <h2>Share</h2>
-    <p class="hint tight">9:16 cards built for stories. The session card comes out transparent — drop it straight over a photo.</p>
+    <p class="hint tight">9:16 cards built for stories. Two of them: who is winning, and what the night is.</p>
     <div class="seg" style="margin-bottom:12px">
-      <button id="card-standings" aria-pressed="true" onclick="setCardKind('standings')"><span class="lic" data-ic="trophy"></span> Standings</button>
-      <button id="card-session"   aria-pressed="false" onclick="setCardKind('session')"><span class="lic" data-ic="standings"></span> Session</button>
+      <button id="card-standings" aria-pressed="true" onclick="setCardKind('standings')"><span class="lic" data-ic="trophy"></span> Leaderboard</button>
+      <button id="card-session"   aria-pressed="false" onclick="setCardKind('session')"><span class="lic" data-ic="standings"></span> Session details</button>
     </div>
     <div id="card-preview" hidden></div>
     <button class="btn btn-go" onclick="makeCard()">Create story card</button>
@@ -4928,6 +5041,7 @@ function load(){
    HELPERS
    ═══════════════════════════════════════════════════ */
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function defaultTitle(){
   const w = (typeof sessionWhen === 'function' && sessionWhen()) || Date.now();
   return DAYS[new Date(w).getDay()] + ' Open Play';
@@ -6860,7 +6974,7 @@ function addPlayer(name, level, force){
   }
   const id = uid();
   S.players[id] = { id, name:n, level: level || newLevel, sex: null, dupr: null, mid: null, photo: null,
-    at: Date.now(), w:0, l:0, g:0, pf:0, pa:0, crowns:0, streak:0, out:false };
+    at: Date.now(), w:0, l:0, g:0, pf:0, pa:0, crowns:0, streak:0, sat:0, out:false };
   S.order.push(id);
   if(!name){ input.value=''; input.focus(); }
   /* A latecomer in a pool format has to be given a pool, or they are on
@@ -7225,10 +7339,28 @@ function startSession(anyway, confirmed){
      It sits under a list people scroll, which is exactly where a thumb lands
      by accident. */
   if(!confirmed){
+    /* The group is asked about here rather than in a modal of its own,
+       because it is the last moment it can be set without a trip back to
+       Setup — and because two sheets in a row before the one button anybody
+       came to press is how a warning gets tapped through unread.
+
+       Only raised when there is actually a group to file it under. Somebody
+       who runs no groups is not being careless by leaving it blank, and
+       telling them off for it every week would be the fastest way to teach
+       them to ignore this sheet. */
+    const canFile = (Groups.list || []).some(x => x.can_organize);
     openSheet(`<h3>Start the session?</h3>
       <p class="sub">${ids.length} on the list. The first round is drawn straight away and
         everybody watching the link sees the courts.</p>
-      <button class="btn btn-go" onclick="closeSheet();startSession(${anyway ? 'true' : 'false'}, true)">
+      ${!S.groupId && canFile ? `<div class="warn-box">
+        <b>This night is not under a group.</b>
+        <span>It will not show on any group's page and its results will not reach a group
+          table. The club ladder still gets them either way.</span>
+      </div>
+      <button class="btn btn-quiet" style="margin-top:10px"
+        onclick="closeSheet();GroupPick.open()">Choose a group first</button>` : ''}
+      <button class="btn btn-go" style="margin-top:10px"
+        onclick="closeSheet();startSession(${anyway ? 'true' : 'false'}, true)">
         Yes, start it</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not yet</button>`);
     return;
@@ -7254,7 +7386,7 @@ function startSession(anyway, confirmed){
   const n = Math.min(S.nCourts, max);
   if(n < S.nCourts) toast('Running ' + n + ' court' + (n>1?'s':'') + ' — that is what the numbers allow.');
 
-  Object.values(S.players).forEach(p=>{ p.w=0; p.l=0; p.g=0; p.pf=0; p.pa=0; p.crowns=0; p.streak=0; });
+  Object.values(S.players).forEach(p=>{ p.w=0; p.l=0; p.g=0; p.pf=0; p.pa=0; p.crowns=0; p.streak=0; p.sat=0; });
   S.nCourts = n; S.round = 1; S.games = 0; S.log = []; S.snap = null; S.pool = [];
   /* cleared for every format, so switching modes never leaves a stale
      set of tiers behind */
@@ -7363,7 +7495,11 @@ function nextRound(){
   if(plan){
     if(plan.crowned) plan.crowned.forEach(id => { if(P(id)) P(id).crowns++; });
     const played = new Set(onCourtIds());
-    activeIds().forEach(id => { P(id).streak = played.has(id) ? (P(id).streak||0)+1 : 0; });
+    activeIds().forEach(id =>{
+      const q = P(id);
+      q.streak = played.has(id) ? (q.streak || 0) + 1 : 0;
+      q.sat    = played.has(id) ? 0 : (q.sat || 0) + 1;
+    });
     applyPlan(plan);
     if(plan.rested && plan.rested.length) toast(plan.rested.map(nm).join(' & ') + ' taking a breather.');
   }
@@ -7545,12 +7681,30 @@ function planMixed(projected){
    works and nobody parks on the sideline. */
 function planGauntlet(projected){
   const proj = projected ? projectedGames() : (id => P(id).g);
+  const sat  = projected ? projectedSat()   : (id => P(id).sat || 0);
   const rate = id => { const p = P(id); return p.g ? p.w / p.g : 0.5; };
   const all = shuffle(activeIds());
   const need = Math.max(1, S.courts.length) * 4;
 
-  const onDeck = all.slice().sort((a,b)=> proj(a) - proj(b)).slice(0, need);
-  const bench  = all.filter(id => !onDeck.includes(id)).sort((a,b)=> proj(a) - proj(b));
+  /* ─ who gets on ────────────────────────────
+     Fewest games first, and among everyone on the same number of games,
+     whoever has been sitting longest.
+
+     That second clause is the whole fix. Ranking on games alone is right
+     but it does not decide anything on a big night: forty-three players
+     across four courts is sixteen seats, and after a round or two most of
+     the room is tied on the same count. Ties fell to the shuffle, so who
+     sat was a fresh coin toss every round with no memory of the last one —
+     and somebody could lose it four times running while the people either
+     side of them played. Equal games, wildly unequal rest, and only one of
+     those is felt. One player sat out four and then played two on the trot,
+     which is the same complaint from both ends.
+
+     Counting the wait fixes it without touching anything else: games stay
+     as level as they were, because that is still the first thing asked. */
+  const waiting = (a, b) => (proj(a) - proj(b)) || (sat(b) - sat(a));
+  const onDeck = all.slice().sort(waiting).slice(0, need);
+  const bench  = all.filter(id => !onDeck.includes(id)).sort(waiting);
 
   onDeck.sort((a,b)=>{
     const d = rate(b) - rate(a);
@@ -7572,6 +7726,14 @@ function planGauntlet(projected){
 function projectedStreak(){
   const on = new Set(onCourtIds());
   return id => (P(id).streak || 0) + (on.has(id) ? 1 : 0);
+}
+/* How long somebody will have been sitting by the time the next round is
+   dealt: nought if they are on court now, one more than they have already
+   waited if they are not. The same trick projectedGames plays, for the
+   other half of a fair night. */
+function projectedSat(){
+  const on = new Set(onCourtIds());
+  return id => on.has(id) ? 0 : (P(id).sat || 0) + 1;
 }
 function restSwapCourts(courts, queue){
   const rested = [];
@@ -7608,7 +7770,11 @@ function applyRest(plan){
 /* Social mix: fewest games get on first, then everything is redrawn. */
 function planMix(projected){
   const proj = projected ? projectedGames() : (id => P(id).g);
-  const all = shuffle(activeIds()).sort((a,b)=> proj(a) - proj(b));
+  const sat  = projected ? projectedSat()   : (id => P(id).sat || 0);
+  /* Same tie-break as Gauntlet, for the same reason: on a night bigger than
+     the courts, everyone is level on games and the shuffle was deciding who
+     sat. Longest wait goes on. */
+  const all = shuffle(activeIds()).sort((a,b)=> (proj(a) - proj(b)) || (sat(b) - sat(a)));
   const need = Math.max(1, S.courts.length) * 4;
   const on = all.slice(0, need);
   const courts = [];
@@ -7976,7 +8142,10 @@ function finishCourt(i){
   c.teams = plan.teams;
   c.win = null; c.left = undefined; c.sc = null; c.ws = undefined;
   const on = new Set(onCourtIds());
-  activeIds().forEach(id => { if(!on.has(id)) P(id).streak = 0; });
+  activeIds().forEach(id =>{
+    if(!on.has(id)){ P(id).streak = 0; P(id).sat = (P(id).sat || 0) + 1; }
+    else P(id).sat = 0;
+  });
 }
 function flushPools(){
   ensurePools();
@@ -9634,8 +9803,28 @@ const Groups = {
 
   paneDetails(box, info){
     const members = (info && info.members) || [];
+    const waiting = (info && info.waiting) || [];
     box.innerHTML = `
       ${info && info.blurb ? `<div class="panel"><p style="margin:0">${esc(info.blurb)}</p></div>` : ''}
+      ${info && info.pending ? `<div class="panel nudge nudge-wait">
+        <span class="nudge-ic">${icon('chair')}</span>
+        <span class="nudge-tx"><b>Waiting to be let in</b>
+          <span>An organizer of this group has your request. You will be in as soon as
+            one of them says yes.</span></span></div>` : ''}
+      ${waiting.length ? `<div class="panel">
+        <h2>Asking to join <span class="label">${waiting.length}</span></h2>
+        <p class="hint tight" style="margin:-4px 0 10px">Let somebody in and they are a
+          member — they see this group's sessions, its table and its chat.</p>
+        <div class="roster">${waiting.map(w => `<div class="pr">
+          ${avatar(w.n, (Club.find(w.m) || {}).photo, 'sm')}
+          <span class="nm"><span class="nmn">${esc(w.n)}</span>
+            <em>${w.at ? esc(shortWhen(Date.parse(w.at))) : 'asked'}</em></span>
+          ${duprBadge(w.dupr, true)}
+          <button class="vw-ok" onclick="Groups.decide('${esc(w.m)}',true)">Approve</button>
+          <button class="gr-no" onclick="Groups.decide('${esc(w.m)}',false)"
+            aria-label="Turn down ${esc(w.n)}">&times;</button>
+        </div>`).join('')}</div>
+      </div>` : ''}
       <div class="panel">
         <h2>Members <span class="label">${members.length || (info && info.membersCount) || ''}</span></h2>
         ${this.canRole() ? `<p class="hint tight" style="margin:-4px 0 10px">Tap the
@@ -9647,9 +9836,13 @@ const Groups = {
           style="margin-bottom:10px">` : ''}
         <div class="roster" id="gm-list">${this.memberRows(members)}</div>
       </div>
-      ${Auth.signedIn() && info ? `<button class="btn ${info.mine ? 'btn-quiet' : 'btn-go'}"
+      ${Auth.signedIn() && info ? `<button class="btn ${info.mine || info.pending ? 'btn-quiet' : 'btn-go'}"
         style="width:100%" onclick="Groups.toggleMine()">${
-        info.mine ? 'Leave this group' : 'Join this group'}</button>` : ''}`;
+        info.mine ? 'Leave this group'
+          : info.pending ? 'Withdraw my request'
+          : (info.approve ? 'Ask to join' : 'Join this group')}</button>
+      ${!info.mine && !info.pending && info.approve
+        ? '<p class="hint tight" style="text-align:center;margin:7px 0 0">An organizer lets people in one at a time.</p>' : ''}` : ''}`;
 
     if(!(this.cache[this.at] || {}).info){
       this.fetch('info').then(()=>{ if(currentScreen() === 'group') this.paintOne(); }).catch(()=>{});
@@ -9690,6 +9883,7 @@ const Groups = {
     const id = this.at;
     const c = this.cache[id] || {};
     const inIt = c.info && c.info.mine;
+    let said = 'in';
     try{
       const out = await Live.rpc(inIt ? 'sideout_group_leave' : 'sideout_group_join',
         { p_club: CONFIG.club || 'sideout', p_id: id });
@@ -9698,13 +9892,39 @@ const Groups = {
         return;
       }
       if(out === 'sign in first'){ toast('Sign in first.'); return; }
+      said = out;
     }catch(e){ toast('Could not reach the group just now.'); return; }
     /* read it again rather than guessing at the new state */
     delete this.cache[id];
     this.list = null;
     await this.load(true);
     this.paintOne();
-    toast(inIt ? 'You have left the group.' : 'You are in.');
+    toast(inIt ? 'You have left the group.'
+        : said === 'asked' ? 'Asked to join — an organizer will let you in.'
+        : 'You are in.');
+  },
+
+  /* Letting somebody in, or not. Turning somebody down removes the request
+     rather than remembering it: a standing list of people refused is not
+     something this app should keep, and somebody turned down by a misplaced
+     thumb can simply ask again. */
+  async decide(member, ok){
+    const id = this.at;
+    if(!id) return;
+    try{
+      await Live.rpc('sideout_group_decide',
+        { p_club: CONFIG.club || 'sideout', p_id: id, p_member: member, p_ok: !!ok });
+    }catch(e){
+      toast(/organizer/i.test(e.detail || e.message || '')
+        ? 'Only an organizer of this group can do that.'
+        : 'Could not do that just now.');
+      return;
+    }
+    delete this.cache[id];
+    this.list = null;
+    await this.load(true);
+    this.paintOne();
+    toast(ok ? 'Let in.' : 'Turned down.');
   },
 
   /* Making one, and changing one. The same form does both: a group is a
@@ -9719,6 +9939,7 @@ const Groups = {
       home_court: (g && g.home_court) || '',
       photo: (g && g.photo) || null,
       private: !!(g && g.private),
+      approve: g ? !!g.approve : true,
       accent: (g && g.theme && g.theme.accent) || null
     };
     this.editSheet();
@@ -9751,6 +9972,16 @@ const Groups = {
           value="${esc(d.home_court)}" oninput="Groups.draft.home_court=this.value"
           placeholder="Where you usually play"></div>
       <div class="field">
+        <span class="label">Joining</span>
+        <div class="seg" id="gf-approve">
+          <button class="${d.approve ? '' : 'on'}" onclick="Groups.setApprove(false)">Anyone can join</button>
+          <button class="${d.approve ? 'on' : ''}" onclick="Groups.setApprove(true)">I approve each one</button>
+        </div>
+        <p class="hint tight" style="margin-top:7px">${d.approve
+          ? 'Requests land on this page for an owner or organizer to let in.'
+          : 'Anybody who finds this group can join it and see its sessions, table and chat.'}</p>
+      </div>
+      <div class="field">
         <span class="label">Colour</span>
         <div class="swatches">
           <button class="sw${!d.accent ? ' on' : ''}" onclick="Groups.setAccent(null)"
@@ -9777,6 +10008,7 @@ const Groups = {
   /* Applied as you tap it. Choosing a colour from a swatch and only seeing it
      after saving asks somebody to commit to something they have not been
      shown. Cancelling puts back whatever the club was already wearing. */
+  setApprove(v){ this.draft.approve = !!v; this.editSheet(); },
   setAccent(c){
     this.draft.accent = c;
     Theme.apply(c || Theme.current());
@@ -9820,7 +10052,8 @@ const Groups = {
         p_club: CONFIG.club || 'sideout', p_id: d.id, p_name: name,
         p_blurb: d.blurb || null, p_photo: d.photo || null,
         p_home_court: d.home_court || null, p_private: !!d.private,
-        p_theme: d.accent ? { accent: d.accent } : null });
+        p_theme: d.accent ? { accent: d.accent } : null,
+        p_approve: !!d.approve });
     }catch(e){
       this.editSheet(/organizer/i.test(e.detail || e.message || '')
         ? 'Only an organizer can start a group.'
@@ -13318,16 +13551,58 @@ const Feed = {
             esc((r.title || 'Open play').replace(/'/g, ''))}',${r.cover ? 1 : 0})">⋯</button>` : ''}
         <h3>${esc(r.title || 'Open play')}</h3>
       </div>
-      <div class="sx-body">
-        <div class="sx-line"><span class="sx-ico">\u25F7</span><span>${t ? esc(longDate(t)) : ''}</span></div>
-        <div class="sx-line"><span class="sx-ico">\u25CF</span>
-          <span>${r.players} played \u00b7 ${r.games} game${r.games === 1 ? '' : 's'}</span></div>
-        ${r.owing == null ? '' : `<div class="sx-line"><span class="sx-ico">${icon('cash')}</span>
-          <span>${r.owing
-            ? `<b>${r.owing}</b> still to pay`
-            : 'everybody has paid'}</span></div>`}
+      <div class="sx-body sx-done">
+        <div class="sx-facts">
+          <div class="sx-line"><span class="sx-ico">\u25F7</span><span>${t ? esc(longDate(t)) : ''}</span></div>
+          <div class="sx-line"><span class="sx-ico">\u25CF</span>
+            <span>${r.players} played \u00b7 ${r.games} game${r.games === 1 ? '' : 's'}</span></div>
+          ${r.owing == null ? '' : `<div class="sx-line"><span class="sx-ico">${icon('cash')}</span>
+            <span>${r.owing
+              ? `<b>${r.owing}</b> still to pay`
+              : 'everybody has paid'}</span></div>`}
+        </div>
+        ${this.resultsBtn(r.code)}
       </div>
     </article>`;
+  },
+
+  /* The one thing anybody wants from a night that is over, on the card
+     rather than two taps inside it. Tapping the card opens the sheet, which
+     is the night's admin — reset it, put a photo on it, settle up. The
+     results are what everybody else came for, so they get their own way in.
+
+     stopPropagation because it sits on a card that is itself a button:
+     without it, every tap opened the sheet on top of the page it asked for. */
+  resultsBtn(code){
+    if(!code) return '';
+    return `<button class="sx-res" title="View results"
+      aria-label="View results for this night"
+      onclick="event.stopPropagation();location.href='?s=' + encodeURIComponent('${esc(code)}')">
+      <span>View results</span>${icon('standings')}</button>`;
+  },
+
+  /* The same night as one line, for the list view. Only what was still to
+     come could be shown as a list; everything already played stayed as big
+     cards underneath, which is the wrong way round if anything — a club
+     scrolls back through months of finished nights and only ever has a
+     handful coming up. */
+  pastRow(r){
+    const t = this.ms(r.played_at);
+    const d = t ? new Date(t) : null;
+    return `<div class="fd-dense fd-past">
+      <button class="fd-open" onclick="pastSession('${esc(r.code || '')}')">
+        <span class="fd-when">
+          <b>${d ? d.getDate() : '\u2014'}</b>
+          <span>${d ? esc(MONTH_SHORT[d.getMonth()]) : ''}</span>
+        </span>
+        <span class="fd-tx">
+          <b>${esc(r.title || 'Open play')}</b>
+          <span>${r.players} played \u00b7 ${r.games} game${r.games === 1 ? '' : 's'}${
+            r.owing ? ' \u00b7 ' + r.owing + ' to pay' : ''}</span>
+        </span>
+      </button>
+      ${this.resultsBtn(r.code)}
+    </div>`;
   },
   /* Months that actually have something in them, newest first, with
      the nearest one picked by default \u2014 a club looking at the app in
@@ -13411,11 +13686,11 @@ const Feed = {
           title="Organize an open play">+ New</button>` : ''}
         <div class="feed-tools">
           ${this.chips()}
-          <span class="fd-view">
+          <span class="fd-view" role="group" aria-label="How to show the feed">
             <button class="${this.dense ? '' : 'on'}" onclick="Feed.setDense(false)"
-              aria-label="Big cards" title="Big cards">${icon('tv')}</button>
+              aria-pressed="${!this.dense}" aria-label="Cards" title="Cards">${icon('grid')}</button>
             <button class="${this.dense ? 'on' : ''}" onclick="Feed.setDense(true)"
-              aria-label="A list" title="A list">${icon('manage')}</button>
+              aria-pressed="${!!this.dense}" aria-label="List" title="List">${icon('rows')}</button>
           </span>
         </div>
       </div>
@@ -13429,7 +13704,8 @@ const Feed = {
                   : 'Nothing listed yet. Your organizer may still be sending links directly.')
                : 'Nothing matches that filter.'}</p>`}
       ${past.length ? `<h2 style="margin-top:22px">Already played</h2>
-        ${past.slice(0, 12).map(r => this.pastCard(r)).join('')}` : ''}
+        ${past.slice(0, this.dense ? 30 : 12)
+              .map(r => this.dense ? this.pastRow(r) : this.pastCard(r)).join('')}` : ''}
     </div>`;
   }
 };
@@ -13486,6 +13762,7 @@ function paintHome(){
          + button ("Join with a code"), so it was holding the best slot on the
          page for something almost nobody needed. Whose birthday it is this
          month is the opposite: nothing to do, worth seeing. -->
+    ${groupNudge()}
     ${birthdayStrip()}
     ${mySessionsHTML()}
     <!-- Back, but as one row rather than the panel with a heading and a line
@@ -13503,6 +13780,30 @@ function paintHome(){
     </div>
     ${Feed.html()}`;
 }
+/* Somebody who has signed up and joined nothing sees a home page of other
+   people's nights with no way of telling which of them are anything to do
+   with them. Groups are how the app is organised and nowhere says so at the
+   moment it matters, which is the first minute of the first visit.
+
+   It goes once they are in one — a permanent banner is furniture, and
+   furniture is invisible. It also waits until the groups have actually been
+   read: `mine` is false on a list that has not arrived yet, and telling a
+   member of three clubs to go and join one is worse than saying nothing. */
+function groupNudge(){
+  const list = Groups.list;
+  if(!list || !list.length) return '';
+  if(list.some(g => g.mine)) return '';
+  return `<button class="panel nudge" onclick="go('groups')">
+    <span class="nudge-ic">${icon('roles')}</span>
+    <span class="nudge-tx">
+      <b>Join a group to get started</b>
+      <span>Groups are the clubs and crews that run the nights. Join one and its
+        sessions, its table and its chat all turn up here.</span>
+    </span>
+    <i class="sr-go">&rsaquo;</i>
+  </button>`;
+}
+
 /* What is on today, lifted out of the feed and put above it. A session
    tonight is a different kind of thing from one in three weeks: you are
    deciding whether to leave the house, not whether to put it in the diary.
@@ -13734,6 +14035,7 @@ const Chat = {
     this.into = boxId; this.inline = true;
     this.at = chat; this.msgs = []; this.since = null;
     this.title = title || 'Chat'; this.who = null; this.kind = 'session';
+    this.code = code; this.loading = true; this.err = null;
     this.paintRoom();
     await this.pull(true);
     this.tick();
@@ -13768,17 +14070,25 @@ const Chat = {
   /* ── one conversation ──────────────────────────────────────────────── */
   async enter(id, title){
     this.at = id;
-    this.msgs = []; this.since = null;
+    this.msgs = []; this.since = null; this.err = null; this.pulling = false;
+    /* Painted before the messages are asked for, so without this the room
+       said "Nothing said yet" over a conversation with thirty-seven messages
+       in it until the read came back @EM@ which on a phone is long enough to
+       read, believe and screenshot. */
+    this.loading = true;
     const row = (this.list || []).find(c => String(c.id) === String(id));
     this.title = title || (row && row.title) || 'Chat';
     this.who = row ? row.who : null;
     this.kind = row ? row.kind : null;
+    this.code = row ? row.code : null;
     this.paintRoom();
     await this.pull(true);
     this.tick();
   },
   leave(){
+    this.popClose();
     this.at = null; this.replyTo = null; this.pending = null;
+    this.err = null; this.pulling = false;
     clearInterval(this.t); this.t = null;
     this.load(true).then(()=>{ if(currentScreen() === 'chats') this.paint(); });
     this.paint();
@@ -13789,6 +14099,8 @@ const Chat = {
     go(this.from === 'chats' ? 'home' : this.from);
   },
 
+  retry(){ this.err = null; this.paintRoom(true); this.pull(true); },
+
   tick(){
     clearInterval(this.t);
     this.t = setInterval(()=>{
@@ -13797,24 +14109,54 @@ const Chat = {
     }, 4000);
   },
 
+  /* One read at a time, and nothing counted twice.
+
+     Sending asks for the new messages straight away, and the four-second
+     tick is still running while it does. Both went out carrying the same
+     `since`, both came back with the message just sent, and both appended
+     it — so your own message appeared twice, every time, if the timing
+     happened to line up. The guard stops the second read starting; the
+     id check means that even if one slips through, a message already on
+     screen is never added again.
+
+     Errors used to be swallowed whole. A conversation that could not be
+     read looked exactly like a conversation nobody had written in, which
+     is the worst of both — nothing to see and nothing to explain it. */
+  pulling: false, err: null, loading: false,
   async pull(first){
-    if(!this.at) return;
+    if(!this.at || this.pulling) return;
+    const chat = this.at;
+    this.pulling = true;
     let rows = [];
     try{
       rows = await Live.rpc('sideout_chat_messages',
-        { p_club: CONFIG.club || 'sideout', p_chat: this.at, p_since: this.since }) || [];
-    }catch(e){ return; }
-    if(rows.length){
-      this.msgs = this.msgs.concat(rows);
-      this.since = rows[rows.length - 1].created_at;
+        { p_club: CONFIG.club || 'sideout', p_chat: chat, p_since: this.since }) || [];
+    }catch(e){
+      this.pulling = false; this.loading = false;
+      if(String(chat) !== String(this.at)) return;
+      this.err = /not your conversation/i.test(e.detail || e.message || '')
+        ? 'This conversation is not open to you any more.'
+        : 'Could not read the messages just now.';
+      this.paintRoom(true);
+      return;
+    }
+    this.pulling = false; this.loading = false;
+    /* the room may have been left, or another opened, while that was away */
+    if(String(chat) !== String(this.at)) return;
+    this.err = null;
+
+    const seen = {};
+    this.msgs.forEach(m =>{ seen[String(m.id)] = 1; });
+    const fresh = rows.filter(r => !seen[String(r.id)]);
+    if(fresh.length) this.msgs = this.msgs.concat(fresh);
+    /* advanced even when every row was one we already had, or the next read
+       asks for the same window again for ever */
+    if(rows.length) this.since = rows[rows.length - 1].created_at;
+
+    if(fresh.length || first){
       this.paintRoom(true);
       try{ await Live.rpc('sideout_chat_read',
-        { p_club: CONFIG.club || 'sideout', p_chat: this.at }); }catch(e){}
-      this.load(true);
-    } else if(first){
-      this.paintRoom(true);
-      try{ await Live.rpc('sideout_chat_read',
-        { p_club: CONFIG.club || 'sideout', p_chat: this.at }); }catch(e){}
+        { p_club: CONFIG.club || 'sideout', p_chat: chat }); }catch(e){}
       this.load(true);
     }
   },
@@ -13845,7 +14187,23 @@ const Chat = {
             `<button class="${m.my_reaction === e2 ? 'on' : ''}"
               onclick="Chat.react('${esc(m.id)}','${esc(e2)}')">${esc(e2)}${
               m.reactions[e2] > 1 ? ' ' + m.reactions[e2] : ''}</button>`).join('')}</span>` : '';
-      return rule + `<div class="ch-m${m.mine ? ' me' : ''}${runOn ? ' run' : ''}">
+      /* picksilog saying the night is done. Not a bubble: nobody said it,
+         and drawing it as though somebody had would put an author's name on
+         a thing the app did. A rule across the conversation, with the way to
+         the results on it. */
+      if(m.kind === 'recap'){
+        last = null;
+        return rule + `<div class="ch-note">
+          <span class="ch-note-h"><img src="${picksilogSrc()}" alt="">
+            <b>picksilog</b></span>
+          <p>${esc(m.body || '')}</p>
+          ${this.code ? `<button class="btn btn-quiet" onclick="location.href='?s=' + encodeURIComponent('${
+            esc(this.code)}')">${icon('standings')} View results</button>` : ''}
+          <em>${t ? esc(clockText(t.getTime())) : ''}</em>
+        </div>`;
+      }
+      return rule + `<div class="ch-m${m.mine ? ' me' : ''}${runOn ? ' run' : ''}"
+          data-id="${esc(m.id)}">
         ${m.mine || runOn ? '' : avatar(m.name, m.photo, 'sm')}
         <span class="ch-b">
           ${m.mine || runOn ? '' : `<i>${esc(m.name)}</i>`}
@@ -13854,10 +14212,20 @@ const Chat = {
           <em>${t ? esc(clockText(t.getTime())) : ''}</em>
           ${reacts}
         </span>
-        <button class="ch-more" aria-label="Reply or react"
-          onclick="Chat.msgMenu('${esc(m.id)}')">\u00b7\u00b7\u00b7</button>
       </div>`;
     }).join('');
+
+    /* Whatever is on its way to the server, drawn where it will land. It is
+       the sender's own bubble with the clock replaced by a word, so nothing
+       moves when the real one arrives — and it is not in this.msgs, so the
+       poll cannot end up showing it twice. */
+    const waiting = this.outbox ? `<div class="ch-m me run pending">
+        <span class="ch-b">
+          ${this.outbox.image ? `<img class="ch-pic" src="${this.outbox.image}" alt="">` : ''}
+          ${this.outbox.body ? `<span>${esc(this.outbox.body).replace(/\n/g, '<br>')}</span>` : ''}
+          <em>Sending…</em>
+        </span>
+      </div>` : '';
 
     /* Three bands: the header, the stream, the box you type in. The header
        and the composer used to scroll away with the conversation, so on a
@@ -13872,10 +14240,16 @@ const Chat = {
         <button class="ch-prof" onclick="Chat.confirmHide('${esc(this.at)}','${esc(this.title)}')"
           aria-label="Clear this conversation">${icon('trash')}</button>
       </div>
-      <div class="ch-stream" id="ch-stream">${this.msgs.length ? body
-        : `<div class="empty">${this.kind === 'session'
-            ? 'Nothing said yet. Somebody has to go first.'
-            : 'Say hello.'}</div>`}</div>
+      <div class="ch-stream" id="ch-stream">${(this.msgs.length || this.outbox) ? body + waiting
+        : this.err
+          ? `<div class="empty"><p>${esc(this.err)}</p>
+             <button class="btn btn-quiet" style="margin-top:12px"
+               onclick="Chat.retry()">Try again</button></div>`
+          : this.loading
+            ? `<div class="ld-block"><span class="ld-ball"></span><p>Reading the messages…</p></div>`
+            : `<div class="empty">${this.kind === 'session'
+              ? 'Nothing said yet. Somebody has to go first.'
+              : 'Say hello.'}</div>`}</div>
       <div class="ch-foot">
         ${this.replyTo ? `<div class="ch-replying">
           <span><i>Replying to ${esc(this.replyTo.name)}</i>${esc(this.replyTo.body)}</span>
@@ -13887,44 +14261,174 @@ const Chat = {
           <button type="button" class="ch-clip" onclick="Chat.addPhoto()"
             aria-label="Send a photo">${icon('camera')}</button>
           <input type="text" id="ch-in" maxlength="2000" autocomplete="off"
-            placeholder="Message" value="${esc(draft || '')}">
-          <button type="submit" aria-label="Send">${icon('upload')}</button>
+            placeholder="Message" value="${esc(draft || '')}"${this.sending ? ' disabled' : ''}>
+          <button type="submit" aria-label="${this.sending ? 'Sending' : 'Send'}"${
+            this.sending ? ' disabled' : ''}>${
+            this.sending ? '<span class="ld-ring"></span>' : icon('upload')}</button>
         </form>
       </div>
     </div>`;
 
     const st = document.getElementById('ch-stream');
     if(st) st.scrollTop = st.scrollHeight;
+    this.wireStream();
     if(keepInput){ const el = document.getElementById('ch-in'); if(el) el.focus(); }
   },
 
-  /* What to do with one message. A sheet rather than a long-press, because a
-     long-press is undiscoverable and this has to work for somebody who has
-     never used it before. */
+  /* Long press a message and the emoji come up over it — which is what a
+     long press does in every other messaging app anybody uses, and was worth
+     more than the argument for discoverability that put a permanent ··· on
+     the end of every line. The dots were on screen a hundred times in a long
+     conversation and doing nothing for any of them.
+
+     Right-click does the same on a desktop, and the popup is anchored to the
+     message it belongs to rather than sliding up from the bottom of the
+     screen, so it is obvious which one is being reacted to.                */
+  pop: null, popTimer: null, popFrom: null,
+
+  popOpen(id, el){
+    this.popClose();
+    const m = this.msgs.find(x => String(x.id) === String(id));
+    if(!m || !el) return;
+    const box = document.createElement('div');
+    box.className = 'ch-pop';
+    box.innerHTML = this.EMOJI.map(e2 =>
+        `<button class="${m.my_reaction === e2 ? 'on' : ''}"
+          onclick="Chat.react('${esc(id)}','${esc(e2)}')">${e2}</button>`).join('')
+      + `<span class="ch-pop-sep"></span>`
+      + `<button class="ch-pop-re" onclick="Chat.reply('${esc(id)}')"
+           aria-label="Reply">${icon('leave')}</button>`;
+    document.body.appendChild(box);
+
+    /* Placed over the message, and nudged back on screen if that would hang
+       it off either edge — a reaction bar half off the side of the phone is
+       the failure this kind of popup always has. */
+    const r = el.getBoundingClientRect();
+    const w = box.offsetWidth, h = box.offsetHeight;
+    let left = r.left + r.width / 2 - w / 2;
+    left = Math.max(10, Math.min(left, window.innerWidth - w - 10));
+    let top = r.top - h - 8;
+    if(top < 8) top = Math.min(r.bottom + 8, window.innerHeight - h - 8);
+    box.style.left = Math.round(left) + 'px';
+    box.style.top = Math.round(top) + 'px';
+    requestAnimationFrame(()=> box.classList.add('in'));
+
+    el.classList.add('lit');
+    this.pop = box; this.popFrom = el;
+    setTimeout(()=>{
+      document.addEventListener('pointerdown', Chat.popAway, true);
+      document.addEventListener('scroll', Chat.popAway, true);
+    }, 0);
+  },
+  popAway(ev){
+    if(Chat.pop && ev && ev.type === 'pointerdown' && Chat.pop.contains(ev.target)) return;
+    Chat.popClose();
+  },
+  popClose(){
+    document.removeEventListener('pointerdown', Chat.popAway, true);
+    document.removeEventListener('scroll', Chat.popAway, true);
+    if(this.popFrom) this.popFrom.classList.remove('lit');
+    if(this.pop && this.pop.parentNode) this.pop.parentNode.removeChild(this.pop);
+    this.pop = null; this.popFrom = null;
+  },
+
+  /* Bound once on the stream rather than per message, so a room with three
+     hundred lines in it still has one set of listeners.
+
+     Two gestures share these handlers. Hold a message and the reactions come
+     up; drag it to the right and let go and you are replying to it. They
+     cannot both happen, so the first one to declare itself cancels the other:
+     moving at all kills the hold, and the hold opening kills the drag.
+
+     The axis is decided once, on the first few pixels, and never revisited.
+     Deciding per-event is what makes a swipe-to-reply fight the scroll — a
+     thumb travelling up the screen wanders sideways by a pixel or two the
+     whole way, and any handler that keeps asking will keep grabbing it. */
+  SWIPE_ARM: 52,
+  wireStream(){
+    const st = document.getElementById('ch-stream');
+    if(!st || st.dataset.wired) return;
+    st.dataset.wired = '1';
+    const hit = ev => ev.target.closest ? ev.target.closest('.ch-m[data-id]') : null;
+    let sw = null;
+
+    const slide = (el, dx) => el.style.setProperty('--sw', Math.round(dx) + 'px');
+    const release = () =>{
+      if(!sw) return;
+      const el = sw.el, go = sw.dx >= Chat.SWIPE_ARM, id = sw.id;
+      el.classList.remove('swiping', 'armed');
+      slide(el, 0);
+      sw = null;
+      if(go) Chat.reply(id);
+    };
+
+    st.addEventListener('pointerdown', ev =>{
+      const el = hit(ev);
+      if(!el) return;
+      sw = { el: el, id: el.dataset.id, x0: ev.clientX, y0: ev.clientY, dx: 0, axis: null };
+      clearTimeout(Chat.popTimer);
+      Chat.popTimer = setTimeout(()=>{
+        if(sw && sw.axis === 'x') return;      /* already a drag */
+        if(sw){ sw.el.classList.remove('swiping','armed'); slide(sw.el, 0); sw = null; }
+        Chat.popOpen(el.dataset.id, el);
+      }, 420);
+    });
+
+    st.addEventListener('pointermove', ev =>{
+      if(!sw) return;
+      const dx = ev.clientX - sw.x0, dy = ev.clientY - sw.y0;
+      if(sw.axis === null){
+        if(Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        /* down the page, or a right-hand drag. Anything else is neither. */
+        sw.axis = (Math.abs(dx) > Math.abs(dy) && dx > 0) ? 'x' : 'y';
+        clearTimeout(Chat.popTimer);
+        if(sw.axis === 'y'){ sw = null; return; }
+        sw.el.classList.add('swiping');
+      }
+      if(sw.axis !== 'x') return;
+      /* Stiffens past the point it would fire, so the gesture has an end you
+         can feel rather than a rubber band that goes on for ever. */
+      const arm = Chat.SWIPE_ARM;
+      sw.dx = dx <= arm ? Math.max(0, dx) : arm + (dx - arm) * 0.28;
+      const was = sw.el.classList.contains('armed');
+      const now = sw.dx >= arm;
+      sw.el.classList.toggle('armed', now);
+      if(now && !was && navigator.vibrate) { try{ navigator.vibrate(8); }catch(e){} }
+      slide(sw.el, sw.dx);
+      if(ev.cancelable) ev.preventDefault();
+    });
+
+    st.addEventListener('pointerup', ()=>{ clearTimeout(Chat.popTimer); release(); });
+    st.addEventListener('pointercancel', ()=>{
+      clearTimeout(Chat.popTimer);
+      if(sw){ sw.dx = 0; release(); }
+    });
+
+    st.addEventListener('contextmenu', ev =>{
+      const el = hit(ev);
+      if(!el) return;
+      ev.preventDefault();
+      clearTimeout(Chat.popTimer);
+      if(sw){ sw.el.classList.remove('swiping','armed'); slide(sw.el, 0); sw = null; }
+      Chat.popOpen(el.dataset.id, el);
+    });
+  },
+
   replyTo: null, pending: null,
   EMOJI: ['\ud83d\udc4d', '\ud83d\ude02', '\ud83d\udd25', '\ud83c\udfd3', '\u2764\ufe0f', '\ud83d\ude2e'],
-  msgMenu(id){
-    const m = this.msgs.find(x => String(x.id) === String(id));
-    if(!m) return;
-    openSheet(`<h3>${esc(m.name)}</h3>
-      <p class="sub">${esc((m.body || (m.image ? 'a photo' : '')).slice(0, 120))}</p>
-      <div class="ch-picker">${this.EMOJI.map(e2 =>
-        `<button class="${m.my_reaction === e2 ? 'on' : ''}"
-          onclick="Chat.react('${esc(id)}','${esc(e2)}')">${e2}</button>`).join('')}</div>
-      <button class="btn btn-go" onclick="Chat.reply('${esc(id)}')">Reply to this</button>
-      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
-  },
   reply(id){
     const m = this.msgs.find(x => String(x.id) === String(id));
     if(!m) return;
     this.replyTo = { id: m.id, name: m.name, body: (m.body || 'a photo').slice(0, 90) };
-    closeSheet();
+    this.popClose();
     this.paintRoom(true);
+    const el = document.getElementById('ch-in');
+    if(el) el.focus();
   },
   cancelReply(){ this.replyTo = null; this.paintRoom(true); },
 
   async react(id, emoji){
-    closeSheet();
+    this.popClose();
     try{
       await Live.rpc('sideout_chat_react',
         { p_club: CONFIG.club || 'sideout', p_msg: id, p_emoji: emoji });
@@ -13977,15 +14481,24 @@ const Chat = {
     toast('Cleared.');
   },
 
+  sending: false, outbox: null,
   async send(){
     const el = document.getElementById('ch-in');
     const body = String((el || {}).value || '').trim();
-    if((!body && !this.pending) || !this.at) return;
+    if((!body && !this.pending) || !this.at || this.sending) return;
     const reply = this.replyTo ? this.replyTo.id : null;
     const image = this.pending;
     const held = this.replyTo;
     if(el) el.value = '';
     this.replyTo = null; this.pending = null;
+    /* Nothing said whether a message had gone anywhere. On a slow connection
+       the box simply emptied and the message turned up some seconds later,
+       which reads as the send having been lost — so people send it again.
+       The button spins, and the message waits in the stream greyed out until
+       the server has it, which is the honest picture: written, not yet sent. */
+    this.sending = true;
+    this.outbox = { body: body, image: image };
+    this.paintRoom(true);
     try{
       await Live.rpc('sideout_chat_send',
         { p_club: CONFIG.club || 'sideout', p_chat: this.at, p_body: body,
@@ -13993,14 +14506,22 @@ const Chat = {
     }catch(e){
       /* Put back exactly what they had, so a failed send is not also a lost
          message and a lost photo. */
-      if(el) el.value = body;
+      this.sending = false; this.outbox = null;
       this.replyTo = held; this.pending = image;
+      this.paintRoom(true);
+      const back = document.getElementById('ch-in');
+      if(back){ back.value = body; back.focus(); }
       toast('That did not send \u2014 '
         + String(e.detail || e.message || '').slice(0, 60));
-      this.paintRoom(true);
       return;
     }
+    this.sending = false; this.outbox = null;
     await this.pull();
+    /* pull() only repaints when something new came back, and the composer has
+       to come out of its spinner either way */
+    this.paintRoom(true);
+    const back = document.getElementById('ch-in');
+    if(back) back.focus();
   }
 };
 
@@ -14508,7 +15029,7 @@ const Past = {
 
   cardBtn(){
     const ttl = ((this.data && this.data.title) || 'Open play').replace(/'/g, '');
-    return '<button class="btn btn-quiet pv-card" onclick="Recap.cardFor(\''
+    return '<button class="btn btn-quiet pv-card" onclick="Recap.cardMenu(\''
       + esc(this.code) + '\',\'' + esc(ttl) + '\')">'
       + icon('instagram') + ' Share to Instagram story</button>';
   },
@@ -14685,7 +15206,7 @@ async function pastSessionSheet(code){
       onclick="location.href='?r=${encodeURIComponent(code)}'">${
         navIcon('eye')}View the full night</button>
     <button class="btn btn-quiet" style="margin-top:8px"
-      onclick="Recap.cardFor('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
+      onclick="Recap.cardMenu('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
         navIcon('instagram')}Story card for Instagram</button>
     <button class="btn btn-quiet" style="margin-top:8px"
       onclick="Recap.share('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
@@ -15063,7 +15584,7 @@ function resetTyped(code){
    start a player off identically. */
 function zeroPlayer(p){
   p.w = 0; p.l = 0; p.g = 0; p.pf = 0; p.pa = 0;
-  p.crowns = 0; p.streak = 0; p.out = false;
+  p.crowns = 0; p.streak = 0; p.sat = 0; p.out = false;
   return p;
 }
 
@@ -15905,6 +16426,17 @@ function navIcon(kind){
        same screen looked like three different apps on three handsets. */
     tv:       '<rect x="3" y="6.4" width="18" height="12" rx="1.6"/>'
             + '<path d="M8.4 3.2 12 6.4l3.6-3.2"/>',
+    /* The two ways to look at the feed. It used to borrow `tv` for cards and
+       `manage` for the list, and neither said what it did: a television set
+       and a hamburger menu sitting in a segmented control that switches a
+       layout. These are the shapes everybody already reads as this. */
+    grid:     '<rect x="3.6" y="3.6" width="7.4" height="7.4" rx="1.8"/>'
+            + '<rect x="13" y="3.6" width="7.4" height="7.4" rx="1.8"/>'
+            + '<rect x="3.6" y="13" width="7.4" height="7.4" rx="1.8"/>'
+            + '<rect x="13" y="13" width="7.4" height="7.4" rx="1.8"/>',
+    rows:     '<rect x="3.4" y="4.4" width="4.2" height="4.2" rx="1.2"/>'
+            + '<rect x="3.4" y="14.4" width="4.2" height="4.2" rx="1.2"/>'
+            + '<path d="M10.8 6.5h9.8M10.8 16.5h9.8"/>',
     folder:   '<path d="M4 7.6a1 1 0 0 1 1-1h3.5l1.6 2H19a1 1 0 0 1 1 1v7.8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>',
     moon:     '<path d="M20 14.4A8.3 8.3 0 1 1 10.3 4a6.7 6.7 0 0 0 9.7 10.4z"/>',
     swords:   '<path d="M4 4.4h2.8l9.4 9.4M20 4.4h-2.8L7.8 13.8"/>'
@@ -18306,346 +18838,154 @@ const Recap = {
 
   footHTML(){
     return `<div class="rc-foot">
-      <button class="btn btn-go" onclick="Recap.card()">${navIcon('instagram')}Story card for Instagram</button>
+      <button class="btn btn-go" onclick="Recap.cardMenu()">${navIcon('instagram')}Story card for Instagram</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="Recap.share()">${
         navIcon('share')}Share the link</button>
       <button class="btn btn-quiet" style="margin-top:8px" onclick="leaveRecap()">Go to Sideout Society</button>
     </div>`;
   },
 
-  /* ── the story card ──────────────────────────────────────────
-     1080 by 1920, which is what a story wants, drawn to the same rules as
-     the one the organizer makes mid-session: the wordmark, the ball green
-     eyebrow, gold for the winner. The difference is the night's own photo
-     across the top — this is a finished evening being remembered rather
-     than a live table, and the picture is the part people recognise.
+  /* ── the story cards ──────────────────────────────────────────
+     Two of them, 1080 by 1920, which is what a story wants: the leaderboard
+     and the session details. Both drawings are shared with the cards an
+     organizer makes mid-session, so the same night cannot go out looking
+     like two different clubs ran it depending on which button was pressed.
 
-     No club branding is invented here: the colours, the wordmark and the
-     crowns are the ones already in the app.                              */
-  async card(){
+     All this end does is say what the night was. Which card gets drawn is
+     the only thing it decides. */
+  cardMenu(code, title){
+    const c = code ? "'" + esc(code) + "','" + esc(String(title || '').replace(/'/g, '')) + "'" : '';
+    openSheet(`<h3>Story card</h3>
+      <p class="sub">Two ways to post the night. Both come out ready to drop
+        straight into a story.</p>
+      <button class="btn btn-go" onclick="Recap.${code ? 'cardFor(' + c + ",'board')" : "card('board')"}">${
+        navIcon('trophy')}The leaderboard</button>
+      <p class="hint tight">Who finished where, top ten, with the podium.</p>
+      <button class="btn btn-quiet" style="margin-top:12px"
+        onclick="Recap.${code ? 'cardFor(' + c + ",'session')" : "card('session')"}">${
+        navIcon('standings')}Session details</button>
+      <p class="hint tight">When, where, how it was played and how big it was
+        — with the night's own photo across the top.</p>
+      <button class="btn btn-quiet" style="margin-top:12px" onclick="closeSheet()">Close</button>`);
+  },
+
+  /* Everything a card needs that does not depend on which of the two it is. */
+  async cardBase(d){
+    const head = cardHeading(d.group);
+    /* Dated from when the night started, not from when its results were
+       banked. A session that runs to half past midnight is banked on the
+       Thursday and everybody there would call it Wednesday's — the card had
+       the masthead saying THURSDAY 30 JUL over a WHEN tile reading Wed 29
+       Jul, which is one night described as two. */
+    const m = d.meta || {};
+    const when = cardWhen(m.starts_at || (d.played_at ? Date.parse(d.played_at) : null));
+    const host = (location.origin && location.origin !== 'null')
+      ? location.host.replace(/^www\./, '') : '';
+    return {
+      club:  head.club,
+      court: String(d.venue || head.court || '').trim(),
+      accent: head.accent,
+      logo:  head.logo ? await loadImg(head.logo) : null,
+      day:   when.day,
+      date:  when.date,
+      title: d.title || 'Open play',
+      link:  host ? host + '/recap/' + (d.code || '') : (d.code ? 'CODE ' + d.code : '')
+    };
+  },
+
+  /* The next night this same group has on the books, or nothing. A card
+     promising a session nobody has actually put in the app is worse than a
+     card that simply ends. */
+  async nextNight(groupId){
+    if(!groupId) return null;
+    let up = [];
+    try{ up = await Live.rpc('sideout_upcoming', { p_club: CONFIG.club || 'sideout' }) || []; }
+    catch(e){ return null; }
+    const now = Date.now();
+    const when = up.filter(r => r.group_id === groupId && r.starts_at)
+                   .map(r => Date.parse(r.starts_at))
+                   .filter(t => t > now)
+                   .sort((x, y) => x - y)[0];
+    return when ? cardDayDate(when) + ' · ' + clockText(when) : null;
+  },
+
+  async card(kind){
     const d = this.data;
     if(!d || !(d.standings || []).length){ toast('Nothing to put on a card yet.'); return; }
+    closeSheet();
     toast('Building your card…');
-    try{
-      await document.fonts.load('130px "Bebas Neue"');
-      await document.fonts.load('800 30px "Barlow Condensed"');
-    }catch(e){}
-
-    try{ await document.fonts.load('700 110px "Outfit"'); }catch(e){}
-    const logo = drawLockup._mark = await loadImg(picksilogURI());
-    /* Covers are data URLs, so the canvas stays clean and can still be
-       exported. A remote one would taint it and toBlob would throw, so a
-       photo that will not load is simply skipped. */
-    const shot = d.cover ? await loadImg(d.cover) : null;
+    cardMark = await cardFonts();
 
     const c = document.getElementById('card-canvas');
     c.width = 1080; c.height = 1920;
     const x = c.getContext('2d');
-    const W = 1080, PAD = 72;
-    const PAL = cardPaint();
-    const GOLD = PAL.gold, BALL = PAL.ball;
-
-    const g = x.createLinearGradient(0, 0, 220, 1920);
-    g.addColorStop(0, PAL.deep); g.addColorStop(.45, PAL.mid); g.addColorStop(1, PAL.low);
-    x.fillStyle = g; x.fillRect(0, 0, W, 1920);
-
-    /* ── the card is a budget ────────────────────────────────────────────
-       1080 by 1920 with the wordmark and the link pinned to the bottom, so
-       every pixel the heading takes is a pixel the table does not get. A
-       title can be two words or eight and the layout has to hold either
-       way, which means working the heading out before drawing any of it
-       rather than starting at the top and hoping.
-
-       What gives way is the photograph. It is the decoration; the standings
-       are the reason somebody is posting the card at all. So the band is
-       whatever is left after the heading and a full table have been paid
-       for, down to a floor where a photo still reads as a photo.
-
-       Without this the table simply ran on into the footer: a card with a
-       cover was over by ten pixels at any title length, and a long title —
-       once titles were allowed the second line they need — put nine rows
-       through the bottom of the card by a hundred and six.             */
-    /* CHAMP is the podium now, not the single champion panel, and ROWS is
-       what is left of the top ten once three of them are standing on it.
-       These two feed the budget that decides how much room the cover photo
-       may have — leaving them at the old panel's numbers would have let the
-       photo take 150px the table needs and pushed the last names through the
-       footer, which is the exact failure the budget exists to prevent. */
-    const FOOT = 1664, GAP = 10, MIN_RH = 58, CHAMP = 380 + 24, ROWS = 7;
-    const TOP_PAD = 108, LOGO_W = 380;
-
-    const heading = String(d.title || 'OPEN PLAY').toUpperCase();
-    track(x, 4);
-    const fit = fitLines(x, heading, 'Bebas Neue', 104, 42, W - PAD * 2, 2);
-    /* how far the baseline of each line sits below the one before it */
-    const steps = fit.rows.map((row, i) =>{
-      x.font = fit.size + 'px "Bebas Neue"';
-      const m = x.measureText(row);
-      return i ? Math.round(fit.size * 0.92)
-               : 26 + Math.round(m.actualBoundingBoxAscent || fit.size * 0.8);
-    });
-    track(x, 0);
-
-    /* The mark is square now, so the height is the mark's size rather than a
-       ratio off a wordmark image. Kept as one number because the whole card
-       is laid out as a budget against it. */
-    const logoH = 96;
-    /* wordmark, the gap under it, the date, the heading, the gap under that */
-    const headH = logoH + 42 + 62 + steps.reduce((a, b) => a + b, 0) + 54;
-    /* what a full table needs at its smallest readable row */
-    const tableH = ROWS * MIN_RH + (ROWS - 1) * GAP;
-    const bandRoom = FOOT - 34 - tableH - CHAMP - headH + 150;
-
-    let y = TOP_PAD;
-
-    if(shot){
-      /* cover the band rather than stretch it: a squashed photo of a court
-         looks worse than a cropped one */
-      const bandH = Math.max(380, Math.min(620, bandRoom));
-      const r = Math.max(W / shot.width, bandH / shot.height);
-      const sw = shot.width * r, sh = shot.height * r;
-      x.save();
-      x.beginPath(); x.rect(0, 0, W, bandH); x.clip();
-      x.drawImage(shot, (W - sw) / 2, (bandH - sh) / 2, sw, sh);
-      const veil = x.createLinearGradient(0, bandH * .35, 0, bandH);
-      veil.addColorStop(0, 'rgba(6,23,38,0)'); veil.addColorStop(1, 'rgba(6,23,38,.96)');
-      x.fillStyle = veil; x.fillRect(0, 0, W, bandH);
-      x.restore();
-      y = bandH - 150;
-    } else {
-      x.save(); x.globalAlpha = .045; x.strokeStyle = '#fff'; x.lineWidth = 54;
-      for(let i = -1400; i < 2200; i += 150){ x.beginPath(); x.moveTo(i, -200); x.lineTo(i + 1300, 2200); x.stroke(); }
-      x.restore();
-    }
-
-    /* The very same logoH the budget was worked out from. Drawing to the
-       unrounded height and budgeting with the rounded one put the table a
-       fraction of a pixel below where the sums said it would be, which was
-       enough to trip the row-dropping backstop and lose a name off the
-       bottom of a card that actually had room for it. */
-    drawLockup(x, W, y, logoH);
-    y += logoH + 42;
-
-    const when = d.played_at ? new Date(d.played_at) : null;
-    const stamp = when
-      ? when.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }).toUpperCase()
-      : '';
-    x.textAlign = 'center'; x.fillStyle = BALL;
-    track(x, 7); x.font = '800 27px "Barlow Condensed"';
-    x.fillText(stamp, W / 2, y);
-    track(x, 0);
-    y += 62;
-
-    /* Two things were wrong here and both showed up on the same line of
-       type. fillText draws from the baseline, so a heading reaches UP from
-       y by its own height — and a fixed 62px step down from the date was
-       less than that height, so the title came down on top of the date.
-       Twelve pixels of overlap on any title short enough to stay at full
-       size, which is most of them. It steps by what the type actually
-       measures now.
-
-       The width was wrong for a different reason in the same place: the
-       tracking was applied after the fitting had finished measuring, so
-       the 4px between every letter was never counted and a long title ran
-       off the edge of the card — "SOS: UP AND DOWN THE RIVER" by 87
-       pixels. Tracking goes on first, and a title too long for one line is
-       carried over two rather than shrunk until nobody can read it. */
-    /* Drawn to the steps measured at the top, so where the heading ends is
-       exactly where the budget said it would. */
-    track(x, 4);
-    x.fillStyle = '#fff'; x.font = fit.size + 'px "Bebas Neue"';
-    fit.rows.forEach((row, i) =>{
-      y += steps[i];
-      x.fillText(row, W / 2, y);
-    });
-    track(x, 0);
-    y += 54;
+    const W = 1080;
+    x.clearRect(0, 0, W, 1920);
 
     const rows = d.standings.slice();
+    const base = await this.cardBase(d);
+    const PAL = cardPaint();
+    const m = d.meta || {};
+    /* The game log lives on the session, which a club may delete long after
+       the results are banked. Nought is then what the count says and not
+       what is true, and "0 GAMES" over a night forty-two people played
+       reads as the card being broken. Unknown is left out instead. */
+    const games = (d.games || []).length;
+    const gameStat = games ? [['GAMES', games, PAL.ball]] : [];
 
-    /* ── the podium ──────────────────────────────────────────────────────
-       Three banners with faces on them, then the chasing pack as rows. The
-       old card gave first place a panel and everybody else a line, which is
-       true to the result but reads as one winner and a list — and the three
-       people who actually stood on a podium are the three the night is about.
-
-       Faces come from the club roster, matched on the name the night was
-       recorded under. They are data URLs, so the canvas stays exportable; a
-       member with no photo gets their initials on a disc, which is what the
-       app does everywhere else. */
-    const faceOf = nm =>{
-      const key = String(nm || '').toLowerCase().replace(/\s+/g, ' ').trim();
-      const m = (Club.list || []).find(x =>
-        String(x.alias || '').toLowerCase().trim() === key ||
-        String(x.name || '').toLowerCase().trim() === key);
-      return m && m.photo ? m.photo : null;
-    };
-    const top3 = rows.slice(0, 3);
-    const faces = await Promise.all(top3.map(p => p.__f ? null : loadImg(faceOf(p.name) || '')));
-
-    const disc = (img, cx, cy, r2, nm, ring) =>{
-      x.save();
-      x.beginPath(); x.arc(cx, cy, r2, 0, Math.PI * 2); x.closePath();
-      x.fillStyle = 'rgba(255,255,255,.12)'; x.fill();
-      if(img){
-        x.clip();
-        /* cover, not stretch — a portrait squashed into a circle is the one
-           thing that makes a card look homemade */
-        const sc = Math.max(r2 * 2 / img.width, r2 * 2 / img.height);
-        x.drawImage(img, cx - img.width * sc / 2, cy - img.height * sc / 2,
-                    img.width * sc, img.height * sc);
-      } else {
-        x.fillStyle = 'rgba(255,255,255,.85)';
-        x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.font = Math.round(r2 * .8) + 'px "Bebas Neue"';
-        x.fillText(String(nm || '?').trim().slice(0, 2).toUpperCase(), cx, cy + r2 * .04);
-        x.textBaseline = 'alphabetic';
+    if(kind === 'session'){
+      const top = rows[0];
+      const face = top ? rosterFace(top.name) : null;
+      const hours = cardHours(m.starts_at, m.ends_at);
+      drawSessionCard(x, W, Object.assign(base, {
+        cover: d.cover ? await loadImg(d.cover) : null,
+        tiles: cardTiles({ startsAt: m.starts_at, endsAt: m.ends_at,
+                           venue: base.court, courts: m.courts,
+                           modeName: m.mode_name, timed: m.timed,
+                           mins: m.mins, target: m.target, levels: m.levels }),
+        stats: [['PLAYERS', d.players || rows.length, PAL.gold]]
+                 .concat(gameStat)
+                 .concat(hours ? [['ON COURT', hours, '#fff']] : []),
+        champ: top ? { name: top.name,
+                       record: (top.wins || 0) + '–' + (top.losses || 0),
+                       face: face ? await loadImg(face) : null } : null,
+        next: await this.nextNight(d.group && d.group.id)
+      }));
+    } else {
+      const faces = await Promise.all(rows.slice(0, 10).map(r =>{
+        const src = rosterFace(r.name);
+        return src ? loadImg(src) : Promise.resolve(null);
+      }));
+      /* Third figure is where the person sharing this actually finished,
+         which is the thing they want on their story — 3/45 says more about
+         their night than the size of the field does. Whoever is filtered on
+         the page if anybody is, otherwise the signed-in member, and both the
+         alias and the real name, because a night is recorded under whichever
+         of the two the club calls you. */
+      const norm = v => String(v || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const field = d.players || rows.length;
+      let at = -1;
+      for(const cand of [this.who, Auth.me && Auth.me.alias, Auth.me && Auth.me.name]
+            .filter(Boolean).map(norm)){
+        at = rows.findIndex(r => norm(r.name) === cand);
+        if(at >= 0) break;
       }
-      x.restore();
-      x.beginPath(); x.arc(cx, cy, r2, 0, Math.PI * 2);
-      x.strokeStyle = ring; x.lineWidth = Math.max(3, r2 * .09); x.stroke();
-    };
-
-    /* first is centre and largest, second and third flank it lower down —
-       the shape of an actual podium, read at a glance without a legend */
-    const PH = 380;
-    const seat = [
-      { i:1, cx: W * .225, r: 78, top: y + 92,  ring: METAL[1], tag: '2' },
-      { i:0, cx: W * .5,   r: 104, top: y + 34,  ring: GOLD,     tag: '1' },
-      { i:2, cx: W * .775, r: 78, top: y + 92,  ring: METAL[2], tag: '3' }
-    ];
-    x.fillStyle = 'rgba(255,255,255,.05)';
-    rrect(x, PAD, y, W - PAD * 2, PH, 30); x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.10)'; x.lineWidth = 2;
-    rrect(x, PAD, y, W - PAD * 2, PH, 30); x.stroke();
-
-    track(x, 6); x.textAlign = 'center'; x.fillStyle = GOLD;
-    x.font = '800 25px "Barlow Condensed"';
-    x.fillText('THE PODIUM', W / 2, y + 46);
-    track(x, 0);
-
-    seat.forEach(st =>{
-      const p = rows[st.i];
-      if(!p) return;
-      const cy = st.top + st.r + 22;
-      disc(faces[st.i], st.cx, cy, st.r, p.name, st.ring);
-
-      /* the place, on a chip tucked under the disc */
-      const bw = 46, bh = 46;
-      x.fillStyle = st.ring;
-      rrect(x, st.cx - bw / 2, cy + st.r - 10, bw, bh, 14); x.fill();
-      x.fillStyle = '#0B1B2B'; x.textAlign = 'center';
-      x.font = '30px "Bebas Neue"';
-      x.fillText(st.tag, st.cx, cy + st.r + 24);
-
-      const nm = String(p.name || '').toUpperCase();
-      const ns = fitFont(x, nm, '', 'Bebas Neue', st.i === 0 ? 52 : 42, W * .30);
-      x.fillStyle = '#fff'; x.font = ns + 'px "Bebas Neue"';
-      x.fillText(nm, st.cx, cy + st.r + 84);
-
-      x.fillStyle = BALL; x.font = (st.i === 0 ? 34 : 29) + 'px "Bebas Neue"';
-      x.fillText((p.wins || 0) + '–' + (p.losses || 0), st.cx, cy + st.r + 124);
-
-      if(p.crowns) drawCrowns(x, p.crowns, st.cx - 14, cy - st.r - 26, 13, GOLD);
-    });
-
-    y += PH + 24;
-
-    /* Four down to ten. Seven rows, because three are on the podium above and
-       the card has always been a top ten. */
-    let rest = rows.slice(3, 10);
-    const room = () => (FOOT - 34 - y - (rest.length - 1) * GAP) / rest.length;
-    while(rest.length > 2 && room() < MIN_RH) rest = rest.slice(0, -1);
-    const gap = GAP;
-    const rH = rest.length ? Math.max(MIN_RH, Math.min(88, Math.floor(room()))) : 0;
-
-    rest.forEach((p, i) =>{
-      const top = y + i * (rH + gap);
-      const mid = top + rH * .66;
-      x.fillStyle = 'rgba(255,255,255,.055)';
-      rrect(x, PAD, top, W - PAD * 2, rH, Math.min(18, rH * .22)); x.fill();
-
-      const place = i + 4;
-      x.textAlign = 'left';
-      x.fillStyle = 'rgba(255,255,255,.42)';
-      x.font = Math.round(rH * .44) + 'px "Bebas Neue"';
-      x.fillText(String(place), PAD + 34, mid);
-
-      const n2 = String(p.name || '').toUpperCase();
-      const ns = fitFont(x, n2, '', 'Bebas Neue', Math.round(rH * .52), 470);
-      x.fillStyle = '#fff'; x.font = ns + 'px "Bebas Neue"';
-      x.fillText(n2, PAD + 104, mid);
-      const after = PAD + 104 + x.measureText(n2).width;
-
-      if(p.crowns) drawCrowns(x, p.crowns, after + 8, mid - rH * .17, Math.round(rH * .10), GOLD);
-
-      x.textAlign = 'right';
-      x.fillStyle = BALL; x.font = Math.round(rH * .46) + 'px "Bebas Neue"';
-      x.fillText((p.wins || 0) + '–' + (p.losses || 0), W - PAD - 34, mid);
-    });
-
-    /* Said plainly, because the link at the foot is the only way to see the
-       rest and a card that just stops at ten looks like the whole night. */
-    if(rows.length > 3 + rest.length){
-      const left = rows.length - 3 - rest.length;
-      x.textAlign = 'center'; track(x, 4);
-      x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 23px "Barlow Condensed"';
-      x.fillText('+ ' + left + ' MORE \u00b7 FULL TABLE BELOW',
-                 W / 2, y + rest.length * (rH + gap) + 30);
-      track(x, 0);
+      /* Two figures when it is not your night to claim, not three. The old
+         third was ON THE BOARD, which on most nights is the same number as
+         PLAYERS printed twice — and a card saying 32 and 32 reads as
+         something having gone wrong rather than as two facts. */
+      drawLeaderCard(x, W, Object.assign(base, {
+        stats: [['PLAYERS', field]]
+                 .concat(games ? [['GAMES', games]] : [])
+                 .concat(at >= 0 ? [['YOUR PLACE', (at + 1) + '/' + field, PAL.gold]] : []),
+        rows: rows.map((r, i) => ({
+          name:   r.name,
+          crowns: r.crowns,
+          record: (r.wins || 0) + '–' + (r.losses || 0),
+          face:   faces[i] || null
+        }))
+      }));
     }
-
-    const fy = FOOT;
-    x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 1;
-    x.beginPath(); x.moveTo(PAD, fy); x.lineTo(W - PAD, fy); x.stroke();
-
-    /* Third figure is where the person sharing this actually finished, which
-       is the thing they want on their story — 3/45 says more about their
-       night than the size of the field does. Whoever is filtered on the page
-       if anybody is, otherwise the signed-in member, and only if they are
-       genuinely on the board. */
-    const field = d.players || rows.length;
-    /* Whoever is filtered on the page first, then the account — and both the
-       alias and the real name, because a night is recorded under whichever
-       the club calls you and the two are not always the same. */
-    const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-    const candidates = [this.who, Auth.me && Auth.me.alias, Auth.me && Auth.me.name]
-      .filter(Boolean).map(norm);
-    let at = -1;
-    for(const cand of candidates){
-      at = rows.findIndex(r => norm(r.name) === cand);
-      if(at >= 0) break;
-    }
-    const stats = [['PLAYERS', String(field)],
-                   ['GAMES', String((d.games || []).length)],
-                   at >= 0 ? ['STANDING', (at + 1) + '/' + field]
-                           : ['ON THE BOARD', String(rows.length)]];
-    x.textAlign = 'center';
-    stats.forEach((st, i) =>{
-      const cx = PAD + (W - PAD * 2) * (i * 2 + 1) / 6;
-      const big = fitFont(x, st[1], '', 'Bebas Neue', 64, (W - PAD * 2) / 3 - 24);
-      x.fillStyle = '#fff'; x.font = big + 'px "Bebas Neue"';
-      x.fillText(st[1], cx, fy + 86);
-      track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 22px "Barlow Condensed"';
-      x.fillText(st[0], cx, fy + 122);
-      track(x, 0);
-    });
-
-    track(x, 8); x.fillStyle = 'rgba(255,255,255,.32)'; x.font = '800 24px "Barlow Condensed"';
-    x.fillText('PICKSILOG', W / 2, 1824);
-    track(x, 0);
-
-    /* Where to find the whole night. Nothing inside a picture can be tapped —
-       an image is an image on every platform there is — so this is printed to
-       be read and typed, and to give somebody something to lay Instagram's
-       own link sticker over. The short form, because a query string across
-       the foot of a story is unreadable and nobody would type it. */
-    const host = (location.origin && location.origin !== 'null')
-      ? location.host.replace(/^www\./, '') : '';
-    const link = host ? host + '/recap/' + (d.code || '') : 'CODE ' + (d.code || '');
-    track(x, 3); x.fillStyle = BALL; x.font = '800 25px "Barlow Condensed"';
-    x.fillText(link.toUpperCase(), W / 2, 1872);
-    track(x, 0);
 
     try{
       shareCanvas(c, 'sideout-' + (d.code || 'night') + '.png', d.title || 'Sideout Society');
@@ -18663,7 +19003,7 @@ const Recap = {
      The recap's own data is put back afterwards. Somebody can be reading
      one night and make a card for another from the feed behind it, and the
      screen they return to should be the night they were reading.        */
-  async cardFor(code, title){
+  async cardFor(code, title, kind){
     if(!code) return;
     toast('Reading the night…');
     let d = null;
@@ -18679,7 +19019,7 @@ const Recap = {
 
     const heldData = this.data, heldCode = this.code;
     this.data = d; this.code = code;
-    try{ await this.card(); }
+    try{ await this.card(kind); }
     finally{ this.data = heldData; this.code = heldCode; }
   },
 
@@ -18739,7 +19079,37 @@ const View = {
     try{ snap = await Live.pull(this.code); }catch(e){}
     if(snap){ this.snap = snap; this.misses = 0; }
     else this.misses++;
-    this.paint();
+    /* finally, not after: painting is decoration and the handover is the
+       thing that actually gets somebody to their night. One must not be able
+       to stop the other, which is exactly what happened when paint() threw. */
+    const gone = !snap && this.misses === 2;
+    try{ this.paint(); }
+    finally{ if(gone) this.maybeRecap(); }
+  },
+
+  /* This page reads the session, and a session is a working copy a club may
+     delete months after the night it describes. The results outlive it. So
+     "session not found" was being shown over nights that are perfectly
+     intact — 42 people, every game, a photo — just not here.
+
+     Asked once, on the second miss, and only then: the common case is a link
+     opened a minute before the host goes online, and that must keep waiting
+     rather than bounce anybody anywhere. If there is a banked night behind
+     the code this hands over to the recap, which is the page that can
+     actually show it. replace() rather than href, so Back goes where the
+     reader came from and not into a loop through this page. */
+  recapTried: false,
+  async maybeRecap(){
+    if(this.recapTried || !this.code) return;
+    this.recapTried = true;
+    let d = null;
+    try{
+      d = await Live.rpc('sideout_recap',
+        { p_club: CONFIG.club || 'sideout', p_code: this.code });
+    }catch(e){ return; }
+    if(!d || !(d.standings || []).length) return;
+    try{ location.replace('?r=' + encodeURIComponent(this.code)); }
+    catch(e){ location.href = '?r=' + encodeURIComponent(this.code); }
   },
   /* Sharing the session you are already looking at. The join link, not the
      recap: this one has not happened yet, and what somebody wants is to be
@@ -18823,7 +19193,12 @@ const View = {
       ttl.textContent = this.misses > 1 ? 'Nothing here' : 'Sideout Society';
       det.hidden = true;
       sub.textContent = this.misses > 1 ? 'Session not found' : 'Connecting…';
-      pill.hidden = true;
+      /* `pill.hidden = true` used to sit here, and `pill` has never been
+         declared in this function — there is no such element on this page.
+         So the not-found branch threw a ReferenceError on that line and the
+         two statements after it never ran: no message in the body, and no
+         handover to the recap. That is the blank white page under "Nothing
+         here" that this page has been showing for as long as it has had one. */
       document.getElementById('vw-live').innerHTML = `<div class="vw-empty">
         <p>${this.misses > 1 ? 'Nothing running under <b>' + esc(this.code) + '</b> just yet.' : 'Looking for the session…'}</p>
         <p class="sub">This page keeps checking, so leave it open.</p></div>`;
@@ -19147,11 +19522,27 @@ const View = {
 
     let list;
     if(this.pTab === 'wait'){
+      /* An organizer who is not the phone running the night gets told why
+         the button is missing, and the way to make it appear.
+
+         It went without a word before: the tick was there, Approve was not,
+         and nothing on the screen said that the waiting list lives in the
+         host device's session and cannot be moved from anywhere else. It
+         read as the button having broken. manageSession takes the night over
+         onto this phone, which is the one thing that actually fixes it. */
+      const takeOver = (!hosting && canOrganize() && this.code)
+        ? `<div class="vw-note">
+             <p>The waiting list is held by the phone running this night, so
+                approving happens there.</p>
+             <button class="btn btn-quiet" style="margin-top:10px"
+               onclick="manageSession('${esc(this.code)}')">${icon('gear')}
+               Run this night on this phone</button>
+           </div>` : '';
       list = pend.length
         ? `<div class="vw-plist">${pend.map((w, i) =>
             row({ n:w.n, m:w.m }, '', hosting
               ? `<button class="vw-ok" onclick="View.approve(${i})">Approve</button>`
-              : `<span class="mark">#${i + 1}</span>`)).join('')}</div>`
+              : `<span class="mark">#${i + 1}</span>`)).join('')}</div>${takeOver}`
         : `<div class="vw-empty"><p>Nobody is waiting.</p>
            <p class="sub">${s2.approve
              ? 'Requests to join land here for the host to approve.'
@@ -20326,7 +20717,7 @@ async function runReset(wipe){
         games: Club.gamesForArchive(), rated: Club.rateNight() } : null;
   if(S.live) await Live.finish();
   if(wipe){ S.players = {}; S.order = []; S.levelsTouched = false; }
-  else Object.values(S.players).forEach(p=>{ p.w=0;p.l=0;p.g=0;p.pf=0;p.pa=0;p.crowns=0;p.streak=0;p.out=false; });
+  else Object.values(S.players).forEach(p=>{ p.w=0;p.l=0;p.g=0;p.pf=0;p.pa=0;p.crowns=0;p.streak=0;p.sat=0;p.out=false; });
   S.hist = { p:{}, o:{} };
   /* A weekly session keeps its link and its PIN — that is the
      whole point of pinning it in the group chat. */
@@ -20812,10 +21203,25 @@ function track(x, px){ try{ x.letterSpacing = px + 'px'; }catch(e){} }
    Measures at whatever letter-spacing is already set, which is the whole
    point: the caller sets the tracking first and gets a size that accounts
    for it. */
-function fitLines(x, text, family, start, floor, maxW, max){
+/* The evenest place to break a run of words in two, measured at whatever
+   font is already set. Null when there is no split that fits, which leaves
+   the greedy answer standing. */
+function balanceTwo(x, words, maxW){
+  let best = null;
+  for(let k = 1; k < words.length; k++){
+    const a = words.slice(0, k).join(' '), b = words.slice(k).join(' ');
+    const wa = x.measureText(a).width, wb = x.measureText(b).width;
+    if(wa > maxW || wb > maxW) continue;
+    const off = Math.abs(wa - wb);
+    if(!best || off < best.off) best = { off, rows: [a, b] };
+  }
+  return best ? best.rows : null;
+}
+function fitLines(x, text, family, start, floor, maxW, max, weight){
   const words = String(text).split(/\s+/).filter(Boolean);
+  const pre = weight ? weight + ' ' : '';
   for(let size = start; size >= floor; size -= 3){
-    x.font = size + 'px "' + family + '"';
+    x.font = pre + size + 'px "' + family + '"';
     const rows = [];
     let line = '', tooWide = false;
     for(const w of words){
@@ -20828,9 +21234,19 @@ function fitLines(x, text, family, start, floor, maxW, max){
     }
     if(tooWide) continue;
     if(line) rows.push(line);
-    if(rows.length <= max) return { size, rows };
+    if(rows.length <= max){
+      /* Filling greedily puts as much as will go on the first line, which
+         leaves a heading hanging: "Friday Night Rated / Play". Two lines of
+         roughly equal width read as a break somebody chose rather than as
+         an overflow, and it costs one more pass over the same words. */
+      if(rows.length === 2){
+        const even = balanceTwo(x, words, maxW);
+        if(even) return { size, rows: even };
+      }
+      return { size, rows };
+    }
   }
-  x.font = floor + 'px "' + family + '"';
+  x.font = pre + floor + 'px "' + family + '"';
   return { size: floor, rows: [String(text)] };
 }
 function fitFont(x, text, weight, family, start, maxW){
@@ -20881,11 +21297,26 @@ function drawCrowns(x, n, startX, cy, s, color){
    holding its own copy of the palette. The accent is whatever the club chose
    and the derivation already made readable; the background is built from it
    so the card is recognisably theirs rather than a blue rectangle with a
-   different button on it. */
-function cardPaint(){
+   different button on it.
+
+   Gold is the exception, and it was wrong for a long time before anybody
+   looked at a card made in daylight. --crown is a theme token: #E0A93A on a
+   dark screen and #9E6C13 on a light one, because a bright gold on white
+   cannot be read. But the card is always dark whichever way the phone is
+   set, so a card built in light mode came out with brown medals and a brown
+   CHAMPION on a navy ground. First place is not a club colour and not a
+   theme colour — it is the same gold on every card ever made, which is what
+   METAL already says. */
+function cardPaint(accent){
   const cs = getComputedStyle(document.documentElement);
   const tok = (n, fb) => (cs.getPropertyValue(n) || '').trim() || fb;
-  const accent = tok('--court', '#2C82C9');
+  /* The group's own colour when the night has one, and only then the page's.
+     Reading the page alone was wrong in the way that matters most: the theme
+     a phone is wearing is the theme its owner picked to look at, so a night
+     run by Sideout Society went out in whatever colour the person making the
+     card happened to be in — and a club that has set a colour posting in
+     somebody else's is worse off than one that never set one. */
+  accent = (accent && /^#[0-9a-f]{3,8}$/i.test(accent)) ? accent : tok('--court', '#2C82C9');
   let deep = '#061726', mid = '#0E3A61', low = '#050F1B';
   try{
     const [h, sat] = Theme.toHsl(accent);
@@ -20895,13 +21326,20 @@ function cardPaint(){
   }catch(e){}
   return {
     accent,
-    gold:  tok('--crown', '#E0A93A'),
+    gold:  METAL[0],
     ball:  tok('--ball',  '#C3D92B'),
     ink:   tok('--on-accent', '#FFFFFF'),
     deep, mid, low
   };
 }
 
+/* The mark for anywhere it is wanted as an image rather than as markup.
+   Built once — it is the same string every time and it is not short. */
+let _pmark = null;
+function picksilogSrc(){
+  if(_pmark === null){ try{ _pmark = picksilogURI(); }catch(e){ _pmark = ''; } }
+  return _pmark;
+}
 function loadImg(src){
   return new Promise(res=>{ const i = new Image(); i.onload = ()=>res(i); i.onerror = ()=>res(null); i.src = src; });
 }
@@ -20920,169 +21358,707 @@ function picksilogURI(){
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-/* Mark plus wordmark, centred, returning the height it used. The wordmark is
-   real text rather than part of the image so it stays crisp at 1080 wide and
-   picks up Outfit once the font has loaded. */
-function drawLockup(x, W, y, size){
-  const mark = drawLockup._mark;
-  const gap = Math.round(size * 0.30);
+/* The mark, once, for whichever card is being drawn. It used to hang off a
+   drawLockup function that centred the whole lockup at the top of the card;
+   the lockup now sits at the foot beside "presented by" and is composed
+   there, so all that is left of it is the image. */
+let cardMark = null;
+
+/* Cut a line of type to a width rather than letting it run off the card.
+   fitLines can shrink a heading; a name cannot be shrunk without making
+   every row a different size, so a long one is trimmed instead.        */
+function clipText(x, text, maxW){
+  let s = String(text || '');
+  if(x.measureText(s).width <= maxW) return s;
+  while(s.length > 1 && x.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+  return s.replace(/\s+$/, '') + '…';
+}
+function cardInitials(nm){
+  const w = String(nm || '?').trim().split(/\s+/).filter(Boolean);
+  if(!w.length) return '?';
+  return (w[0][0] + (w.length > 1 ? w[w.length - 1][0] : '')).toUpperCase();
+}
+/* A face on a disc, or the initials the app falls back to everywhere else.
+   Cover rather than stretch — a portrait squashed into a circle is the one
+   thing that makes a card look homemade. */
+function drawDisc(x, img, cx, cy, r, name, ring){
   x.save();
-  x.font = '700 ' + Math.round(size * 0.82) + 'px "Outfit", system-ui, sans-serif';
-  const label = 'picksilog';
-  const tw = x.measureText(label).width;
-  const total = size + gap + tw;
-  let left = (W - total) / 2;
-  if(mark) x.drawImage(mark, left, y, size, size);
-  x.textAlign = 'left'; x.textBaseline = 'middle';
-  x.fillStyle = '#FFFFFF';
-  x.fillText(label, left + size + gap, y + size / 2 + Math.round(size * 0.02));
+  x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.closePath();
+  x.fillStyle = 'rgba(255,255,255,.10)'; x.fill();
+  if(img){
+    x.clip();
+    const sc = Math.max(r * 2 / img.width, r * 2 / img.height);
+    x.drawImage(img, cx - img.width * sc / 2, cy - img.height * sc / 2,
+                img.width * sc, img.height * sc);
+  } else {
+    x.fillStyle = 'rgba(255,255,255,.80)';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '700 ' + Math.round(r * .72) + 'px "Outfit", system-ui, sans-serif';
+    x.fillText(cardInitials(name), cx, cy + r * .03);
+    x.textBaseline = 'alphabetic';
+  }
   x.restore();
-  return size;
+  if(ring){
+    x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2);
+    x.strokeStyle = ring; x.lineWidth = Math.max(3, r * .075); x.stroke();
+  }
 }
 
-async function makeCard(){
-  if(!S.games){ toast('Play a round first — there is nothing to show yet.'); return; }
-  const btn = document.getElementById('card-save');   /* absent on the viewer */
-  toast('Building your card…');
+/* ── THE LEADERBOARD CARD ─────────────────────────────────────────────
+   One drawing with two callers: the organizer building a card mid-session,
+   and a night already played being remembered. They used to have a card
+   each, which is how the two quietly drifted apart — the same night could
+   go out twice and look as though two different clubs had run it. Whatever
+   either caller knows is a field on the object handed in here, and neither
+   of them draws anything itself.
+
+   The header belongs to the group, not to the app. A night filed under
+   Sideout Society is posted as Sideout Society, with its own logo and its
+   own home court, because that is the name the people in the photograph
+   would use for themselves. picksilog signs the foot instead — it made the
+   card, it did not run the night. A session under no group falls back to
+   the club, which is the name it has always carried anyway.
+
+   The figure beside each name is the record, not a points total. There is
+   no running score to print: nothing in the app keeps one across a night,
+   so any number in that slot would have to be invented. A win percentage
+   was the other option and reads worse than it sounds — five games gives
+   you six possible values, so most of the card ends up saying 60%, and two
+   people on 60% might have played three games or thirteen. 9–3 says how it
+   went and how much of it there was.
+
+   Everything below is laid out against fixed anchors rather than flowing
+   from the top, because the one thing that must never happen is the tenth
+   name coming down through the footer. The heading has the room between
+   the eyebrow and the podium and no more; if a title will not fit in two
+   lines it is shrunk, and past the floor it is cut.                    */
+/* ── THE PIECES BOTH CARDS SHARE ───────────────────────────────
+   The leaderboard and the session details are two cards from one set: the
+   same ground, the same masthead, the same signature at the foot. Drawn
+   twice they would drift the way the two leaderboards did before them, so
+   the parts that have to agree live here and each card draws only what
+   makes it itself. */
+const CARD_PAD = 64;
+const OUTFIT = (w, s) => w + ' ' + s + 'px "Outfit", system-ui, sans-serif';
+
+function cardGround(x, W, PAL){
+  const g = x.createLinearGradient(0, 0, 260, 1920);
+  g.addColorStop(0, PAL.deep); g.addColorStop(.5, PAL.mid); g.addColorStop(1, PAL.low);
+  x.fillStyle = g; x.fillRect(0, 0, W, 1920);
+  x.save(); x.globalAlpha = .022; x.strokeStyle = '#fff'; x.lineWidth = 54;
+  for(let i = -1400; i < 2200; i += 150){ x.beginPath(); x.moveTo(i, -200); x.lineTo(i + 1300, 2200); x.stroke(); }
+  x.restore();
+}
+
+/* Whose night it is on the left, and when, on the right. The group's logo
+   and the group's name — a night run under Sideout Society goes out as
+   Sideout Society, whatever the app around it happens to be called. */
+function cardMasthead(x, W, o, PAL){
+  const PAD = CARD_PAD, lr = 44, lcx = PAD + lr, lcy = 140;
+  drawDisc(x, o.logo, lcx, lcy, lr, o.club, 'rgba(255,255,255,.20)');
+
+  x.textAlign = 'right'; x.textBaseline = 'alphabetic';
+  track(x, 6); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 23px "Barlow Condensed"';
+  x.fillText(String(o.day || '').toUpperCase(), W - PAD, lcy - 8);
+  track(x, 0);
+  x.fillStyle = '#fff'; x.font = OUTFIT('600', 31);
+  x.fillText(o.date || '', W - PAD, lcy + 28);
+  /* the widest the name may be before it would run into the date */
+  const rightEdge = W - PAD - Math.max(x.measureText(o.date || '').width, 150) - 40;
+
+  x.textAlign = 'left';
+  const nameL = lcx + lr + 26;
+  const cs = fitFont(x, o.club || '', '700', 'Outfit', 40, rightEdge - nameL);
+  x.fillStyle = '#fff'; x.font = OUTFIT('700', cs);
+  x.fillText(o.club || '', nameL, lcy + (o.court ? 2 : 12));
+  if(o.court){
+    track(x, 3); x.fillStyle = PAL.ball; x.font = '800 22px "Barlow Condensed"';
+    x.fillText(clipText(x, String(o.court).toUpperCase(), rightEdge - nameL), nameL, lcy + 32);
+    track(x, 0);
+  }
+}
+
+/* A rule and a word: which kind of card this is, before the title says
+   which night it is about. */
+function cardEyebrow(x, y, text, colour){
+  x.textAlign = 'left';
+  x.fillStyle = colour; rrect(x, CARD_PAD + 2, y - 11, 46, 5, 3); x.fill();
+  track(x, 7); x.fillStyle = colour; x.font = '800 26px "Barlow Condensed"';
+  x.fillText(text, CARD_PAD + 70, y);
+  track(x, 0);
+}
+
+/* The night's own name, over one line or two, hung from the top of the
+   letterforms rather than from the baseline — a title that has been
+   shrunk to fit should still start level with one that has not, or the gap
+   under the eyebrow changes size depending on how long the night was
+   called. Returns the last baseline, so a caller can carry on below it. */
+function cardTitle(x, W, title, topY, start){
+  const PAD = CARD_PAD, maxW = W - PAD * 2 - 8;
+  const fit = fitLines(x, title || 'Open play', 'Outfit', start, 44, maxW, 2, '700');
+  const step = Math.round(fit.size * 1.14);
+  x.textAlign = 'left'; x.fillStyle = '#fff'; x.font = OUTFIT('700', fit.size);
+  const asc = x.measureText(fit.rows[0]).actualBoundingBoxAscent || fit.size * .72;
+  const base0 = topY + Math.round(asc);
+  fit.rows.forEach((row, i) => x.fillText(clipText(x, row, maxW), PAD, base0 + i * step));
+  return base0 + (fit.rows.length - 1) * step;
+}
+
+/* A figure each for whatever the caller thinks is worth saying about the
+   night in one number. Two or three of them, sharing the width. */
+function cardStats(x, W, y, stats){
+  const PAD = CARD_PAD;
+  x.textAlign = 'center';
+  stats.forEach((st, i) =>{
+    const cx = PAD + (W - PAD * 2) * (i * 2 + 1) / (stats.length * 2);
+    const big = fitFont(x, String(st[1]), '700', 'Outfit', 54, (W - PAD * 2) / stats.length - 26);
+    x.fillStyle = st[2] || '#fff'; x.font = OUTFIT('700', big);
+    x.fillText(String(st[1]), cx, y);
+    track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 22px "Barlow Condensed"';
+    x.fillText(st[0], cx, y + 32);
+    track(x, 0);
+  });
+}
+
+/* picksilog signs the foot. It made the card; it did not run the night —
+   that name is at the top and it belongs to the group.
+
+   The link under it is printed to be read and typed, and to give somebody
+   something to lay Instagram's own link sticker over: nothing inside a
+   picture can be tapped, on any platform there is. The short form, because
+   a query string across the foot of a story is unreadable. */
+function cardSignature(x, W, link){
+  const PAD = CARD_PAD, fy = 1758;
+  x.strokeStyle = 'rgba(255,255,255,.13)'; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(PAD, fy); x.lineTo(W - PAD, fy); x.stroke();
+
+  const ms = 54, mgap = 14;
+  x.font = '800 22px "Barlow Condensed"'; track(x, 8);
+  const pw = x.measureText('PRESENTED BY').width;
+  track(x, 0); x.font = OUTFIT('700', 40);
+  const ww = x.measureText('picksilog').width;
+  let lx = (W - (pw + 61 + ms + mgap + ww)) / 2;
+
+  x.textAlign = 'left'; x.textBaseline = 'middle';
+  track(x, 8); x.fillStyle = 'rgba(255,255,255,.40)'; x.font = '800 22px "Barlow Condensed"';
+  x.fillText('PRESENTED BY', lx, fy + 66);
+  track(x, 0);
+  lx += pw + 30;
+  x.fillStyle = 'rgba(255,255,255,.22)'; x.fillRect(lx, fy + 49, 1.5, 34);
+  lx += 31;
+  if(cardMark) x.drawImage(cardMark, lx, fy + 39, ms, ms);
+  x.fillStyle = '#fff'; x.font = OUTFIT('700', 40);
+  x.fillText('picksilog', lx + ms + mgap, fy + 68);
+  x.textBaseline = 'alphabetic';
+
+  if(link){
+    x.textAlign = 'center'; track(x, 3);
+    x.fillStyle = 'rgba(255,255,255,.38)'; x.font = '800 23px "Barlow Condensed"';
+    x.fillText(String(link).toUpperCase(), W / 2, 1878);
+    track(x, 0);
+  }
+}
+
+function drawLeaderCard(x, W, o){
+  const PAD = CARD_PAD;
+  const PAL = cardPaint(o.accent);
+  const GOLD = PAL.gold, BALL = PAL.ball;
+  const OUT = OUTFIT;
+
+  cardGround(x, W, PAL);
+  /* the light sits behind the podium rather than spread evenly over the card */
+  const glow = x.createRadialGradient(W / 2, 700, 80, W / 2, 700, 720);
+  glow.addColorStop(0, 'rgba(255,255,255,.09)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = glow; x.fillRect(0, 0, W, 1400);
+
+  cardMasthead(x, W, o, PAL);
+
+  /* The eyebrow says how many are actually on the card. "TOP 10" over a
+     night six people turned up to is a small lie it does not need. */
+  cardEyebrow(x, 248, 'TOP ' + Math.min(10, o.rows.length) + ' LEADERBOARD', GOLD);
+  cardTitle(x, W, o.title, 264, 98);
+
+  /* ── where everything below sits ───────────────────────────────────
+     The podium and the pack are one block, centred in the band between the
+     heading and the footer. Pinned to the top instead, a night that only
+     six people turned up to left the bottom third of the card empty, which
+     reads as something having failed to load rather than as a small night.
+     Centred, the air falls evenly above and below at any size — and a full
+     ten works out at the same 502 the layout was drawn to, so the common
+     card is unmoved. */
+  const rest = o.rows.slice(3, 10);
+  const rH = 86, rGap = 10;
+  const blockH = rest.length ? rest.length * (rH + rGap) - rGap : 0;
+  const BAND_TOP = 466, BAND_H = 1190, PODIUM_H = 410;
+  const contentH = PODIUM_H + (blockH ? 46 + blockH : 0);
+  const podTop = BAND_TOP + Math.max(0, Math.round((BAND_H - contentH) / 2));
+
+  /* ── the podium ────────────────────────────────────────────────────
+     First is centre and tallest, second and third flank it lower down —
+     the shape of an actual podium, read without a legend. */
+  const seats = [
+    { i:1, cx: PAD + 141,     w: 282, top: podTop + 112, h: 294, r: 55, ring: METAL[1], tag: '2' },
+    { i:0, cx: W / 2,         w: 324, top: podTop, h: PODIUM_H, r: 72, ring: GOLD, tag: '1', big: true },
+    { i:2, cx: W - PAD - 141, w: 282, top: podTop + 112, h: 294, r: 55, ring: METAL[2], tag: '3' }
+  ];
+  /* the champion's card carries a light of its own, so it reads as first
+     place from across a room rather than as the middle of three */
+  const cg = x.createRadialGradient(W / 2, podTop + 258, 40, W / 2, podTop + 258, 340);
+  cg.addColorStop(0, 'rgba(232,178,60,.26)'); cg.addColorStop(1, 'rgba(232,178,60,0)');
+  x.fillStyle = cg; x.fillRect(W / 2 - 360, podTop - 62, 720, 640);
+
+  seats.forEach(st =>{
+    const p = o.rows[st.i];
+    if(!p) return;
+    const L = st.cx - st.w / 2;
+    x.fillStyle = st.big ? 'rgba(224,169,58,.08)' : 'rgba(255,255,255,.05)';
+    rrect(x, L, st.top, st.w, st.h, 28); x.fill();
+    x.strokeStyle = st.big ? 'rgba(224,169,58,.75)' : 'rgba(255,255,255,.10)';
+    x.lineWidth = st.big ? 3 : 2;
+    rrect(x, L, st.top, st.w, st.h, 28); x.stroke();
+
+    x.textAlign = 'center';
+    if(st.big){
+      track(x, 7); x.fillStyle = GOLD; x.font = '800 24px "Barlow Condensed"';
+      x.fillText('CHAMPION', st.cx, st.top + 56);
+      track(x, 0);
+    }
+
+    const cy = st.top + (st.big ? 180 : 109);
+    drawDisc(x, p.face, st.cx, cy, st.r, p.name, st.ring);
+
+    /* the place on a chip tucked under the disc, in its own metal */
+    const br = st.big ? 25 : 21, bcy = cy + st.r + 4;
+    x.beginPath(); x.arc(st.cx, bcy, br, 0, Math.PI * 2);
+    x.fillStyle = st.ring; x.fill();
+    x.fillStyle = '#10202F'; x.font = OUT('700', st.big ? 30 : 25);
+    x.textBaseline = 'middle'; x.fillText(st.tag, st.cx, bcy + 1);
+    x.textBaseline = 'alphabetic';
+
+    const ns = fitFont(x, p.name, '700', 'Outfit', st.big ? 35 : 29, st.w - 28);
+    x.fillStyle = '#fff'; x.font = OUT('700', ns);
+    x.fillText(clipText(x, p.name, st.w - 28), st.cx, bcy + (st.big ? 83 : 69));
+
+    x.fillStyle = st.big ? GOLD : 'rgba(255,255,255,.62)';
+    x.font = OUT(st.big ? '700' : '600', st.big ? 31 : 26);
+    x.fillText(p.record, st.cx, bcy + (st.big ? 115 : 97));
+
+    /* Crowns go under the record, not over the disc. Above it they landed
+       on top of the CHAMPION label — and only on King of the Court nights,
+       which is exactly the kind of collision nobody sees until the one
+       night it matters. */
+    if(p.crowns){
+      const s = st.big ? 10 : 8;
+      drawCrowns(x, p.crowns, st.cx - Math.min(p.crowns, 5) * s * 1.25,
+                 st.top + st.h - (st.big ? 19 : 15), s, GOLD);
+    }
+  });
+
+  /* ── four down to ten ──────────────────────────────────────────────
+     Seven rows, because three of the ten are standing on the podium. */
+  const top0 = podTop + PODIUM_H + 46;
+
+  rest.forEach((p, i) =>{
+    const top = top0 + i * (rH + rGap), mid = top + rH / 2;
+    x.fillStyle = 'rgba(255,255,255,.055)';
+    rrect(x, PAD, top, W - PAD * 2, rH, 20); x.fill();
+
+    x.textAlign = 'center'; x.fillStyle = BALL; x.font = OUT('700', 33);
+    x.fillText(String(i + 4), PAD + 36, mid + 12);
+
+    drawDisc(x, p.face, PAD + 112, mid, 30, p.name, 'rgba(255,255,255,.18)');
+
+    x.textAlign = 'right'; x.fillStyle = 'rgba(255,255,255,.72)'; x.font = OUT('600', 29);
+    x.fillText(p.record, W - PAD - 32, mid + 11);
+    const valL = W - PAD - 32 - x.measureText(p.record).width - 28;
+
+    x.textAlign = 'left'; x.fillStyle = '#fff'; x.font = OUT('700', 30);
+    const nx = PAD + 172;
+    x.fillText(clipText(x, p.name, valL - nx - (p.crowns ? 60 : 0)), nx, mid + 11);
+    if(p.crowns) drawCrowns(x, p.crowns, nx + x.measureText(clipText(x, p.name, valL - nx - 60)).width + 10, mid - 5, 10, GOLD);
+  });
+
+  /* The night in three figures, back under the table where it always was.
+     It also does the job the old "+ 22 more played" line was doing, and
+     does it better: PLAYERS says how big the night was without implying
+     the twenty-two were an afterthought. */
+  cardStats(x, W, 1700, o.stats || []);
+  cardSignature(x, W, o.link);
+}
+
+/* ── THE SESSION CARD ─────────────────────────────────────────
+   The other half of the pair. Where the leaderboard says who won, this says
+   what the night was: when it ran, where, how it was played and to what
+   standard, then the size of it in three figures and whoever came out on
+   top. It is the card you post the morning after for people who were not
+   there, and the one you post beforehand to say what is coming.
+
+   The night's own photograph is across the top, which is the part people
+   recognise before they have read a word of it. It is the only card of the
+   two that carries one: the leaderboard is a table and a table wants a
+   plain ground behind it.
+
+   Every tile is drawn from something the session actually recorded. A night
+   with no photograph, no venue or no finishing time simply has fewer of
+   them; nothing here invents a fact to fill a box out. — the LEVEL tile
+   comes from the courts' own levels, so a night whose courts were all set
+   the same says so, and one that was graded across three says that. */
+function drawSessionCard(x, W, o){
+  const PAD = CARD_PAD;
+  const PAL = cardPaint(o.accent);
+  const GOLD = PAL.gold, BALL = PAL.ball;
+
+  cardGround(x, W, PAL);
+
+  /* ── the photograph ────────────────────────────────────────────
+     Cover, never stretch. Scrimmed at the top so the masthead reads over
+     any picture at all, and faded into the ground at the bottom so there
+     is no hard edge where the photo stops and the card starts. */
+  const BAND = 604;
+  if(o.cover){
+    /* The photo is faded to *nothing* rather than to a colour, and the
+       difference matters. Painting a veil down to the card's own navy left
+       a hard line right across the picture at the foot of the band: the
+       ground behind is a diagonal gradient, so the shade under the seam is
+       never quite the shade the veil arrived at, and the eye finds a
+       one-pixel edge across 1080 pixels every time.
+
+       So the fade is cut into the photograph itself on a canvas of its own
+       and the finished thing is dropped on top. Whatever the ground happens
+       to be doing underneath simply shows through, and there is no seam
+       because there is no second colour involved. */
+    const off = document.createElement('canvas');
+    off.width = W; off.height = BAND;
+    const ox = off.getContext('2d');
+    const r = Math.max(W / o.cover.width, BAND / o.cover.height);
+    const sw = o.cover.width * r, sh = o.cover.height * r;
+    ox.drawImage(o.cover, (W - sw) / 2, (BAND - sh) / 2, sw, sh);
+    /* Darkened at the top so the masthead reads over any picture at all —
+       and it has to survive the worst case, which is not a dim photo of a
+       hall but a poster somebody made in Canva with a white background. The
+       first version faded out by 250 and left the club's name barely there
+       over one of those. */
+    const top = ox.createLinearGradient(0, 0, 0, 320);
+    top.addColorStop(0, 'rgba(6,20,34,.92)');
+    top.addColorStop(.55, 'rgba(6,20,34,.55)');
+    top.addColorStop(1, 'rgba(6,20,34,0)');
+    ox.fillStyle = top; ox.fillRect(0, 0, W, 320);
+    ox.globalCompositeOperation = 'destination-out';
+    const cut = ox.createLinearGradient(0, BAND * .40, 0, BAND);
+    cut.addColorStop(0, 'rgba(0,0,0,0)'); cut.addColorStop(1, 'rgba(0,0,0,1)');
+    ox.fillStyle = cut; ox.fillRect(0, 0, W, BAND);
+    x.drawImage(off, 0, 0);
+  }
+
+  cardMasthead(x, W, o, PAL);
+  cardEyebrow(x, o.cover ? 612 : 248, 'SESSION DETAILS', BALL);
+  const titleBottom = cardTitle(x, W, o.title, o.cover ? 628 : 264, 86);
+
+  /* ── what the night was ────────────────────────────────────────
+     Two by two, and only the tiles there is something true to put in. Three
+     of them lay out as one across the top and two below rather than leaving
+     a gap where the fourth would have been. */
+  const tiles = o.tiles || [];
+  const TW = Math.round((W - PAD * 2 - 20) / 2), TH = 156, TGAP = 20;
+  const rowsOfTiles = Math.ceil(tiles.length / 2);
+  const tilesH = rowsOfTiles ? rowsOfTiles * (TH + TGAP) - TGAP : 0;
+
+  /* the whole lower half is one block, centred in what the photograph and
+     the heading have left, so a card missing its next-session bar does not
+     hang a hole above the footer */
+  /* Gated on the stats, not on the tiles. Tied to the tiles it dropped the
+     player and game counts off any night whose session row had been deleted
+     — the results outlive it, so those two numbers were there to be printed
+     and the card left them out. */
+  const STAT_H = (o.stats && o.stats.length) ? 118 : 0;
+  const CHAMP_H = o.champ ? 152 : 0;
+  const NEXT_H = o.next ? 120 : 0;
+  const gaps = (tilesH ? 26 : 0) + (CHAMP_H ? 26 : 0) + (NEXT_H ? 22 : 0);
+  const blockH = tilesH + STAT_H + CHAMP_H + NEXT_H + gaps;
+  /* With a photograph the block is centred in what is left below it, which
+     is where the mockup puts it. Without one there is a whole band of card
+     that the photo would have filled, and centring in it left the heading
+     stranded alone at the top with four hundred pixels of nothing under it.
+     So a card with no photo hangs its block off the bottom of the title
+     instead and lets the slack fall at the foot, where it reads as margin
+     rather than as a hole. */
+  const BAND_BOT = 1712;
+  let y;
+  if(o.cover){
+    y = 856 + Math.max(0, Math.round((BAND_BOT - 856 - blockH) / 2));
+  } else {
+    y = Math.min(titleBottom + 96, Math.max(titleBottom + 96, BAND_BOT - blockH));
+  }
+
+  tiles.forEach((t, i) =>{
+    const wide = tiles.length === 3 && i === 0;
+    const col = wide ? 0 : (tiles.length === 3 ? (i - 1) % 2 : i % 2);
+    const row = wide ? 0 : (tiles.length === 3 ? 1 : Math.floor(i / 2));
+    const tw = wide ? W - PAD * 2 : TW;
+    const L = PAD + col * (TW + 20);
+    const T = y + row * (TH + TGAP);
+    x.fillStyle = 'rgba(255,255,255,.055)';
+    rrect(x, L, T, tw, TH, 22); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.08)'; x.lineWidth = 1.5;
+    rrect(x, L, T, tw, TH, 22); x.stroke();
+
+    x.textAlign = 'left';
+    track(x, 6); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 21px "Barlow Condensed"';
+    x.fillText(t[0], L + 30, T + 46);
+    track(x, 0);
+    /* Shrunk to fit before being cut. A tile's value is a venue name or a
+       list of grades, and "Advanced · Intermediate · Beginner" clipped to
+       "Advanced · Intermediate ·…" tells you less than the same thing two
+       points smaller tells you whole. */
+    x.fillStyle = '#fff';
+    x.font = OUTFIT('700', fitFont(x, t[1] || '', '700', 'Outfit', 31, tw - 60));
+    x.fillText(clipText(x, t[1] || '', tw - 60), L + 30, T + 90);
+    if(t[2]){
+      x.fillStyle = 'rgba(255,255,255,.72)';
+      x.font = OUTFIT('600', fitFont(x, t[2], '600', 'Outfit', 29, tw - 60));
+      x.fillText(clipText(x, t[2], tw - 60), L + 30, T + 128);
+    }
+  });
+  if(tilesH) y += tilesH + 26;
+
+  if(STAT_H){ cardStats(x, W, y + 62, o.stats || []); y += STAT_H + 26; }
+
+  /* ── whoever came out on top ───────────────────────────────────
+     One line, not a podium. Somebody reading this card wants to know what
+     the night was; who won is a fact about it, not the point of it — the
+     other card is the one that spends half its height on that. */
+  if(o.champ){
+    x.fillStyle = 'rgba(232,178,60,.08)';
+    rrect(x, PAD, y, W - PAD * 2, CHAMP_H, 24); x.fill();
+    x.strokeStyle = 'rgba(232,178,60,.45)'; x.lineWidth = 2;
+    rrect(x, PAD, y, W - PAD * 2, CHAMP_H, 24); x.stroke();
+
+    const cy = y + CHAMP_H / 2;
+    drawDisc(x, o.champ.face, PAD + 42 + 44, cy, 44, o.champ.name, GOLD);
+
+    x.textAlign = 'right'; x.fillStyle = GOLD; x.font = OUTFIT('700', 34);
+    x.fillText(o.champ.record || '', W - PAD - 40, cy + 12);
+    const valL = W - PAD - 40 - x.measureText(o.champ.record || '').width - 30;
+
+    x.textAlign = 'left';
+    const nx = PAD + 42 + 88 + 26;
+    track(x, 6); x.fillStyle = GOLD; x.font = '800 22px "Barlow Condensed"';
+    x.fillText('SESSION CHAMPION', nx, cy - 14);
+    track(x, 0);
+    x.fillStyle = '#fff'; x.font = OUTFIT('700', 35);
+    x.fillText(clipText(x, o.champ.name, valL - nx), nx, cy + 26);
+    y += CHAMP_H + 22;
+  }
+
+  /* ── and the next one ───────────────────────────────────────────
+     Only when there genuinely is one on the books for this group. A card
+     promising a next session that nobody has put in the app is worse than
+     a card that ends. */
+  if(o.next){
+    x.fillStyle = BALL;
+    rrect(x, PAD, y, W - PAD * 2, NEXT_H, 24); x.fill();
+
+    const cy = y + NEXT_H / 2;
+    x.textAlign = 'left';
+    track(x, 6); x.fillStyle = 'rgba(12,26,16,.62)'; x.font = '800 21px "Barlow Condensed"';
+    x.fillText('NEXT SESSION', PAD + 34, cy - 12);
+    track(x, 0);
+    x.fillStyle = '#10200F'; x.font = OUTFIT('700', 33);
+
+    /* the button is measured first, because the date has to stop short of
+       it rather than run underneath it */
+    x.font = OUTFIT('700', 25);
+    const bw = x.measureText('RSVP in app').width + 56, bh = 62;
+    const bx = W - PAD - 26 - bw;
+    rrect(x, bx, cy - bh / 2, bw, bh, 31);
+    x.fillStyle = '#0F2747'; x.fill();
+    x.textAlign = 'center'; x.fillStyle = '#fff';
+    x.fillText('RSVP in app', bx + bw / 2, cy + 9);
+
+    x.textAlign = 'left'; x.fillStyle = '#10200F'; x.font = OUTFIT('700', 33);
+    x.fillText(clipText(x, o.next, bx - 24 - (PAD + 34)), PAD + 34, cy + 28);
+  }
+
+  cardSignature(x, W, o.link);
+}
+
+/* ── WHAT EACH CARD IS TOLD ────────────────────────────────────
+   Both callers — the organizer mid-session and a night already played —
+   have the same facts under different names, so the shaping happens once
+   here and each caller only has to say where its copy of them lives. */
+function cardHours(a, b){
+  if(!a || !b || b <= a) return null;
+  const h = (b - a) / 3600000;
+  if(h >= 24) return null;
+  const whole = Math.round(h);
+  return (Math.abs(h - whole) < .12 ? whole : Math.round(h * 2) / 2) + 'h';
+}
+function cardSpan(a, b){
+  if(!a) return '';
+  if(!b || b <= a) return clockText(a);
+  const one = clockText(a), two = clockText(b);
+  /* "7:00 " + EN + " 10:00 pm" reads better than saying pm twice, but only when
+     both are in the same half of the day */
+  const ap = /(am|pm)$/.exec(one), bp = /(am|pm)$/.exec(two);
+  return (ap && bp && ap[1] === bp[1])
+    ? one.replace(/\s?(am|pm)$/, '') + ' – ' + two
+    : one + ' – ' + two;
+}
+/* Every court set the same way says so once; a night graded across its
+   courts lists what it was graded into, best first. */
+function cardLevels(levels){
+  const list = (levels || []).filter(v => LEVELS[v]);
+  if(!list.length) return null;
+  const seen = [];
+  list.forEach(v =>{ if(seen.indexOf(v) < 0) seen.push(v); });
+  seen.sort((a, b) => LEVEL_RANK[a] - LEVEL_RANK[b]);
+  return seen.length === 1
+    ? [LEVELS[seen[0]], list.length === 1 ? '' : 'Every court']
+    : [seen.map(v => LEVELS[v]).join(' · '), 'Graded by court'];
+}
+/* The faces on a card come from the club roster, matched on the name the
+   night was recorded under — a night is booked under whichever of the two
+   the club calls you, and the alias and the real name are not always the
+   same. They are data URLs, so the canvas stays exportable; a remote one
+   would taint it and the export would throw. */
+function rosterFace(nm){
+  const key = String(nm || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const m = (Club.list || []).find(v =>
+    String(v.alias || '').toLowerCase().trim() === key ||
+    String(v.name  || '').toLowerCase().trim() === key);
+  return m && m.photo ? m.photo : null;
+}
+const DAY_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+/* "Fri 08 Aug" — short enough for a tile and unambiguous on any phone,
+   which toLocaleDateString on its own is not. */
+function cardDayDate(ms){
+  const d = new Date(ms);
+  return DAY_LONG[d.getDay()].slice(0, 3) + ' ' +
+    String(d.getDate()).padStart(2, '0') + ' ' + MONTH_SHORT[d.getMonth()];
+}
+function cardWhen(ms){
+  const d = ms ? new Date(ms) : new Date();
+  return {
+    day:  DAY_LONG[d.getDay()],
+    date: d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+  };
+}
+/* The group the night was filed under, or the club it falls back to. */
+function cardHeading(group){
+  if(group && group.name){
+    return { club: group.name, court: group.home_court || '',
+             logo: group.photo || null,
+             accent: (group.theme && group.theme.accent) || group.accent || null };
+  }
+  return { club: CONFIG.clubName || 'Sideout Society', court: '', logo: null, accent: null };
+}
+async function cardFonts(){
   try{
-    await document.fonts.load('130px "Bebas Neue"');
     await document.fonts.load('800 30px "Barlow Condensed"');
+    await document.fonts.load('700 90px "Outfit"');
+    await document.fonts.load('600 32px "Outfit"');
   }catch(e){}
-  try{ await document.fonts.load('700 110px "Outfit"'); }catch(e){}
-  const logo = drawLockup._mark = await loadImg(picksilogURI());
+  return loadImg(picksilogURI());
+}
+
+function cardTiles(o){
+  const t = [];
+  if(o.startsAt) t.push(['WHEN', cardDayDate(o.startsAt), cardSpan(o.startsAt, o.endsAt)]);
+  if(o.venue)    t.push(['WHERE', o.venue, o.courts ? (o.courts === 1 ? '1 court' : o.courts + ' courts') : '']);
+  if(o.modeName) t.push(['FORMAT', o.modeName,
+                         o.timed ? (o.mins + ' min rounds') : ('Games to ' + o.target)]);
+  const lv = cardLevels(o.levels);
+  if(lv) t.push(['LEVEL', lv[0], lv[1]]);
+  return t.slice(0, 4);
+}
+
+/* The organizer's own pair of cards, mid-session. The same two drawings the
+   recap uses, fed from the session in memory rather than from a banked
+   night. Which one is drawn is the toggle above the button.
+
+   No link at the foot on either: there is no recap to send anybody to until
+   the night has been ended and banked, and a printed address that 404s is
+   worse than no address at all. */
+async function makeCard(){
+  if(!S.games && cardKind !== 'session'){
+    toast('Play a round first — there is nothing to show yet.'); return;
+  }
+  toast('Building your card…');
+  cardMark = await cardFonts();
 
   const c = document.getElementById('card-canvas');
   c.width = 1080; c.height = 1920;
   const x = c.getContext('2d');
-  const W = 1080, PAD = 72;
+  const W = 1080;
+  x.clearRect(0, 0, W, 1920);
+
+  const ranked = S.order.filter(id => P(id) && P(id).g > 0).sort(nightOrder);
+  if(cardKind !== 'session' && !ranked.length){ toast('No completed games yet.'); return; }
+
+  /* The group may never have been fetched on this phone — an organizer can
+     set a night up, run it and make a card without ever opening the Groups
+     screen. Without this the header quietly falls back to the club and the
+     card goes out under the wrong name, which is the whole thing this was
+     meant to fix. */
+  /* Fetched if the group is not already to hand — and "not to hand" means
+     this group is missing, not that the list is empty. Checking only for an
+     empty list left a stale list standing: a group made on another device,
+     or after this list was read, was never found, and the card quietly fell
+     back to the club with no logo and the wrong colour. */
+  const known = id => (Groups.list || []).some(v => v.id === id);
+  if(S.groupId && !known(S.groupId)){ try{ await Groups.load(true); }catch(e){} }
+  const grp = (Groups.list || []).find(v => v.id === S.groupId) || null;
+  const head = cardHeading(grp);
+  const when = cardWhen(sessionWhen() || Date.now());
   const PAL = cardPaint();
-  const GOLD = PAL.gold, BALL = PAL.ball;
-  x.clearRect(0,0,W,1920);
+  const venue = (S.venueName || (S.venue ? venueName(S.venue) : '') || head.court || '').trim();
 
-  if(cardKind === 'session'){ drawSessionOverlay(x, W, logo, BALL); publishCard(c); return; }
+  const base = {
+    club: head.club, court: venue, accent: head.accent,
+    logo: head.logo ? await loadImg(head.logo) : null,
+    day: when.day, date: when.date,
+    title: sessionTitle() || 'Open play',
+    link: ''
+  };
 
-  // backdrop
-  const g = x.createLinearGradient(0,0,220,1920);
-  g.addColorStop(0,'#061726'); g.addColorStop(.45,'#0E3A61'); g.addColorStop(1,'#050F1B');
-  x.fillStyle = g; x.fillRect(0,0,W,1920);
-  const glow = x.createRadialGradient(W/2,470,60,W/2,470,760);
-  glow.addColorStop(0,'rgba(63,146,214,.30)'); glow.addColorStop(1,'rgba(63,146,214,0)');
-  x.fillStyle = glow; x.fillRect(0,0,W,1200);
+  /* A player carries their own photo once they have been matched to a club
+     record; anyone added by hand on the night has none, so the roster is
+     asked as well before falling back to initials. */
+  const faceFor = async id =>{
+    const src = P(id).photo || rosterFace(P(id).name);
+    return src ? loadImg(src) : null;
+  };
 
-  // paddle stripes, echoing the logo
-  x.save(); x.globalAlpha = .045; x.strokeStyle = '#fff'; x.lineWidth = 54;
-  for(let i=-1400;i<2200;i+=150){ x.beginPath(); x.moveTo(i,-200); x.lineTo(i+1300,2200); x.stroke(); }
-  x.restore();
-
-  let y = 108;
-
-  // wordmark
-  if(logo){
-    const lw = 470, lh = logo.height * lw / logo.width;
-    x.drawImage(logo, (W-lw)/2, y, lw, lh);
-    y += lh + 54;
-  } else { y += 110; }
-
-  // eyebrow
-  const stamp = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}).toUpperCase();
-  x.textAlign = 'center'; x.fillStyle = BALL;
-  track(x, 7); x.font = '800 27px "Barlow Condensed"';
-  x.fillText(MODE_NAME[S.mode].toUpperCase() + '  ·  ' + stamp, W/2, y);
-  track(x, 0);
-  y += 34;
-
-  x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1;
-  x.beginPath(); x.moveTo(PAD+70, y); x.lineTo(W-PAD-70, y); x.stroke();
-
-  y += 96;
-
-  // title
-  track(x, 9); x.fillStyle = '#fff'; x.font = '132px "Bebas Neue"';
-  x.fillText('STANDINGS', W/2, y);
-  track(x, 0);
-  y += 56;
-
-  // ranked players — the same order as the table on screen
-  const rows = S.order.filter(id => P(id) && P(id).g > 0).sort(nightOrder);
-  if(!rows.length){ toast('No completed games yet.'); return; }
-
-  // champion
-  const champ = P(rows[0]);
-  const cH = 246;
-  x.fillStyle = 'rgba(224,169,58,.12)';
-  rrect(x, PAD, y, W-PAD*2, cH, 26); x.fill();
-  x.strokeStyle = 'rgba(224,169,58,.55)'; x.lineWidth = 2;
-  rrect(x, PAD, y, W-PAD*2, cH, 26); x.stroke();
-
-  x.textAlign = 'left';
-  track(x, 6); x.fillStyle = GOLD; x.font = '800 25px "Barlow Condensed"';
-  x.fillText(S.mode === 'kotc' ? 'KING OF THE COURT' : 'TOP OF THE TABLE', PAD+42, y+62);
-  track(x, 0);
-
-  const recW = 250;
-  const nameSize = fitFont(x, champ.name.toUpperCase(), '', 'Bebas Neue', 94, W-PAD*2-recW-84);
-  x.fillStyle = '#fff'; x.font = nameSize + 'px "Bebas Neue"';
-  x.fillText(champ.name.toUpperCase(), PAD+42, y+152);
-
-  const afterCrowns = drawCrowns(x, champ.crowns, PAD+44, y+190, 13, GOLD);
-  x.font = '30px "Barlow Condensed"'; x.fillStyle = 'rgba(255,255,255,.55)';
-  x.fillText(champ.g + ' games played', afterCrowns + (champ.crowns ? 10 : 0), y+200);
-
-  x.textAlign = 'right';
-  x.fillStyle = GOLD; x.font = '78px "Bebas Neue"';
-  x.fillText(champ.w + '–' + champ.l, W-PAD-42, y+160);
-  track(x, 4); x.font = '800 22px "Barlow Condensed"'; x.fillStyle = 'rgba(255,255,255,.4)';
-  x.fillText('WON  LOST', W-PAD-42, y+198);
-  track(x, 0);
-
-  y += cH + 26;
-
-  // the chasing pack
-  const rest = rows.slice(1, 8);
-  const rH = 104, gap = 12;
-  rest.forEach((id,i)=>{
-    const p = P(id), top = y + i*(rH+gap);
-    x.fillStyle = 'rgba(255,255,255,.055)';
-    rrect(x, PAD, top, W-PAD*2, rH, 18); x.fill();
-
-    x.textAlign = 'left';
-    x.fillStyle = 'rgba(255,255,255,.42)'; x.font = '46px "Bebas Neue"';
-    x.fillText(String(i+2), PAD+34, top+68);
-
-    const nm2 = p.name.toUpperCase();
-    const ns = fitFont(x, nm2, '', 'Bebas Neue', 54, 460);
-    x.fillStyle = '#fff'; x.font = ns + 'px "Bebas Neue"';
-    x.fillText(nm2, PAD+108, top+68);
-
-    if(p.crowns){
-      x.font = ns + 'px "Bebas Neue"';
-      drawCrowns(x, p.crowns, PAD+120 + x.measureText(nm2).width, top+52, 9, GOLD);
-    }
-    x.textAlign = 'right';
-    x.fillStyle = BALL; x.font = '48px "Bebas Neue"';
-    x.fillText(p.w + '–' + p.l, W-PAD-34, top+68);
-  });
-
-  y += rest.length*(rH+gap) + 40;
-
-  // session footer
-  const fy = Math.max(y, 1600);
-  x.strokeStyle = 'rgba(255,255,255,.14)';
-  x.beginPath(); x.moveTo(PAD, fy); x.lineTo(W-PAD, fy); x.stroke();
-  const stats = [['ROUNDS', S.round], ['GAMES', S.games], ['PLAYERS', S.order.length]];
-  x.textAlign = 'center';
-  stats.forEach((st,i)=>{
-    const cx = PAD + (W-PAD*2) * (i*2+1) / 6;
-    x.fillStyle = '#fff'; x.font = '68px "Bebas Neue"';
-    x.fillText(String(st[1]), cx, fy+92);
-    track(x, 5); x.fillStyle = 'rgba(255,255,255,.45)'; x.font = '800 23px "Barlow Condensed"';
-    x.fillText(st[0], cx, fy+128);
-    track(x, 0);
-  });
-
-  track(x, 8); x.fillStyle = 'rgba(255,255,255,.32)'; x.font = '800 24px "Barlow Condensed"';
-  x.fillText('SIDEOUT SOCIETY', W/2, 1852);
-  track(x, 0);
+  if(cardKind === 'session'){
+    const top = ranked[0];
+    drawSessionCard(x, W, Object.assign(base, {
+      cover: S.cover ? await loadImg(S.cover) : null,
+      tiles: cardTiles({ startsAt: S.startsAt, endsAt: S.endsAt,
+                         venue: venue, courts: S.nCourts,
+                         modeName: MODE_NAME[S.mode], timed: S.timed,
+                         mins: S.mins, target: S.target, levels: S.courtLevels }),
+      stats: [['PLAYERS', S.order.length, PAL.gold],
+              ['GAMES', S.games, PAL.ball]]
+               .concat(cardHours(S.startsAt, S.endsAt)
+                 ? [['ON COURT', cardHours(S.startsAt, S.endsAt), '#fff']] : []),
+      champ: top ? { name: P(top).name,
+                     record: (P(top).w || 0) + '–' + (P(top).l || 0),
+                     face: await faceFor(top) } : null,
+      next: await Recap.nextNight(S.groupId)
+    }));
+  } else {
+    const faces = await Promise.all(ranked.slice(0, 10).map(faceFor));
+    drawLeaderCard(x, W, Object.assign(base, {
+      stats: [['PLAYERS', S.order.length], ['GAMES', S.games],
+              ['ROUNDS', S.round]],
+      rows: ranked.map((id, i) =>{
+        const q = P(id);
+        return { name: q.name, crowns: q.crowns,
+                 record: (q.w || 0) + '–' + (q.l || 0),
+                 face: faces[i] || null };
+      })
+    }));
+  }
 
   publishCard(c);
 }
@@ -21094,90 +22070,6 @@ function publishCard(c){
   pv.hidden = false;
   document.getElementById('card-save').hidden = false;
   toast('Card ready — save it or share straight to your story.');
-}
-
-/* Session overlay — transparent PNG meant to sit on top of a photo in a
-   story. Everything lives in the lower third over a soft scrim, so the
-   picture stays the picture.                                          */
-function spell(mins){
-  if(mins < 1) return 'JUST STARTED';
-  const h = Math.floor(mins/60), m = mins % 60;
-  const hp = h ? h + (h === 1 ? ' HOUR' : ' HOURS') : '';
-  const mp = m ? m + (m === 1 ? ' MINUTE' : ' MINUTES') : '';
-  return (hp && mp) ? hp + ' ' + mp : (hp || mp);
-}
-function drawSessionOverlay(x, W, logo, BALL){
-  const H = 1920, PAD = 84;
-  const INK = '#FFFFFF';
-
-  // scrim so white type survives any photo
-  const g = x.createLinearGradient(0, 850, 0, H);
-  g.addColorStop(0,   'rgba(4,16,28,0)');
-  g.addColorStop(.30, 'rgba(4,16,28,.68)');
-  g.addColorStop(.60, 'rgba(4,16,28,.87)');
-  g.addColorStop(1,   'rgba(4,16,28,.94)');
-  x.fillStyle = g; x.fillRect(0, 850, W, H-850);
-  const soft = on => {
-    x.shadowColor = on ? 'rgba(0,0,0,.55)' : 'transparent';
-    x.shadowBlur = on ? 18 : 0; x.shadowOffsetY = on ? 2 : 0;
-  };
-
-  const rule = y => {
-    x.strokeStyle = 'rgba(255,255,255,.26)'; x.lineWidth = 1;
-    x.beginPath(); x.moveTo(PAD, y); x.lineTo(W-PAD, y); x.stroke();
-  };
-  const label = (t, ax, y, align) => {
-    x.textAlign = align || 'left';
-    track(x, 6); x.fillStyle = 'rgba(255,255,255,.62)'; x.font = '800 22px "Barlow Condensed"';
-    x.fillText(t, ax, y); track(x, 0);
-  };
-
-  let y = 1187;   /* keeps everything clear of Instagram's reply bar */
-
-  // the lockup, with the format opposite it. Left-aligned here rather than
-  // centred, so it is drawn by hand instead of through drawLockup.
-  if(logo){
-    const ms = 68;
-    x.drawImage(logo, PAD, y - ms, ms, ms);
-    x.save();
-    x.font = '700 56px "Outfit", system-ui, sans-serif';
-    x.textAlign = 'left'; x.textBaseline = 'middle';
-    x.fillStyle = '#FFFFFF';
-    x.fillText('picksilog', PAD + ms + 20, y - ms / 2 + 2);
-    x.restore();
-  }
-  label(MODE_NAME[S.mode].toUpperCase(), W-PAD, y - 6, 'right');
-
-  y += 34; rule(y);
-
-  // hero — how long everyone was out there
-  const mins = S.started ? Math.max(0, Math.round((Date.now()-S.started)/60000)) : 0;
-  const dur = spell(mins);
-  label('TIME ON COURT', PAD, y + 56);
-  const size = fitFont(x, dur, '', 'Bebas Neue', 108, W - PAD*2);
-  x.textAlign = 'left'; x.fillStyle = INK; x.font = size + 'px "Bebas Neue"';
-  soft(true); x.fillText(dur, PAD, y + 152); soft(false);
-
-  y += 208; rule(y);
-
-  // the three numbers that matter
-  const cells = [['PLAYERS', S.order.length], ['GAMES', S.games], ['COURTS', S.courts.length]];
-  cells.forEach((cell,i)=>{
-    const cx = PAD + (W-PAD*2) * i / 3 + 4;
-    label(cell[0], cx, y + 52);
-    x.textAlign = 'left'; x.fillStyle = INK; x.font = '82px "Bebas Neue"';
-    soft(true); x.fillText(String(cell[1]), cx, y + 132); soft(false);
-    if(i){
-      x.strokeStyle = 'rgba(255,255,255,.20)';
-      const bx = PAD + (W-PAD*2) * i / 3 - 22;
-      x.beginPath(); x.moveTo(bx, y + 26); x.lineTo(bx, y + 142); x.stroke();
-    }
-  });
-
-  y += 186; rule(y);
-
-  const stamp = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}).toUpperCase();
-  label(stamp, PAD, y + 50);
 }
 
 /* Watchers hold a snapshot, not a session, so shape one into the
