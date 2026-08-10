@@ -230,6 +230,24 @@ tables matter:
 Organizer-only RPCs check the role from the JWT and raise on failure; the
 client string-matches `/organizer/i` on the error to show the right message.
 
+**Two screens open with a coloured band, and the app's own bar is part of
+it.** The profile and a group's page are `.screen.hero` — full bleed, no side
+padding — and `syncNav()` puts `.onhero` on `#appbar` for exactly those two so
+the bar goes navy and loses its border. Anything that changes the app bar has
+to survive being white-on-navy, and any third screen given a band has to be
+added to that check or it gets a paper-coloured strip above its own header.
+The band, the white strip that straddles it, `.sec`/`.sec-h`/`.sec-c` and the
+`.me-item` rows are shared by both: a club and a person are introduced the
+same way, and when the two were drawn separately they drifted.
+
+**A two- or three-letter class name in this file is probably already taken.**
+`.sw` is the club-colour swatch — a 34px white circle — so the day/night
+toggle row written as `class="me-item sw"` drew itself as a full-width white
+ellipse. `.sec` is the profile and group section wrapper, which carries a 22px
+top margin, so the seconds on Home's countdown sat lower than the hours and
+the minutes. Both looked like layout bugs and neither was. Grep the stylesheet
+for the name before using it, and prefer a prefixed one (`me-tog`, `ticking`).
+
 ---
 
 ## Known cruft
@@ -240,6 +258,19 @@ collapsing into one that returns a boolean, when nothing else is in flight.
 
 `Feed.pastCard()` had an `<article>` closed by `</div>`; fixed, but worth a
 scan for others.
+
+The old profile and group headers left CSS behind: `.ghead`, `.gh-pic`,
+`.gh-tx`, `.gh-court`, `.gh-edit`, `.rank-card`, `.rank-big`, `.rank-txt`,
+`.idcard`, `.id-n`, `.ms-row`/`.ms-n`/`.ms-w`, and the `.tier-head` group
+(`.tier-who`, `.tier-mark`, `.tier-goal`, `.tier-badge`, `.tier-pts`,
+`.tier-next`) have no reader now. `.tier-bar`, `.tier-gate` and `.tier-lock`
+are still live, so the tier block cannot be deleted wholesale.
+
+Home's rebuild orphaned another set: `.hm-top`, `.hm-me`, `.hm-tx`, `.hm-pair`,
+`.hm-cnt`, `.hm-today`, `.hm-sess`, `.hm-shot`, `.hm-stx`, `.hm-when`,
+`.hm-rt`, `.feed-new` and `.code-panel`. The functions that fed them
+(`homeRatings`, `todayStrip`) are gone; the CSS is not. `.sx` and its children
+are still live — `Feed.pastCard()` uses them.
 
 ---
 

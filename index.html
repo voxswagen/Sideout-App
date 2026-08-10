@@ -1397,24 +1397,79 @@ body.lboxed{overflow:hidden}
    so a long conversation had no way back and nothing to type into until you
    had scrolled to the bottom of it. */
 /* A conversation is a frame, not a page: the name at the top and the box you
-   type in are the two fixed edges and only the middle moves. Laid out as a
-   column that fills the screen and lets the stream take what is left, so the
-   composer sits directly on the bottom nav rather than scrolling away under
-   it — which on a phone meant scrolling to the bottom of a long thread
-   before you could write anything.
+   type in are the two fixed edges and only the middle moves.
 
-   Sticky rather than fixed, so it stays inside whatever box it is drawn into.
-   The same markup is used on its own screen and inside a tab on a session,
-   and a fixed element would escape the second one. */
-.ch-wrap{display:flex;flex-direction:column;min-height:0;
-  height:calc(100dvh - var(--dock-h) - env(safe-area-inset-bottom) - 74px)}
-#vw-chat .ch-wrap,#past-body .ch-wrap{height:calc(100dvh - var(--dock-h) - env(safe-area-inset-bottom) - 210px)}
-.ch-wrap .ch-top{position:sticky;top:0;z-index:6;flex:0 0 auto;margin:0 -2px 8px;
-  padding:6px 2px 8px;background:var(--paper);
-  box-shadow:0 6px 10px -10px rgba(11,44,74,.5)}
+   This was sticky first and sticky was the wrong tool. The app's own header
+   is `position:sticky; top:0` and the dock is `position:fixed`, so a chat
+   header sticking to top:0 stuck *behind* the app bar and came out cropped,
+   and a composer stuck to bottom:0 sat *under* the dock. Both only showed
+   once the thread was long enough to scroll, which is why it looked
+   intermittent rather than simply wrong.
+
+   On its own screen the frame is fixed between the two of them, measured
+   rather than guessed — --top-h is read off the real header, because its
+   height moves with the safe-area inset and any phone with a notch would
+   otherwise be out by the size of it. Nothing inside is sticky, so nothing
+   can stick to the wrong thing.
+
+   Inside a session tab it stays in flow: that box scrolls with the page and
+   a fixed child would escape it. */
+.ch-wrap{display:flex;flex-direction:column;min-height:0}
+/* Measured against the app's header first, and that was wrong twice over: the
+   header is emptied on some screens, so the measurement came back 0, the
+   frame pinned to the top of the viewport and the chat's own header sat
+   underneath the app bar — invisible rather than merely cropped.
+
+   So it does not measure anything. A conversation takes the whole screen and
+   carries its own bar, which is what every messaging app does and what the
+   back button in that bar has always implied. Above the app header rather
+   than below it, so there is nothing to be hidden by. */
+.ch-wrap.pinned{position:fixed;left:0;right:0;z-index:60;
+  top:0;
+  bottom:calc(var(--dock-h) + env(safe-area-inset-bottom));
+  padding:calc(10px + env(safe-area-inset-top)) 14px 0;background:var(--paper)}
+.ch-wrap.pinned .ch-top{flex:0 0 auto;margin:0 0 8px}
+.ch-wrap.pinned .ch-foot{flex:0 0 auto;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+/* the page behind must not scroll under a frame that fills it */
+body.chat-pinned{overflow:hidden}
+
+/* A conversation is as tall as whatever is left, and what is left used to be
+   guessed at: viewport, minus the dock, minus 210px of assumed header. The
+   assumption was wrong the moment a night had a poster on it — the chat came
+   out taller than the room it had, the page scrolled to fit it, and the header
+   went off the top while the box you type in went under the phone's own bar.
+
+   Nothing is measured now. The screen becomes a column for as long as the
+   chat tab is open: the header and the tabs are rows that cannot move, the
+   chat is the row that takes the rest, and the page itself does not scroll at
+   all. The poster is dropped while you are in there, because a conversation
+   wants the height more than a picture you have already seen does. */
+#viewer.chatting{display:flex;flex-direction:column;overflow:hidden}
+#viewer.chatting .vw-top,#viewer.chatting .vw-tabs{flex:0 0 auto}
+#viewer.chatting .vw-body{flex:1 1 auto;min-height:0;overflow:hidden;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+/* `margin:0 auto` is what centres these two in the ordinary scroll, and it is
+   also what stops a flex item stretching across its column, so both of them
+   shrank to the width of their own contents the moment the screen became one.
+   Given a width, the auto margins go back to centring. */
+#viewer.chatting .vw-tabs,#viewer.chatting .vw-body,
+#screen-past.chatting .vw-tabs,#screen-past.chatting #past-body{width:100%}
+/* flex the whole way down rather than a height percentage, which would have
+   nothing definite to be a percentage of */
+#viewer.chatting .vw-body,#viewer.chatting #vw-chat,
+#screen-past.chatting #past-body{display:flex;flex-direction:column}
+#viewer.chatting #vw-chat,#viewer.chatting #vw-chat .ch-wrap,
+#screen-past.chatting #past-body .ch-wrap{flex:1 1 auto;min-height:0}
+#screen-past.chatting{position:fixed;left:0;right:0;top:0;padding:0 14px;
+  bottom:calc(var(--dock-h) + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;overflow:hidden}
+#screen-past.chatting .sp-back,#screen-past.chatting .pv-head,
+#screen-past.chatting .vw-tabs{flex:0 0 auto}
+#screen-past.chatting #past-body{flex:1 1 auto;min-height:0;overflow:hidden;padding-bottom:6px}
+#viewer.chatting .vw-cover,#screen-past.chatting .pv-cover{display:none}
+.ch-wrap .ch-top{flex:0 0 auto;margin-bottom:8px;background:var(--paper)}
 .ch-wrap .ch-stream{flex:1 1 auto;min-height:0;height:auto;overscroll-behavior:contain}
-.ch-foot{position:sticky;bottom:0;z-index:6;flex:0 0 auto;background:var(--paper);
-  padding:6px 0 2px;box-shadow:0 -8px 12px -10px rgba(11,44,74,.5)}
+.ch-foot{flex:0 0 auto;background:var(--paper);padding:6px 0 2px}
 .ch-clip{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:0;cursor:pointer;
   background:var(--card-2);color:var(--ink-2);display:grid;place-items:center}
 .ch-clip .ic{width:18px;height:18px}
@@ -1909,6 +1964,12 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
   background:rgba(255,255,255,.13);transform:rotate(-17deg);pointer-events:none}
 .vw-bar{position:relative;display:flex;align-items:center;gap:11px;margin-bottom:15px}
 .vw-bar .badge{width:38px;height:38px;flex:0 0 auto;border-radius:50%;object-fit:cover}
+/* Same height and the same corner as .pv-cover on a finished night, on a
+   band rather than on paper, so the picture is the same size in the same
+   place whichever of the two you happened to open. */
+.vw-cover{position:relative;height:150px;border-radius:var(--r);margin-bottom:14px;
+  background:rgba(255,255,255,.08) center/cover no-repeat;
+  border:1px solid rgba(255,255,255,.16)}
 /* Set rather than drawn, so a club whose name is four words wraps to two
    lines instead of being squashed to nothing like the wordmark image was. */
 .vw-club{flex:1;min-width:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;
@@ -2036,11 +2097,6 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
 .vv-pic{flex:0 0 auto;width:52px;height:52px;border-radius:14px;overflow:hidden;
   display:grid;place-items:center;background:var(--brand-navy)}
 .ct-tile{width:100%;height:100%;display:block}
-/* The night's picture, at the top of Details where a picture belongs. 16:9
-   because that is the shape posters are made in and cropping one to a
-   square loses the title off the bottom. */
-.vw-hero{aspect-ratio:16/9;border-radius:var(--r);margin-bottom:13px;
-  background:var(--card-2) center/cover no-repeat}
 .vv-pic .ic{width:24px;height:24px}
 .vv-tx{flex:1;min-width:0}
 .vv-tx i{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
@@ -2765,6 +2821,9 @@ textarea:focus{border-color:var(--court)}
 .imp-row{display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:6px;
   border-radius:var(--r-s);background:var(--card-2);border:1px solid var(--edge)}
 .imp-row.drop{opacity:.42}
+/* a repeat is not merely unticked, it is unticked for a reason worth seeing */
+.imp-row.dupe{border-color:var(--crown-line);background:var(--kitchen)}
+.imp-row.dupe .imp-tx span{color:var(--crown);font-weight:600}
 .imp-tick{flex:0 0 auto;width:24px;height:24px;border-radius:7px;cursor:pointer;
   display:grid;place-items:center;background:var(--court);border:0;color:var(--on-accent,#fff)}
 .imp-row.drop .imp-tick{background:var(--card);border:1px solid var(--edge-2)}
@@ -2807,6 +2866,17 @@ textarea:focus{border-color:var(--court)}
   background:var(--card-2);border:1px solid var(--edge)}
 .vw-note p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.45}
 .vw-note .btn{margin-top:10px}
+/* Somebody waiting to be let in, said on the card. An organizer should not
+   have to open every group to find out one of them wants something. */
+.gc-ask{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
+  border-radius:99px;background:var(--crown);color:#12200B;vertical-align:2px}
+.gc-wait{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;
+  border-radius:99px;background:var(--card-2);border:1px solid var(--edge-2);
+  color:var(--ink-3);vertical-align:2px}
+button.lnk{border:0;background:none;padding:0;cursor:pointer;font:inherit;
+  color:var(--grass);text-decoration:underline}
 .gr-no{flex:0 0 auto;width:34px;height:34px;margin-left:6px;border-radius:50%;cursor:pointer;
   border:1px solid var(--edge-2);background:var(--card-2);color:var(--ink-3);font-size:17px;
   line-height:1;display:grid;place-items:center}
@@ -2993,6 +3063,460 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .pl-head i{font-style:normal;font-size:12.5px;color:var(--ink-2)}
 
 /* the settings list on the profile, where the drawer's contents went */
+
+
+/* ══════════════ HOME ══════════════
+   Home answers one question and it is not "who are you" — that was the top
+   third of the page, a card of your own face and rating you had already seen
+   every other time you opened the app. It answers "what is on, and am I in
+   it", so the night that is next is the whole top of the page, at the size a
+   thing you are deciding about deserves, with the join on it.
+
+   Everything after it is in the order you would ask for it: how you are
+   doing, what else is on, a way in by code, whose birthday it is, and what
+   has already been played. */
+.hm-greet{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:14px}
+.hm-greet h1{flex:1;min-width:0;margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
+  font-size:clamp(28px,7.4vw,36px);line-height:1;letter-spacing:.02em;color:var(--ink)}
+.hm-greet .hm-day{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3)}
+.hm-greet p{flex:1 0 100%;margin:0;font-size:14px;color:var(--ink-2)}
+
+/* ── the night that is next ── */
+.hm-next{position:relative;overflow:hidden;padding:17px 18px 18px;border-radius:var(--r-l);
+  color:#fff;box-shadow:var(--sh-2);
+  background:linear-gradient(158deg,var(--brand-navy) 0%,#12304F 58%,var(--brand-navy-deep) 100%)}
+.hm-next::after{content:'';position:absolute;right:-90px;top:-40px;width:230px;height:230px;
+  border-left:2px solid rgba(255,255,255,.10);transform:rotate(-24deg);pointer-events:none}
+.hm-nh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.hm-nh b{flex:1;min-width:0;display:flex;align-items:center;gap:7px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:#fff}
+.hm-nh b i{width:8px;height:8px;border-radius:50%;background:var(--ball);flex:0 0 auto}
+.hm-nh span{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);
+  max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-cd{position:relative;display:flex;align-items:flex-start;gap:4px;margin-bottom:14px}
+.hm-cu{flex:0 1 auto;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
+.hm-cu b{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(38px,12.4vw,56px);
+  line-height:.9;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.hm-cu i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9px;
+  letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+/* The seconds are the part that is actually moving, so they are the part
+   that is lit — everything else on this card is still.
+
+   Not `.sec`: that is the section wrapper the profile and group pages use,
+   and it carries a 22px top margin, so the seconds sat lower than the hours
+   and the minutes for no reason anybody could see. */
+.hm-cu.ticking b{color:var(--ball)}
+.hm-csep{flex:0 0 auto;font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,7.4vw,38px);
+  line-height:1;color:rgba(255,255,255,.28);padding-top:4px}
+.hm-next h2{position:relative;margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
+  font-size:clamp(30px,8.6vw,42px);line-height:.96;letter-spacing:.02em;color:#fff}
+.hm-nwhen{position:relative;margin:5px 0 0;font-size:14px;color:rgba(255,255,255,.78)}
+.hm-nwho{position:relative;display:flex;align-items:center;gap:10px;margin-top:13px}
+.hm-faces{flex:0 0 auto;display:flex}
+.hm-faces .av{width:30px;height:30px;font-size:11px;border:2px solid var(--brand-navy)}
+/* enough overlap to read as a stack, not so much that the initials
+   underneath are covered */
+.hm-faces>*+*{margin-left:-8px}
+.hm-more{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.16);border:2px solid var(--brand-navy);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;color:#fff}
+.hm-nct{flex:1;min-width:0;font-size:13.5px;color:rgba(255,255,255,.78)}
+.hm-nacts{position:relative;display:flex;gap:10px;margin-top:15px}
+.hm-nacts .btn{flex:1;border-radius:99px;padding:15px}
+.hm-in{background:var(--ball);color:#0B1B2B;box-shadow:none}
+.hm-in:hover{filter:brightness(1.06)}
+.hm-nact{flex:0 0 auto;width:54px;border-radius:99px;display:grid;place-items:center;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);color:#fff}
+.hm-nact:hover{background:rgba(255,255,255,.18)}
+.hm-nact svg{width:19px;height:19px}
+
+/* ── how you are doing, in four figures ── */
+.hm-fig{display:flex;margin:12px 0 0;padding:13px 6px;background:var(--card);
+  border-radius:var(--r);box-shadow:var(--sh-1);border:1px solid var(--edge)}
+.hm-fig .ps{flex:1 1 0;padding:0 4px;border:0;background:none;border-radius:0}
+.hm-fig .ps+.ps{border-left:1px solid var(--edge)}
+.hm-fig .ps b{font-size:23px}
+.hm-fig .ps b.good{color:var(--grass)}
+
+/* ── what's on ── */
+.hm-sec{margin-top:26px}
+.hm-sh{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.hm-sh h2{flex:1;min-width:0;margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
+  font-size:26px;letter-spacing:.02em;color:var(--ink)}
+.hm-sh p{margin:0}
+.hm-new{flex:0 0 auto;padding:7px 15px;border-radius:99px;background:var(--brand-green);
+  color:#0B1B2B;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
+  letter-spacing:.12em;text-transform:uppercase}
+.hm-sub{margin:0 0 12px;font-size:13.5px;color:var(--ink-2)}
+/* One row that scrolls rather than a block of chips that wraps to three
+   lines. Which club a night belongs to is a filter you flick through, not a
+   list you read. */
+.hm-clubs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;
+  scrollbar-width:none;-ms-overflow-style:none}
+.hm-clubs::-webkit-scrollbar{display:none}
+.hm-club{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;
+  border-radius:99px;background:var(--card);border:1px solid var(--edge);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2)}
+.hm-club .mono{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:grid;
+  place-items:center;background:var(--card-2);color:var(--ink-3);font-size:10px}
+.hm-club i{font-style:normal;font-size:11px;color:var(--ink-3)}
+.hm-club.on{background:var(--brand-navy);border-color:var(--brand-navy);color:#fff}
+.hm-club.on .mono{background:var(--ball);color:#0B1B2B}
+.hm-club.on i{color:rgba(255,255,255,.6)}
+
+/* ── one night on the board ──
+   Five stacked buttons is what this card used to end in — view, leave, copy
+   link, manage, delete — which made every card as tall as a phone and put
+   Delete one thumb away from Join on a scrolling list. One thing to do is on
+   the card; everything else an organizer needs is behind the dots. */
+.fd-strip{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 12px;
+  scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none}
+.fd-strip::-webkit-scrollbar{display:none}
+.fd-strip .sx2{flex:0 0 min(78vw,300px);scroll-snap-align:start}
+.sx2{position:relative;border-radius:var(--r);overflow:hidden;background:var(--card);
+  border:1px solid var(--edge);box-shadow:var(--sh-1);margin-bottom:12px}
+.sx2-top{position:relative;min-height:118px;display:flex;flex-direction:column;
+  justify-content:space-between;padding:12px 14px 13px;color:#fff;
+  background:linear-gradient(150deg,var(--brand-navy) 0%,#12304F 60%,var(--brand-navy-deep) 100%)}
+/* a night you are in wears the club's green rather than the house navy, so
+   the ones that are yours are findable without reading a word */
+.sx2-top.mine{background:linear-gradient(150deg,#2C6B33 0%,#1F5B2C 55%,#0F3A22 100%)}
+.sx2-top.shot{background-size:cover;background-position:center}
+.sx2-top.shot::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(9,22,38,.25) 0%,rgba(9,22,38,.82) 100%)}
+.sx2-top>*{position:relative}
+.sx2-tags{display:flex;gap:6px;flex-wrap:wrap}
+.sx2-tag{padding:4px 10px;border-radius:99px;background:var(--ball);color:#0B1B2B;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;
+  letter-spacing:.13em;text-transform:uppercase}
+.sx2-tag.live{background:var(--fault);color:#fff}
+.sx2-tag.full{background:rgba(255,255,255,.22);color:#fff}
+.sx2-tag.in{background:rgba(255,255,255,.22);color:#fff}
+.sx2-top h3{margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
+  font-size:clamp(22px,6vw,28px);line-height:.98;letter-spacing:.02em}
+.sx2-body{padding:12px 14px 13px}
+.sx2-when{margin:0;font-size:13px;color:var(--ink-2)}
+.sx2-fill{display:flex;align-items:baseline;gap:8px;margin:9px 0 0}
+.sx2-fill b{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:16px;color:var(--ink)}
+.sx2-fill span{flex:1;min-width:0;text-align:right;font-size:11.5px;color:var(--ink-3)}
+.sx2-bar{height:6px;border-radius:99px;background:var(--card-2);overflow:hidden;margin:7px 0 11px}
+.sx2-bar i{display:block;height:100%;border-radius:99px;background:var(--brand-green);
+  transition:width .4s ease}
+.sx2-bar i.full{background:var(--crown)}
+.sx2-cta{display:block;width:100%;padding:12px;border-radius:var(--r-s);text-align:center;
+  background:var(--card-2);border:1px solid var(--edge);color:var(--ink);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
+  letter-spacing:.13em;text-transform:uppercase}
+.sx2-cta.go{background:var(--brand-green);border-color:var(--brand-green);color:#0B1B2B}
+.sx2-dots{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;
+  border-radius:50%;display:grid;place-items:center;color:#fff;font-size:18px;line-height:1;
+  background:rgba(9,22,38,.4);border:1px solid rgba(255,255,255,.3)}
+
+/* ── the code box ── */
+#home-box .nudge{margin-top:16px}
+#home-box .bd-strip{margin-top:16px}
+.hm-code{display:flex;align-items:center;gap:9px;margin-top:22px;padding:9px;
+  border-radius:var(--r);border:2px dashed var(--edge-2)}
+.hm-code input{flex:1;min-width:0;border:0;background:none;padding:9px 8px;font-size:14.5px}
+.hm-code input:focus{outline:none}
+.hm-code button{flex:0 0 auto;padding:12px 20px;border-radius:var(--r-s);
+  background:var(--brand-navy);color:#fff;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:12px;letter-spacing:.13em;text-transform:uppercase}
+
+/* ── already played ── */
+.hm-done{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;
+  background:var(--card);border-radius:var(--r);border:1px solid var(--edge);margin-bottom:8px}
+.hm-done .dn-tx{flex:1;min-width:0}
+.hm-done .dn-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:15px;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-done .dn-tx span{display:block;font-size:12px;color:var(--ink-2);margin-top:1px}
+.hm-res{flex:0 0 auto;padding:6px 13px;border-radius:99px;border:1px solid var(--edge-2);
+  color:var(--ink-2);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.13em;text-transform:uppercase}
+.hm-res:hover{border-color:var(--court);color:var(--court-ink)}
+.hm-foot{margin:26px 0 0;text-align:center;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);
+  opacity:.6}
+
+/* ══════════════ THE HERO SCREENS ══════════════
+   Your profile and a group's page are the two screens that are about a
+   *subject* rather than about a task, and both of them used to open with a
+   white card holding a small round picture. That is the shape of a settings
+   row, not of a page with somebody's name at the top of it.
+
+   Both now open with a navy band that runs up under the app's own bar, so
+   the bar reads as the top of the page instead of a shelf above it, and the
+   figures that matter sit in a white card straddling the join. The band and
+   its parts are shared — a club and a person should be introduced the same
+   way, and when they were drawn separately they drifted. */
+.appbar.onhero{background:var(--brand-navy);border-bottom-color:transparent;color:#fff}
+.appbar.onhero .ab-title b,.appbar.onhero .ab-bell{color:#fff}
+/* The plus is a near-white disc with dark ink on it, which is right on a
+   white bar and invisible on a navy one — a white circle with a white plus
+   in it. It has to be restated, not merely recoloured: the background is the
+   half that was wrong. */
+.appbar.onhero .ab-plus{background:rgba(255,255,255,.16);
+  border-color:rgba(255,255,255,.42);color:#fff}
+.appbar.onhero .ab-plus:hover{background:rgba(255,255,255,.28);border-color:#fff;color:#fff}
+/* and the face beside it needs an edge of its own, or a dark photo on a dark
+   bar has nothing to say where it stops */
+.appbar.onhero .ab-face{box-shadow:0 0 0 2px rgba(255,255,255,.28)}
+.appbar.onhero .ab-bell:hover{background:rgba(255,255,255,.12);color:#fff}
+/* The wrap this sits in insets everything by 14px, which is right for a card
+   and wrong for a band: the header came out as a stripe with paper down both
+   sides. Pulled back out to the edges, and the sections below put the inset
+   back themselves. */
+.screen.hero{padding:0 0 8px;margin:0 -14px}
+/* Room above the name. The band used to start 6px under the bar, which put
+   somebody's face and the app's own title within a few pixels of each other
+   and made the top of the page read as one crowded block. */
+/* The bottom padding is not decoration either: the white card below straddles
+   this edge by pulling itself up 18px, so anything less than that plus room to
+   breathe means the card lands on the rating tiles and crops "self-reported"
+   off the bottom of them. */
+.hero-band{position:relative;overflow:hidden;padding:20px 16px 46px;
+  margin:0 -0px;color:#fff;
+  background:linear-gradient(163deg,var(--brand-navy) 0%,#123253 55%,var(--brand-navy-deep) 100%)}
+/* a court drawn faintly behind it, the same one the session header wears */
+.hero-band::after{content:'';position:absolute;right:-70px;top:-54px;width:250px;height:250px;
+  border:2px solid rgba(255,255,255,.10);border-radius:12px;transform:rotate(-18deg);
+  pointer-events:none}
+.hero-band::before{content:'';position:absolute;right:-70px;top:46px;width:250px;height:2px;
+  background:rgba(255,255,255,.10);transform:rotate(-18deg);pointer-events:none}
+.hero-back{position:relative;display:inline-flex;align-items:center;gap:5px;margin-bottom:10px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+.hero-back span{font-size:17px;line-height:1}
+
+/* ── who it is ── */
+/* ── a group's own band ── */
+.gp-idr{position:relative;display:flex;align-items:flex-start;gap:14px}
+.gp-logo{flex:0 0 auto;width:78px;height:78px;border-radius:14px;overflow:hidden;
+  display:grid;place-items:center;background:#fff;color:var(--brand-navy)}
+.gp-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.gp-logo b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;
+  letter-spacing:.04em}
+.gp-who{flex:1;min-width:0;padding-top:2px}
+.gp-who h1{margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
+  font-size:clamp(30px,8.6vw,42px);line-height:.92;letter-spacing:.02em;color:#fff}
+.gp-court{display:flex;align-items:center;gap:5px;margin:7px 0 0;font-size:13px;
+  color:var(--ball)}
+.gp-court svg{width:14px;height:14px}
+.gp-tiles{position:relative;display:flex;gap:9px;margin-top:16px}
+.gp-tile{flex:1;min-width:0;padding:10px 12px;border-radius:var(--r);text-align:left;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15)}
+.gp-tile.own{background:rgba(123,201,67,.14);border-color:rgba(123,201,67,.42)}
+.gp-tile b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:26px;
+  line-height:1;color:#fff}
+.gp-tile.own b{color:var(--brand-green)}
+.gp-tile i{display:block;margin-top:3px;font-style:normal;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:rgba(255,255,255,.6)}
+/* The three panes sit on the join, half on the band and half on the paper,
+   the same way the profile's figures do. */
+.gp-seg{position:relative;z-index:2;margin:-21px 14px 0;display:flex;padding:5px;
+  background:var(--card);border-radius:99px;box-shadow:var(--sh-2)}
+.gp-seg button{flex:1;padding:9px 4px;border-radius:99px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2)}
+.gp-seg button.on{background:var(--brand-navy);color:#fff}
+.gp-blurb{margin:18px 16px 0;font-size:15.5px;line-height:1.45;color:var(--ink)}
+.gp-acts{display:flex;gap:9px;margin:14px 14px 0}
+.gp-acts .btn{flex:1}
+.gp-act{flex:0 0 auto;width:52px;display:grid;place-items:center;border-radius:var(--r-s);
+  background:var(--card);border:1px solid var(--edge);color:var(--ink-2)}
+.gp-act svg{width:19px;height:19px}
+.gp-act:hover{color:var(--court-ink);border-color:var(--court)}
+.gp-wait{display:flex;align-items:flex-start;gap:12px;padding:14px}
+.gp-wait .wt-ic{flex:0 0 auto;width:36px;height:36px;border-radius:11px;display:grid;
+  place-items:center;background:var(--card-2);color:var(--ink-3)}
+.gp-wait p{margin:0;font-size:14px;color:var(--ink-2)}
+.gp-more{display:block;width:100%;padding:13px;border-top:1px solid var(--edge);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--court-ink)}
+.gp-leave{display:block;width:100%;margin:16px 14px 0;width:calc(100% - 28px);padding:14px;
+  border-radius:var(--r);background:var(--fault-soft);color:var(--fault);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
+  letter-spacing:.14em;text-transform:uppercase}
+.gp-find{margin:0 0 10px}
+#gm-list{padding:0 !important;gap:0;margin-bottom:0}
+#gm-list .pr{border:0;border-radius:0;background:none;box-shadow:none;padding:11px 14px}
+#gm-list .pr+.pr{border-top:1px solid var(--edge)}
+
+.pf-idr{position:relative;display:flex;align-items:center;gap:15px}
+.pf-face{flex:0 0 auto;position:relative;display:block;border-radius:50%}
+.pf-face .av{width:92px;height:92px;font-size:30px}
+.pf-face .av-img,.pf-face img{width:92px;height:92px}
+/* The tick is the club saying it knows who you are, so it sits on the
+   picture rather than beside the name where it reads as decoration. */
+.pf-tick{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;background:var(--brand-green);color:#0B1B2B;
+  border:3px solid var(--brand-navy)}
+.pf-tick svg{width:15px;height:15px}
+.pf-who{flex:1;min-width:0}
+.pf-who h1{margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
+  font-size:clamp(34px,10vw,48px);line-height:.94;letter-spacing:.02em;color:#fff}
+.pf-who p{margin:3px 0 0;font-size:13.5px;color:rgba(255,255,255,.72)}
+.pf-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.pf-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:99px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase}
+.pf-chip.role{background:var(--brand-green);color:#0B1B2B}
+.pf-chip.tier{background:var(--tier,#8A8F98);color:#fff}
+.pf-chip.flat{border:1px solid rgba(255,255,255,.34);color:rgba(255,255,255,.82)}
+
+/* ── the two ratings ── */
+.pf-rates{position:relative;display:flex;gap:10px;margin-top:16px}
+.pf-rate{flex:1;min-width:0;padding:11px 13px;border-radius:var(--r);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15)}
+/* The club rating is the one this app is responsible for, so it is the one
+   that is lit. DUPR is a number somebody typed in about themselves. */
+.pf-rate.own{background:rgba(123,201,67,.14);border-color:rgba(123,201,67,.42)}
+.pf-rate i{display:inline-block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:9.5px;letter-spacing:.16em;color:rgba(255,255,255,.62)}
+.pf-rate.own i{color:var(--brand-green)}
+.pf-rate b{margin-left:7px;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:27px;
+  letter-spacing:.02em;color:#fff}
+.pf-rate span{display:block;margin-top:1px;font-size:11.5px;color:rgba(255,255,255,.58)}
+
+/* ── the white strip that straddles the band ── */
+.hero-strip{position:relative;z-index:2;margin:-18px 14px 0;padding:13px 6px;
+  display:flex;background:var(--card);border-radius:var(--r);box-shadow:var(--sh-2)}
+.hero-strip .ps{flex:1 1 0;padding:0 4px;border:0;background:none;border-radius:0}
+.hero-strip .ps+.ps{border-left:1px solid var(--edge)}
+.hero-strip .ps b{font-size:27px}
+.hero-strip .ps b.good{color:var(--grass)}
+
+/* ── where you stand ── */
+.pf-stand{display:flex;align-items:center;gap:14px;margin:14px 14px 0;padding:14px 16px;
+  border-radius:var(--r);color:#fff;
+  background:linear-gradient(100deg,#4C8B2B 0%,#5E9E33 100%)}
+.pf-stand b{flex:0 0 auto;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:38px;
+  line-height:.9;letter-spacing:.02em}
+.pf-stand b small{font-size:15px;vertical-align:super;margin-left:1px}
+.pf-stand s{flex:0 0 auto;width:1px;align-self:stretch;background:rgba(255,255,255,.34)}
+.pf-stand span{flex:1;min-width:0}
+.pf-stand span i{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,.78)}
+.pf-stand span em{display:block;font-style:normal;font-size:14.5px;margin-top:2px}
+
+/* ── section headings, outside the cards ── */
+.sec{margin:22px 14px 0}
+.sec-h{display:flex;align-items:baseline;gap:8px;margin:0 2px 9px}
+.sec-h b{flex:1;min-width:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:11px;letter-spacing:.19em;text-transform:uppercase;color:var(--ink-3)}
+.sec-h i{font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.sec-h .lnk,.sec-h button{font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--court-ink)}
+.sec-c{background:var(--card);border-radius:var(--r);box-shadow:var(--sh-1);
+  border:1px solid var(--edge);overflow:hidden}
+.sec-c.pad{padding:14px}
+.sec-note{margin:-5px 2px 9px;font-size:12.5px;color:var(--ink-2)}
+
+/* ── rank progress ── */
+.pf-rank{padding:14px}
+.pf-rank .rk-top{display:flex;align-items:center;gap:12px}
+.pf-rank .rk-mark{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;
+  place-items:center;background:var(--card-2);border:1px solid var(--edge-2)}
+.pf-rank .rk-who{flex:1 1 auto;min-width:0}
+.pf-rank .rk-who span{text-wrap:pretty}
+.pf-rank .rk-who b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+.pf-rank .rk-who span{display:block;font-size:13px;color:var(--ink-2);margin-top:1px}
+.pf-rank .rk-next{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase}
+
+/* ── one upcoming night ── */
+.pf-up{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:13px 14px}
+.pf-up+.pf-up{border-top:1px solid var(--edge)}
+.pf-when{flex:0 0 auto;width:48px;padding:6px 0;border-radius:11px;text-align:center;
+  background:var(--brand-navy);color:#fff}
+.pf-when i{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.62)}
+.pf-when b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:23px;
+  line-height:1}
+.pf-up .up-tx{flex:1;min-width:0}
+.pf-up .up-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:16px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-up .up-tx span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:1px}
+.pf-going{flex:0 0 auto;padding:4px 11px;border-radius:99px;border:1px solid var(--grass);
+  color:var(--grass);font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+
+/* ── a night you played ── */
+.pf-night{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px}
+.pf-night+.pf-night{border-top:1px solid var(--edge)}
+.pf-pos{flex:0 0 auto;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:20px;
+  background:var(--card-2);color:var(--ink-2)}
+/* a top-three finish is worth seeing from across the list */
+.pf-pos.pod{background:var(--crown-soft);color:var(--crown)}
+.pf-night .ni-tx{flex:1;min-width:0}
+.pf-night .ni-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:15px;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-night .ni-tx span{display:block;font-size:12px;color:var(--ink-2);margin-top:1px}
+.pf-night .ni-r{flex:0 0 auto;text-align:right}
+.pf-night .ni-r b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:17px;color:var(--grass)}
+.pf-night .ni-r span{display:block;font-size:11px;color:var(--ink-3);line-height:1.25}
+
+/* ── the QR card ── */
+.pf-id{padding:16px;border-radius:var(--r);color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(158deg,var(--brand-navy) 0%,#12304F 60%,var(--brand-navy-deep) 100%)}
+.pf-id>p{margin:0 0 13px;font-size:13px;color:rgba(255,255,255,.74)}
+.pf-id .id-qr{margin:0;padding:14px;background:#fff;border-radius:12px;line-height:0;
+  display:flex;justify-content:center}
+.pf-id .id-ft{display:flex;align-items:flex-end;gap:12px;margin-top:13px}
+.pf-id .id-ft span{flex:1;min-width:0}
+.pf-id .id-ft b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:22px;
+  letter-spacing:.02em;line-height:1.05}
+.pf-id .id-ft em{display:block;font-style:normal;font-size:11.5px;color:rgba(255,255,255,.62);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-share{flex:0 0 auto;padding:7px 15px;border-radius:99px;background:var(--brand-green);
+  color:#0B1B2B;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase}
+
+/* ── plain fact rows ── */
+.pf-facts{padding:2px 14px}
+.pf-facts>div{display:flex;align-items:center;gap:12px;padding:11px 0}
+.pf-facts>div+div{border-top:1px solid var(--edge)}
+.pf-facts dt{flex:1;min-width:0;margin:0;font-size:13.5px;color:var(--ink-2)}
+.pf-facts dd{margin:0;font-size:13.5px;font-weight:600;color:var(--ink);text-align:right}
+
+/* ── the list rows, restyled for a page with headings above the cards ── */
+.sec-c .me-list{border-radius:0;box-shadow:none;border:0}
+.sec-c .me-item{padding:14px}
+.sec-c .me-item+.me-item{border-top:1px solid var(--edge)}
+.me-sq{flex:0 0 auto;width:10px;height:10px;border-radius:3px;background:var(--brand-green)}
+.me-mono{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:var(--brand-navy);color:#fff;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:14px;letter-spacing:.06em}
+.me-item.warn b{color:var(--fault)}
+/* Day and night is a state, not a place to go, so it is a switch and not a
+   row with an arrow on the end pretending there is a screen behind it. */
+/* Not `.sw` — that is the club-colour swatch further up this file, a 34px
+   white circle with a border, and the toggle row was quietly wearing it: a
+   full-width white ellipse drawn around "Switch to night". Two-letter class
+   names are cheap to collide with. */
+.me-item.me-tog{cursor:pointer}
+.me-item.me-tog>span:first-child{flex:1;min-width:0}
+.me-item.me-tog .me-sw{flex:0 0 auto}
+.me-sw{flex:0 0 auto;width:44px;height:26px;border-radius:99px;background:var(--edge-2);
+  position:relative;transition:background .18s}
+.me-sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;
+  border-radius:50%;background:#fff;box-shadow:var(--sh-1);transition:transform .18s}
+.me-item.me-tog.on .me-sw{background:var(--grass)}
+.me-item.me-tog.on .me-sw::after{transform:translateX(18px)}
+
 .me-list{display:flex;flex-direction:column;gap:1px;border-radius:var(--r);
   overflow:hidden;background:var(--edge);border:1px solid var(--edge)}
 .me-item{display:flex;align-items:center;gap:11px;width:100%;padding:13px 13px;
@@ -3416,10 +3940,12 @@ body.casting{overflow:hidden}
   </section>
 
   <!-- one group, with the three things you go to a group page for -->
-  <section class="screen" id="screen-group">
-    <button class="sp-back" onclick="go('groups')"><span>‹</span>Groups</button>
+  <!-- Full bleed for the same reason the profile is: the page opens with the
+       group's own band, and the back link lives inside it rather than on a
+       strip of paper above it. -->
+  <section class="screen hero" id="screen-group">
     <div id="group-head"></div>
-    <div class="seg" id="group-seg" style="margin:14px 0 12px">
+    <div class="gp-seg" id="group-seg">
       <button class="on" data-t="details" onclick="Groups.setPane('details')">Details</button>
       <button data-t="sessions" onclick="Groups.setPane('sessions')">Sessions</button>
       <button data-t="board" onclick="Groups.setPane('board')">Leaderboard</button>
@@ -3568,7 +4094,10 @@ body.casting{overflow:hidden}
     <div id="market-box"></div>
   </section>
 
-  <section id="screen-me" class="screen">
+  <!-- Full bleed, because the page opens with a coloured band and a band
+       with 14px of paper down either side is a stripe. Everything inside is
+       inset by its own section instead. -->
+  <section id="screen-me" class="screen hero">
     <div id="me-box"></div>
   </section>
 
@@ -3644,7 +4173,7 @@ body.casting{overflow:hidden}
   </div>
 
   <div class="setup-page" id="sp-details" hidden>
-    <button class="sp-back" onclick="setupPage('')"><span>‹</span>Back</button>
+    <button class="sp-back" onclick="setupBack()"><span>‹</span>Back</button>
   <div class="panel">
     <h2>This session</h2>
     <div class="field" style="margin-top:12px">
@@ -3769,7 +4298,7 @@ body.casting{overflow:hidden}
   </div>
 
   <div class="setup-page" id="sp-format" hidden>
-    <button class="sp-back" onclick="setupPage('')"><span>‹</span>Back</button>
+    <button class="sp-back" onclick="setupBack()"><span>‹</span>Back</button>
   <div class="panel">
     <h2>Format</h2>
     <div class="modes">
@@ -3822,7 +4351,7 @@ body.casting{overflow:hidden}
   </div>
 
   <div class="setup-page" id="sp-live" hidden>
-    <button class="sp-back" onclick="setupPage('')"><span>‹</span>Back</button>
+    <button class="sp-back" onclick="setupBack()"><span>‹</span>Back</button>
   <div class="panel">
     <h2>Online</h2>
     <div data-live-box></div>
@@ -3831,7 +4360,7 @@ body.casting{overflow:hidden}
   </div>
 
   <div class="setup-page" id="sp-courts" hidden>
-    <button class="sp-back" onclick="setupPage('')"><span>‹</span>Back</button>
+    <button class="sp-back" onclick="setupBack()"><span>‹</span>Back</button>
   <div class="panel">
     <h2>Courts &amp; rounds</h2>
     <label class="label" style="display:block;margin-bottom:6px">Courts in play</label>
@@ -3892,7 +4421,7 @@ body.casting{overflow:hidden}
   </div>
 
   <div class="setup-page" id="sp-players" hidden>
-    <button class="sp-back" onclick="setupPage('')"><span>‹</span>Back</button>
+    <button class="sp-back" onclick="setupBack()"><span>‹</span>Back</button>
   <div class="panel">
     <h2>Players <span style="display:flex;align-items:center;gap:10px">
       <button class="linky" id="clear-roster" style="margin:0" onclick="confirmClearRoster()" hidden>Clear list</button>
@@ -4285,6 +4814,12 @@ body.casting{overflow:hidden}
       <button class="vw-home" onclick="View.shareMenu()"
         aria-label="Share this session" title="Share this session"><span class="lic" data-ic="share"></span></button>
     </div>
+    <!-- The night's poster, above its name. It used to sit in the body below
+         the tabs, which is nowhere near where a finished night keeps it, so
+         the two screens for the same night opened looking like two different
+         apps — and the one thing you would recognise a night by was the one
+         thing you had to scroll to find. -->
+    <div class="vw-cover" id="vw-cover" hidden></div>
     <h1 class="vw-title" id="vw-title"> </h1>
     <p class="vw-meta" id="vw-sub">Connecting…</p>
     <div class="vw-details" id="vw-details" hidden></div>
@@ -4328,9 +4863,14 @@ body.casting{overflow:hidden}
 </div>
 
 <!-- ══════════════ DOCKS ══════════════ -->
+<!-- Two different jobs, so two different buttons rather than one that means
+     whichever you happen to be looking at. Inside one of the five panels the
+     only thing you can do is finish with it; starting the night from in there
+     was a way to go live off the back of tapping what you thought was Done. -->
 <div class="dock" id="setup-dock">
   <div class="dock-in">
-    <button class="btn btn-go" id="start-btn" onclick="startSession()" disabled>Start the session</button>
+    <button class="btn btn-go" id="setup-save" onclick="setupSave()" hidden></button>
+    <button class="btn btn-go" id="start-btn" onclick="startSession()" disabled></button>
   </div>
 </div>
 
@@ -4501,6 +5041,7 @@ const Live = {
     return c;
   },
   async saveAll(){
+    this.ensureCode();
     if(this.mode() === 'local'){
       localStorage.setItem(this.lkey(this.code),
         JSON.stringify({ snap:this.snapshot(), state:this.packState(), at:Date.now() }));
@@ -5023,8 +5564,26 @@ const Live = {
       : ' \u2014 session full, added to the waiting list.'));
     if(gone.length) toast(gone.join(', ') + (gone.length > 1 ? ' have' : ' has') + ' dropped out.');
   },
+  /* Which code this device is publishing to lives in two places: S.liveCode,
+     which is saved with the session and comes back on a reload, and
+     Live.code, which is set when the session is adopted or claimed. resume()
+     only sets the second one when it also has the pin — so a device that
+     came back without one carried on looking exactly like the host, drawing
+     the host's buttons and changing the host's state, while every publish
+     quietly did nothing.
+
+     That is what "I approved her and she came back" was: the promotion
+     happened, the write never left the phone, and the next poll restored the
+     server's version of the truth. Silence is the worst possible answer here,
+     so the code is taken from S when it is missing and the write is allowed
+     to fail loudly instead. */
+  ensureCode(){
+    if(!this.code && S.live && S.liveCode) this.code = S.liveCode;
+    return this.code;
+  },
   beat(){
-    if(!S.live || !this.code || this.adopting) return;
+    if(!S.live || this.adopting) return;
+    if(!this.ensureCode()) return;
     clearTimeout(this._d);
     this._d = setTimeout(()=>{
       this.saveAll()
@@ -5136,7 +5695,7 @@ let mem = null; // fallback when localStorage is unavailable
 function blank(){
   return {
     v:3, players:{}, order:[], courts:[], queue:[], bracket:null,
-    nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', venueName:'', cap:0, waiting:[], approve:false, groupId:null, repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
+    nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', venueName:'', cap:0, waiting:[], approve:false, groupId:null, groupName:null, repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
     next:null, planRound:-1,
     round:0, games:0, active:false, started:null,
     /* called off is its own state: ended, but with nothing banked and a
@@ -5470,7 +6029,17 @@ function capHint(){
     ? '<b>' + room + ' place' + (room > 1 ? 's' : '') + ' left</b> of ' + S.cap + '. After that people join a waiting list.'
     : '<b>Full.</b> Anyone else joins the waiting list, and moves up when someone drops out.';
 }
-function capReached(){ return S.cap > 0 && S.order.length >= S.cap; }
+/* Somebody who has gone home is not holding a place. They stay on S.order
+   because the games they played have to keep adding up, but counting them
+   against the cap means a night of twenty with three early leavers turns
+   people away from a court that is standing empty.
+
+   `left` and not `out`: out is also how somebody sitting a round out is
+   marked, and they have very much not gone anywhere. */
+function capReached(){
+  if(!(S.cap > 0)) return false;
+  return S.order.filter(id => P(id) && !P(id).left).length >= S.cap;
+}
 
 /* ── WAITING LIST ──────────────────────────────────────
    Someone who arrives to a full session should not be turned away
@@ -5650,28 +6219,6 @@ function ratingsRow(me){
   </div>`;
 }
 
-/* The one-line version for the home card. The full ratingsRow carries its
-   own explanatory notes, which is right on the profile and far too much
-   under a name on the front page — here the two figures just sit together
-   with the shorter of the two labels. A club rating under six games is
-   dimmed rather than hidden: seeing it move is half the point of having it. */
-function homeRatings(row, me){
-  /* The club roster row is the better source — it is what every other rating
-     on the page reads — but it can still be in flight on a cold start, and a
-     card that shows no rating for two seconds and then grows one is worse
-     than reading the signed-in account until the roster lands. */
-  const m = Object.assign({}, me || {}, row || {});
-  const bits = [];
-  if(m.dupr != null) bits.push(`<span><b>${Number(m.dupr).toFixed(2)}</b> <em>DUPR</em></span>`);
-  if(m.rating != null){
-    const settled = (m.rating_games || 0) >= 6;
-    bits.push(`<span class="${settled ? '' : 'soft'}"
-      title="${settled ? 'Moves with your results' : 'Still settling — a few more sessions and it steadies'}"
-      ><b>${Number(m.rating).toFixed(2)}</b> <em>Club</em></span>`);
-  }
-  if(!bits.length) return `<span>${greetWord()}</span>`;
-  return `<span class="hm-rt">${bits.join('<s></s>')}</span>`;
-}
 
 function clubRateBadge(rating, games){
   const n = Number(rating);
@@ -7000,14 +7547,93 @@ function syncRoundEndUI(){
    and the handler it always had. */
 const SETUP_PAGES = ['details','format','courts','players','live'];
 let setupAt = '';
+
+/* Everything on S that a panel could be said to have changed. The rest is
+   the night running itself — whose turn it is, what the plan is, what has
+   been played — and it churns on its own, so comparing it would report
+   changes nobody made. */
+const SETUP_VOLATILE = ['next','planRound','snap','pulled','rosterQ','logQ','logAll',
+  'rosterSort','hist','roundStart','warPlan','warAt','warDone','warAsked','log',
+  'courts','queue','bracket','round','games','active','started','pairs','pool'];
+
+/* JSON.stringify does not sort keys, and a player picking up a property
+   mid-edit would reorder one object and read as the whole session having
+   changed. Sorted, so the only thing a difference can mean is a difference. */
+function stableStr(v){
+  if(v === null || typeof v !== 'object') return JSON.stringify(v);
+  if(Array.isArray(v)) return '[' + v.map(stableStr).join(',') + ']';
+  return '{' + Object.keys(v).sort().map(k =>
+    JSON.stringify(k) + ':' + stableStr(v[k])).join(',') + '}';
+}
+function setupSlice(){
+  const o = {};
+  Object.keys(S).forEach(k =>{ if(SETUP_VOLATILE.indexOf(k) < 0) o[k] = S[k]; });
+  return o;
+}
+let setupWas = null;      // what the session looked like when the panel opened
+
+/* Every control here writes straight through to S and to the phone's storage,
+   and on a night that is already up, straight out to everybody's link as
+   well. That is worth keeping — it is why an edit never gets lost — but it
+   does mean Back has nothing to undo unless something remembers. This does.
+   Save is the tap that says keep it; Back offers to put it back. */
+function setupMark(){
+  try{ setupWas = JSON.parse(JSON.stringify(setupSlice())); }
+  catch(e){ setupWas = null; }
+}
+function setupDirty(){
+  if(!setupWas) return false;
+  try{ return stableStr(setupSlice()) !== stableStr(setupWas); }
+  catch(e){ return false; }
+}
+function setupSave(){
+  setupMark();
+  save();
+  setupPage('');
+  toast(S.live && S.liveCode
+    ? 'Saved — everybody\'s link has it.'
+    : 'Saved.');
+}
+function setupBack(){
+  if(!setupDirty()){ setupPage(''); return; }
+  openSheet(`<h3>Save what you changed?</h3>
+    <p class="sub">You have changed something on this panel. Going back without
+      saving puts it how it was.</p>
+    <button class="btn btn-go" onclick="closeSheet();setupSave()">
+      ${icon('check')} Save it</button>
+    <button class="btn btn-quiet" style="margin-top:9px"
+      onclick="closeSheet();setupUndo()">${icon('undo')} Put it back</button>
+    <button class="btn btn-quiet" style="margin-top:9px"
+      onclick="closeSheet()">Keep editing</button>`);
+}
+function setupUndo(){
+  const was = setupWas;
+  if(!was){ setupPage(''); return; }
+  /* A key added since the snapshot has to go, not merely be overwritten —
+     Object.assign alone would leave it behind. */
+  Object.keys(S).forEach(k =>{
+    if(SETUP_VOLATILE.indexOf(k) < 0 && !(k in was)) delete S[k];
+  });
+  Object.keys(was).forEach(k =>{ S[k] = was[k]; });
+  save();
+  try{ setMode(S.mode); }catch(e){}
+  try{ renderAll(); }catch(e){}
+  setupPage('');
+  toast('Put back the way it was.');
+}
+
 function setupPage(k){
+  const was = setupAt;
   setupAt = SETUP_PAGES.indexOf(k) >= 0 ? k : '';
+  if(setupAt && setupAt !== was) setupMark();
+  if(!setupAt) setupWas = null;
   const sum = document.getElementById('setup-summary');
   if(sum) sum.hidden = !!setupAt;
   SETUP_PAGES.forEach(n =>{
     const el = document.getElementById('sp-' + n);
     if(el) el.hidden = n !== setupAt;
   });
+  syncSetupDock();
   if(!setupAt) paintSetupSummary();
   /* Coming back should put you where you left, not halfway down the last
      screen you were reading. */
@@ -7058,8 +7684,25 @@ function paintSetupSummary(){
   const rounds = S.timed ? (S.mins + ' min rounds') : ('first to ' + S.target);
   set('sum-courts', (S.nCourts === 1 ? '1 court' : S.nCourts + ' courts') + ' · ' + rounds);
 
+  /* This said "a group" for a group you had picked yourself. The name only
+     ever came from Groups.list, and that list is loaded lazily — open the app
+     and go straight to Manage and it is still empty, so a night filed under
+     Sideout Society reported itself as belonging to some group or other.
+
+     The name is written onto the session when it is picked, so the row can
+     answer without asking anybody. The list is still preferred when it is
+     there, because a group that has been renamed should read as its new
+     name rather than the one it had the day the night was set up. */
   const g = (Groups.list || []).find(x => x.id === S.groupId);
-  set('sum-group', S.groupId ? (g ? g.name : 'a group') : 'no group', !S.groupId);
+  if(g && g.name) S.groupName = g.name;
+  set('sum-group', S.groupId ? (g ? g.name : (S.groupName || 'a group')) : 'no group',
+      !S.groupId);
+  /* and if the list has never been read on this device, read it, once, and
+     come back to write the real name in */
+  if(S.groupId && !g && !paintSetupSummary.asked){
+    paintSetupSummary.asked = true;
+    try{ Groups.load().then(()=>{ try{ paintSetupSummary(); }catch(e){} }); }catch(e){}
+  }
 
   const n = S.order.length;
   set('sum-players', n ? (n + (n === 1 ? ' player' : ' players')) : 'nobody yet', !n);
@@ -7233,6 +7876,11 @@ function dropFromSession(id){
   S.queue = S.queue.filter(x => x !== id);
   poolsSync();
   fillGaps();
+  /* Their place is free now, so the queue gets asked — the same as when
+     somebody who never played is taken off. Only this branch was missing it,
+     so a full night that somebody left halfway through kept everybody else
+     waiting for a place that already existed. */
+  if(S.waiting.length && !capReached()) fillFromWait();
   return 'left';
 }
 
@@ -7331,15 +7979,31 @@ function renderRoster(){
     const lp = document.getElementById('ladder-preview');
     if(lp && lp.querySelector('.rung')) renderLadder();
   }
-  const enough = ids.length >= 4;
+  syncSetupDock();
+}
+
+/* Save while you are inside a panel, Start play when you are back out on the
+   list looking at the whole night. The disabled form of Start is kept rather
+   than hidden, because "add two more" is the answer to why it will not go
+   and a button that is simply not there is not. */
+function syncSetupDock(){
   const btn = document.getElementById('start-btn');
+  const sv = document.getElementById('setup-save');
+  if(sv){
+    sv.hidden = !setupAt;
+    sv.innerHTML = icon('check') + ' Save';
+  }
+  if(!btn) return;
+  btn.hidden = !!setupAt;
+  const ids = S.order;
+  const enough = ids.length >= 4;
   btn.disabled = !enough;
   /* "Start" means the courts go live and the first round is drawn. On a
      session that is already online and being edited, that is still what the
      button does — but calling it "Start" next to a list of people who joined
      yesterday reads as though nothing has happened yet. */
-  btn.textContent = enough
-    ? ((S.live && S.liveCode) ? 'Start play' : 'Start the session')
+  btn.innerHTML = enough
+    ? icon('tonight') + ' ' + ((S.live && S.liveCode) ? 'Start play' : 'Start the session')
     : 'Add ' + (4 - ids.length) + ' more to start';
 }
 /* One tap to the level you want, and all three are visible — no guessing
@@ -8945,8 +9609,15 @@ function pullOff(i, id){
    BULK IMPORT — paste a WhatsApp list
    ═══════════════════════════════════════════════════ */
 let importList = [];
+/* Repeats were always dropped here and never mentioned, so a list pasted
+   twice looked like it had done nothing. What was skipped is counted now and
+   said on the review sheet — silence and success look identical, and only
+   one of them is. */
+let pasteSkipped = { repeat: 0, already: 0 };
 function parseNameList(text){
-  const seen = new Set(S.order.map(id => P(id).name.toLowerCase()));
+  const onList = new Set(S.order.map(id => P(id).name.toLowerCase()));
+  const seen = new Set();
+  pasteSkipped = { repeat: 0, already: 0 };
   const out = [];
   String(text||'').split(/\r?\n/).forEach(raw=>{
     let n = raw
@@ -8960,7 +9631,8 @@ function parseNameList(text){
     if(!n || n.length > 40) return;
     if(/^[\d\W_]+$/.test(n)) return;
     const key = n.toLowerCase();
-    if(seen.has(key)) return;
+    if(onList.has(key)){ pasteSkipped.already++; return; }
+    if(seen.has(key)){ pasteSkipped.repeat++; return; }
     seen.add(key);
     out.push(n);
   });
@@ -8974,6 +9646,39 @@ function openImport(){
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
   setTimeout(()=>{ const t = document.getElementById('bulk'); if(t) t.focus(); }, 60);
 }
+/* Two ways a pasted list repeats somebody, and both of them happen.
+
+   The same person twice in the paste — a list assembled from two group
+   chats, or one where somebody typed their own name and was added again at
+   the bottom. And somebody already on the night, because the usual way a
+   list gets pasted is a second time, after a few more replies came in.
+
+   Neither was noticed. addPlayer refuses a repeated name on its own, but the
+   import passes force, so it made "Kat 2" and the night had two of her —
+   splitting her games and her record between them.
+
+   Matched on the club record where both rows have one, and on the name where
+   they do not, which is the same rule the rest of the app uses. Linking a row
+   to somebody can create a duplicate that was not there a moment ago, so this
+   runs again on every paint rather than once at the start. */
+function markImportDupes(){
+  const seenMid = {}, seenName = {};
+  importList.forEach((x, i) =>{
+    const key = normName(x.n);
+    const mid = x.mid || null;
+    x.dupe = null;
+
+    const on = S.order.find(id => P(id) && (
+      (mid && P(id).mid === mid) || normName(P(id).name) === key));
+    if(on){ x.dupe = { why:'on', who: nm(on) }; return; }
+
+    const before = mid ? seenMid[mid] : seenName[key];
+    if(before != null){ x.dupe = { why:'list', at: before }; return; }
+
+    if(mid) seenMid[mid] = i; else seenName[key] = i;
+  });
+}
+
 function readImport(){
   const el = document.getElementById('bulk');
   importList = parseNameList(el ? el.value : '').map(n => ({ n, keep:true }));
@@ -9029,22 +9734,34 @@ function readImport(){
       && (normName(hits[0].alias) === normName(n) || normName(hits[0].name) === normName(n));
     return { n, keep:true, hits, mid: sure ? hits[0].id : null, sure };
   });
+  /* Left out to begin with rather than in. Adding somebody twice costs a
+     split record and a night that does not balance; leaving somebody out is
+     one tap to undo, and the row is still sitting there saying so. */
+  markImportDupes();
+  importList.forEach(x =>{ if(x.dupe) x.keep = false; });
   renderImport();
 }
 
 function renderImport(){
+  markImportDupes();
   const keep = importList.filter(x => x.keep);
+  const dupes = importList.filter(x => x.dupe).length;
   const known = keep.filter(x => x.mid).length;
   const fresh = keep.filter(x => !x.mid && !x.hits.length).length;
   const ask = keep.filter(x => !x.mid && x.hits.length).length;
 
   const rowOf = (x, i) =>{
     const m = x.mid ? Club.find(x.mid) : null;
-    const sub = m
-      ? 'Club record \u00b7 ' + (m.dupr != null ? duprText(m.dupr) + ' DUPR' : 'no rating')
-      : (x.hits.length ? x.hits.length + ' possible match' + (x.hits.length === 1 ? '' : 'es')
-                       : 'New to the club');
-    return `<div class="imp-row${x.keep ? '' : ' drop'}">
+    const sub = x.dupe
+      ? (x.dupe.why === 'on'
+          ? 'Already on this night' + (x.dupe.who && normName(x.dupe.who) !== normName(x.n)
+              ? ' as \u201c' + esc(x.dupe.who) + '\u201d' : '')
+          : 'Already further up this list')
+      : (m
+          ? 'Club record \u00b7 ' + (m.dupr != null ? duprText(m.dupr) + ' DUPR' : 'no rating')
+          : (x.hits.length ? x.hits.length + ' possible match' + (x.hits.length === 1 ? '' : 'es')
+                           : 'New to the club'));
+    return `<div class="imp-row${x.keep ? '' : ' drop'}${x.dupe ? ' dupe' : ''}">
       <button class="imp-tick" onclick="toggleImport(${i})"
         aria-label="${x.keep ? 'Leave out' : 'Put back'}">${x.keep ? icon('check') : ''}</button>
       ${m ? avatar(m.alias || m.name, m.photo, 'sm') : `<span class="imp-new">${icon('plus')}</span>`}
@@ -9072,6 +9789,14 @@ function renderImport(){
     <p class="sub">${known} matched to the club${ask ? ', ' + ask + ' to check' : ''}${
       fresh ? ', ' + fresh + ' new' : ''}. Matched players keep their photo,
       their rating and their record.</p>
+    ${(pasteSkipped.repeat || pasteSkipped.already) ? `<p class="hint tight">${
+      [pasteSkipped.repeat ? pasteSkipped.repeat + ' repeated line' + (pasteSkipped.repeat === 1 ? '' : 's') : '',
+       pasteSkipped.already ? pasteSkipped.already + ' already on the night' : '']
+        .filter(Boolean).join(' · ')} — skipped.</p>` : ''}
+    ${dupes ? `<div class="warn-box"><b>${dupes} ${dupes === 1 ? 'is a repeat' : 'are repeats'}.</b>
+      <span>${dupes === 1 ? 'It is' : 'They are'} already on this night or further up this
+        list, so ${dupes === 1 ? 'it has' : 'they have'} been left out. Tick
+        ${dupes === 1 ? 'it' : 'them'} to add anyway.</span></div>` : ''}
     ${ask ? `<div class="warn-box"><b>${ask} could be somebody you already have.</b>
       <span>Tap Link to say who, or leave it and a second record is made.</span></div>` : ''}
     ${fresh ? `<p class="hint tight">Anything marked new can still be linked —
@@ -9865,7 +10590,9 @@ const Groups = {
           ? `<img src="${g.photo}" alt="">`
           : `<span class="gc-mono">${esc((g.name || '?').slice(0,1).toUpperCase())}</span>`}</span>
         <span class="gc-tx">
-          <b>${esc(g.name)}${g.mine ? ' <i class="gc-in">In</i>' : ''}</b>
+          <b>${esc(g.name)}${g.mine ? ' <i class="gc-in">In</i>' : ''}${
+            g.pending ? ' <i class="gc-wait">Asked</i>' : ''}${
+            g.requests ? ` <i class="gc-ask">${g.requests} asking</i>` : ''}</b>
           <span>${g.members} member${g.members === 1 ? '' : 's'} · ${
             g.sessions} session${g.sessions === 1 ? '' : 's'}${
             g.private ? ' · private' : ''}</span>
@@ -9876,11 +10603,15 @@ const Groups = {
   open(id){
     this.at = id;
     this.pane = 'details';
+    this.mq = '';
+    this.allMembers = false;
     go('group');
   },
 
   setPane(p){
     this.pane = ['details','sessions','board'].indexOf(p) >= 0 ? p : 'details';
+    /* The panes are also where the header's figures come from, so moving
+       between them is a reason to redraw it, not only the body. */
     document.querySelectorAll('#group-seg button').forEach(b =>
       b.classList.toggle('on', b.dataset.t === this.pane));
     this.paintOne();
@@ -9925,21 +10656,38 @@ const Groups = {
       blurb: stub.blurb, home_court: stub.home_court, private: stub.private,
       mine: stub.mine, members: [] } : null);
 
+    /* The three figures a group is asked for, and the third of them is the
+       only one that is about the person reading it — so it is the lit one,
+       the same way the club rating is on a profile. It is left out rather
+       than shown as a dash for somebody who has not played under this group:
+       a rank of nothing is not a rank. */
+    const nMem = ((info && (info.members || []).length) || (stub && stub.members) || 0);
+    const nSes = (info && info.sessions != null ? info.sessions
+                  : (stub && stub.sessions)) || 0;
+    const place = (info && info.you_rank) || null;
+    const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th'
+      : ['th','st','nd','rd'][n % 10] || 'th');
+    const tile = (val, lab, own) =>
+      `<div class="gp-tile${own ? ' own' : ''}"><b>${val}</b><i>${lab}</i></div>`;
+
     head.innerHTML = info ? `
-      <div class="ghead">
-        <span class="gh-pic">${info.photo
-          ? `<img src="${info.photo}" alt="">`
-          : `<span class="gc-mono">${esc((info.name || '?').slice(0,1).toUpperCase())}</span>`}</span>
-        <div class="gh-tx">
-          <h2>${esc(info.name || '')}</h2>
-          ${info.home_court ? `<p class="gh-court">${icon('pin')} ${esc(info.home_court)}</p>` : ''}
+      <div class="hero-band">
+        <button class="hero-back" onclick="go('groups')"><span>&lsaquo;</span>All groups</button>
+        <div class="gp-idr">
+          <span class="gp-logo">${info.photo
+            ? `<img src="${info.photo}" alt="">`
+            : `<b>${esc(meMono(info.name))}</b>`}</span>
+          <div class="gp-who">
+            <h1>${esc(info.name || '')}</h1>
+            ${info.home_court
+              ? `<p class="gp-court">${icon('pin')}${esc(info.home_court)}</p>` : ''}
+          </div>
         </div>
-        ${(c.info && (c.info.role === 'owner' || c.info.role === 'organizer'))
-          ? `<button class="gh-edit" onclick="Groups.edit('${id}')"
-               aria-label="Edit this group">${icon('pencil')}</button>` : ''}
-        ${Auth.isOwner && Auth.isOwner()
-          ? `<button class="gh-edit" onclick="seasonSheet()"
-               aria-label="Season" title="Season">${icon('season')}</button>` : ''}
+        <div class="gp-tiles">
+          ${tile(nMem, nMem === 1 ? 'member' : 'members')}
+          ${tile(nSes, nSes === 1 ? 'session' : 'sessions')}
+          ${place ? tile(ord(place), 'you rank', true) : ''}
+        </div>
       </div>` : '';
 
     if(this.pane === 'details') this.paneDetails(body, info);
@@ -9956,7 +10704,9 @@ const Groups = {
     const box = document.getElementById('gm-list');
     if(!box) return;
     const c = this.cache[this.at] || {};
-    box.innerHTML = this.memberRows(((c.info || {}).members) || []);
+    const all = ((c.info || {}).members) || [];
+    const n = this.norm(q);
+    box.innerHTML = this.memberRows(n ? all.filter(m => this.norm(m.n).includes(n)) : all, all);
   },
   /* Who runs this group. Its own row rather than buried in the member list,
      because "who can put a night under this club" is a question an owner asks
@@ -9998,12 +10748,16 @@ const Groups = {
     toast('Saved.');
   },
 
-  memberRows(members){
-    const q = this.norm(this.mq);
-    const hit = q ? members.filter(m => this.norm(m.n).includes(q)) : members;
-    if(!members.length)
+  /* `all` is what the group actually has; `rows` is the slice being drawn.
+     Passing both means "reading the members" and "nobody called that" can
+     still be told apart when the slice is empty for a third reason. */
+  memberRows(rows, all){
+    const whole = all || rows;
+    if(!whole.length)
       return '<div class="ld-block"><span class="ld-ball"></span><p>Reading the members…</p></div>';
-    if(!hit.length) return `<div class="empty">Nobody here called “${esc(this.mq)}”.</div>`;
+    if(!rows.length) return `<div class="empty">Nobody here called “${esc(this.mq)}”.</div>`;
+    const hit = rows;
+
     /* A button, not a div — tapping a person should take you to that person,
        which is what it does everywhere else a name appears. */
     const boss = this.canRole();
@@ -10024,49 +10778,130 @@ const Groups = {
   paneDetails(box, info){
     const members = (info && info.members) || [];
     const waiting = (info && info.waiting) || [];
+    const boss = info && info.can_organize;
+    const id = this.at;
+
+    /* Starting a night is what an organizer came to this page to do, so it is
+       a whole button rather than a row in a settings list at the bottom. The
+       pencil and the season sit beside it as squares: both are occasional,
+       and neither deserves a line of its own above the description. */
+    const acts = boss ? `<div class="gp-acts">
+      <button class="btn btn-go" onclick="Groups.startHere('${esc(id)}')">
+        Start a session</button>
+      <button class="gp-act" onclick="Groups.edit('${esc(id)}')"
+        aria-label="Edit this group" title="Edit this group">${icon('pencil')}</button>
+      ${Auth.isOwner && Auth.isOwner() ? `<button class="gp-act" onclick="seasonSheet()"
+        aria-label="Season" title="Season">${icon('season')}</button>` : ''}
+    </div>` : '';
+
+    /* Ten, then the rest on request. Eighty-six rows under a heading is the
+       whole page, and everything below it — the invite link, the audit log,
+       leaving — becomes unreachable without a very long thumb. */
+    const shownAll = this.allMembers || this.mq;
+    const q = this.norm(this.mq);
+    const hits = q ? members.filter(m => this.norm(m.n).includes(q)) : members;
+    const list = shownAll ? hits : hits.slice(0, 8);
+
     box.innerHTML = `
-      ${info && info.blurb ? `<div class="panel"><p style="margin:0">${esc(info.blurb)}</p></div>` : ''}
-      ${info && info.pending ? `<div class="panel nudge nudge-wait">
-        <span class="nudge-ic">${icon('chair')}</span>
-        <span class="nudge-tx"><b>Waiting to be let in</b>
-          <span>An organizer of this group has your request. You will be in as soon as
-            one of them says yes.</span></span></div>` : ''}
-      ${waiting.length ? `<div class="panel">
-        <h2>Asking to join <span class="label">${waiting.length}</span></h2>
-        <p class="hint tight" style="margin:-4px 0 10px">Let somebody in and they are a
-          member — they see this group's sessions, its table and its chat.</p>
-        <div class="roster">${waiting.map(w => `<div class="pr">
-          ${avatar(w.n, (Club.find(w.m) || {}).photo, 'sm')}
-          <span class="nm"><span class="nmn">${esc(w.n)}</span>
-            <em>${w.at ? esc(shortWhen(Date.parse(w.at))) : 'asked'}</em></span>
-          ${duprBadge(w.dupr, true)}
-          <button class="vw-ok" onclick="Groups.decide('${esc(w.m)}',true)">Approve</button>
-          <button class="gr-no" onclick="Groups.decide('${esc(w.m)}',false)"
-            aria-label="Turn down ${esc(w.n)}">&times;</button>
-        </div>`).join('')}</div>
+      ${info && info.blurb ? `<p class="gp-blurb">${esc(info.blurb)}</p>` : ''}
+      ${acts}
+      ${info && info.pending ? `<div class="sec"><div class="sec-c gp-wait">
+        <span class="wt-ic">${icon('chair')}</span>
+        <p><b>Waiting to be let in.</b> An organizer of this group has your request.
+          You are in as soon as one of them says yes.</p>
+      </div></div>` : ''}
+
+      ${(waiting.length || (boss && info.approve)) ? `<div class="sec">
+        <div class="sec-h"><b>Asking to join</b><i>${waiting.length} waiting</i></div>
+        <div class="sec-c">
+          ${waiting.length ? `<div class="roster" style="padding:6px 12px">${waiting.map(w =>
+            `<div class="pr">
+              ${avatar(w.n, (Club.find(w.m) || {}).photo, 'sm')}
+              <span class="nm"><span class="nmn">${esc(w.n)}</span>
+                <em>${w.at ? esc(shortWhen(Date.parse(w.at))) : 'asked'}</em></span>
+              ${duprBadge(w.dupr, true)}
+              <button class="vw-ok" onclick="Groups.decide('${esc(w.m)}',true)">Approve</button>
+              <button class="gr-no" onclick="Groups.decide('${esc(w.m)}',false)"
+                aria-label="Turn down ${esc(w.n)}">&times;</button>
+            </div>`).join('')}</div>`
+          : `<div class="gp-wait"><span class="wt-ic">${icon('chair')}</span>
+              <p>Nobody is waiting. You approve each person who taps Join.</p></div>`}
+          ${boss ? `<button class="gp-more" style="text-align:left"
+            onclick="Groups.edit('${esc(id)}')">Change who can join
+            <i class="sr-go" style="float:right;font-style:normal">&rsaquo;</i></button>` : ''}
+        </div>
       </div>` : ''}
-      <div class="panel">
-        <h2>Members <span class="label">${members.length || (info && info.membersCount) || ''}</span></h2>
-        ${this.canRole() ? `<p class="hint tight" style="margin:-4px 0 10px">Tap the
-          sliders beside somebody to make them an organizer of this club \u2014 they can
-          then run open plays under it.</p>` : ''}
-        ${members.length > 7 ? `<input class="in" type="search" id="gm-find"
+
+      <div class="sec">
+        <div class="sec-h"><b>Members</b><i>${members.length || ''}</i></div>
+        <p class="sec-note">Tap anybody to open their profile, see their record${
+          this.canRole() ? ', and change their role' : ''}.</p>
+        ${members.length > 7 ? `<input class="in gp-find" type="search" id="gm-find"
           placeholder="Search members" aria-label="Search members" autocomplete="off"
-          value="${esc(this.mq)}" oninput="Groups.findMember(this.value)"
-          style="margin-bottom:10px">` : ''}
-        <div class="roster" id="gm-list">${this.memberRows(members)}</div>
+          value="${esc(this.mq)}" oninput="Groups.findMember(this.value)">` : ''}
+        <div class="sec-c">
+          <div class="roster" id="gm-list" style="padding:4px 12px">${this.memberRows(list, members)}</div>
+          ${!shownAll && hits.length > list.length
+            ? `<button class="gp-more" onclick="Groups.showAllMembers()">Show all
+                ${members.length}</button>` : ''}
+        </div>
       </div>
-      ${Auth.signedIn() && info ? `<button class="btn ${info.mine || info.pending ? 'btn-quiet' : 'btn-go'}"
-        style="width:100%" onclick="Groups.toggleMine()">${
-        info.mine ? 'Leave this group'
-          : info.pending ? 'Withdraw my request'
-          : (info.approve ? 'Ask to join' : 'Join this group')}</button>
-      ${!info.mine && !info.pending && info.approve
-        ? '<p class="hint tight" style="text-align:center;margin:7px 0 0">An organizer lets people in one at a time.</p>' : ''}` : ''}`;
+
+      ${boss ? `<div class="sec">
+        <div class="sec-h"><b>Group settings</b></div>
+        <div class="sec-c"><div class="me-list">
+          ${meRow(`Groups.edit('${esc(id)}')`, 'Edit group details', 'pencil',
+                  'Name, logo, home court', 'sq')}
+          ${meRow(`Groups.copyInvite('${esc(id)}')`, 'Invite link', 'link',
+                  'A link that brings somebody straight here', 'sq')}
+          ${Auth.isOwner && Auth.isOwner()
+            ? meRow("go('audit')", 'Audit log', 'audit', '', 'sq') : ''}
+        </div></div>
+      </div>` : ''}
+
+      ${Auth.signedIn() && info ? (info.mine
+        ? `<button class="gp-leave" onclick="Groups.toggleMine()">Leave this group</button>`
+        : `<div class="sec"><button class="btn btn-go" style="width:100%"
+             onclick="Groups.toggleMine()">${info.pending ? 'Withdraw my request'
+               : (info.approve ? 'Ask to join' : 'Join this group')}</button>
+           ${!info.pending && info.approve ? `<p class="hint tight"
+             style="text-align:center;margin:7px 0 0">An organizer lets people in one at a
+             time.</p>` : ''}</div>`) : ''}`;
 
     if(!(this.cache[this.at] || {}).info){
       this.fetch('info').then(()=>{ if(currentScreen() === 'group') this.paintOne(); }).catch(()=>{});
     }
+  },
+
+  /* Whether the member list is showing all of itself. Reset on the way in to
+     a group, so opening a second one does not inherit the first one's. */
+  allMembers: false,
+  showAllMembers(){ this.allMembers = true; this.paintOne(); },
+
+  /* Setting a night up under this group, from the group. It has to go through
+     startOrganizing — go('setup') is the editor for whatever session is
+     already loaded, so sending somebody there from here would have shown them
+     last night's form and called it a new session. */
+  startHere(id){
+    S.groupId = id;
+    const g = (this.list || []).find(x => x.id === id);
+    S.groupName = g ? g.name : null;
+    save();
+    startOrganizing();
+  },
+
+  /* The link that brings somebody straight to this group. Shared if the phone
+     can, copied if it cannot. */
+  copyInvite(id){
+    const url = location.origin + location.pathname + '?g=' + encodeURIComponent(id);
+    const g = (this.list || []).find(x => x.id === id);
+    const name = (g && g.name) || 'this group';
+    if(navigator.share){
+      navigator.share({ title: name, text: 'Join ' + name + ' on picksilog', url })
+        .catch(()=>{});
+      return;
+    }
+    toast(legacyCopy(url) ? 'Invite link copied.' : 'Could not copy that just now.');
   },
 
   paneSessions(box){
@@ -10581,6 +11416,10 @@ const GroupPick = {
   },
   async set(id){
     S.groupId = id;
+    /* kept beside the id so the setup screen can say which group this is
+       without the groups list having been read on this device yet */
+    const picked = (Groups.list || []).find(x => x.id === id);
+    S.groupName = picked ? picked.name : null;
     save();
     closeSheet();
     try{ paintSetupSummary(); }catch(e){}
@@ -12499,20 +13338,27 @@ function tierChip(points){
    with where you finished on each. */
 function mySessionsHTML(){
   const up = (Feed.up || []).filter(r => r.mine);
-  const row = (r, done) =>{
-    const when = done ? Feed.ms(r.played_at) : Feed.ms(r.starts_at);
-    return `<button class="ms-row${done ? ' done' : ''}"
-        onclick="${done ? `pastSession('${r.code || ''}')` : `location.href='?s=${encodeURIComponent(r.code)}'`}">
-      <span class="ms-n">${esc(r.title || 'Open play')}</span>
-      <span class="ms-w">${when ? esc(longDate(when)) : ''}${
-        done ? ' \u00b7 ' + r.players + ' played' : ''}</span>
+  /* Nothing booked used to print "Nothing booked yet" under a heading of its
+     own, which is a heading and a sentence spent saying there is nothing to
+     say. The section is simply not there. */
+  if(!up.length) return '';
+  const row = r =>{
+    const when = Feed.ms(r.starts_at);
+    const d = when ? new Date(when) : null;
+    return `<button class="pf-up" onclick="location.href='?s=${encodeURIComponent(r.code)}'">
+      <span class="pf-when">${d
+        ? `<i>${MONTH_SHORT[d.getMonth()]}</i><b>${d.getDate()}</b>`
+        : `<i>TBC</i><b>—</b>`}</span>
+      <span class="up-tx"><b>${esc(r.title || 'Open play')}</b>
+        <span>${d ? esc(DAYS[d.getDay()] + ' · ' + d.getDate() + ' '
+          + MONTHS[d.getMonth()]) : 'No date yet'}</span></span>
+      <span class="pf-going">Going</span>
     </button>`;
   };
-  return `<div class="panel">
-      <h2>Upcoming sessions</h2>
-      ${up.length ? up.map(r => row(r, false)).join('')
-        : '<p class="conn">Nothing booked yet. Anything listed shows on Home.</p>'}
-    </div>`;
+  return `<div class="sec">
+    <div class="sec-h"><b>Upcoming</b></div>
+    <div class="sec-c">${up.map(row).join('')}</div>
+  </div>`;
 }
 function rankWord(place, total){
   if(!place || !total) return '';
@@ -12526,35 +13372,36 @@ function rankWord(place, total){
 }
 function tierCardHTML(points, nights, unlocked){
   if(!unlocked){
-    return `<div class="panel tier locked">
-      <div class="tier-lock">${icon('lock')}</div>
-      <h2>Tiers</h2>
-      <p class="hint tight">Reach a tier and the club has something for you — ask whoever runs it
-        what is on offer this season. Earn a point for every session you play, more for finishing near the top,
-        and climb from Bronze to Legend.</p>
-      <p class="tier-gate">Become an official member to unlock</p>
-    </div>`;
+    return `<div class="sec">
+      <div class="sec-h"><b>Rank progress</b></div>
+      <div class="sec-c pad tier locked">
+        <div class="tier-lock">${icon('lock')}</div>
+        <p class="hint tight" style="margin:0">Reach a tier and the club has something for you —
+          ask whoever runs it what is on offer this season. Earn a point for every session you
+          play, more for finishing near the top, and climb from Bronze to Legend.</p>
+        <p class="tier-gate">Become an official member to unlock</p>
+      </div></div>`;
   }
   const t = tierFor(points), n = nextTier(points);
   const from = t.at, to = n ? n.at : t.at;
   const pct = n ? Math.max(3, Math.round((points - from) / (to - from) * 100)) : 100;
-  return `<div class="panel tier">
-    <div class="tier-head">
-      <span class="tier-mark" style="background:${t.hue}">${tierIcon(t.name, 30)}</span>
-      <span class="tier-who">
-        <b class="tier-badge" style="--tier:${t.hue}">${esc(t.name)}</b>
-        <span class="tier-pts"><b>${points}</b> point${points === 1 ? '' : 's'}</span>
-      </span>
-      ${n ? `<span class="tier-goal" title="Next: ${esc(n.name)}">
-        ${tierIcon(n.name, 26)}</span>` : ''}
+  return `<div class="sec">
+    <div class="sec-h"><b>Rank progress</b><i>${points} pt${points === 1 ? '' : 's'}</i></div>
+    <div class="sec-c pf-rank">
+      <div class="rk-top">
+        <span class="rk-mark" style="color:${t.hue}">${tierIcon(t.name, 26)}</span>
+        <span class="rk-who"><b>${esc(t.name)}</b>
+          <span>${n ? '<b style="font-size:13px;letter-spacing:0;text-transform:none">'
+            + (to - points) + ' more</b> to reach ' + esc(n.name)
+            : 'Top tier. Nothing left to climb.'}</span></span>
+        ${n ? `<span class="rk-next" style="color:${n.hue}">${esc(n.name)}</span>` : ''}
+      </div>
+      <div class="tier-bar" style="margin:12px 0 0"><i style="width:${pct}%;background:${t.hue}"></i></div>
+      <p class="hint tight" style="margin:9px 0 0">${nights
+        ? nights + ' session' + (nights === 1 ? '' : 's')
+          + ' played · 1 point each, +1 for a top-ten finish, +1 for a top three'
+        : (t.note || '')}</p>
     </div>
-    <div class="tier-bar"><i style="width:${pct}%;background:${t.hue}"></i></div>
-    <p class="tier-next">${n
-      ? '<b>' + (to - points) + ' more</b> to reach ' + esc(n.name)
-      : 'Top tier. Nothing left to climb.'}</p>
-    <p class="hint tight">${nights
-      ? nights + ' session' + (nights === 1 ? '' : 's') + ' played \u00b7 1 point each, +1 for a top-ten finish, +1 for a top three'
-      : (t.note || '')}</p>
   </div>`;
 }
 
@@ -12568,14 +13415,28 @@ function tierCardHTML(points, nights, unlocked){
    signing out are the two things you are least often looking for. */
 function meSection(title, rows){
   if(!rows.length) return '';
-  return `<div class="panel"><h2>${title}</h2>
-    <div class="me-list">${rows.join('')}</div></div>`;
+  return `<div class="sec">
+    <div class="sec-h"><b>${title}</b></div>
+    <div class="sec-c"><div class="me-list">${rows.join('')}</div></div>
+  </div>`;
 }
-function meRow(fn, label, ic, note){
-  return `<button class="me-item" onclick="${fn}">
-    <span class="me-ic">${navIcon(ic)}</span>
+/* `mark` is what goes on the left. An icon for the things that are a screen,
+   a small square for an organizer's tools — which are a short list of jobs
+   rather than places, and read better as a list than as six more glyphs —
+   and a monogram for a club, because a club has a name and its initials are
+   the closest thing it has to a face here. */
+function meRow(fn, label, ic, note, mark){
+  const left = mark === 'sq' ? '<span class="me-sq"></span>'
+    : mark ? `<span class="me-mono">${esc(mark)}</span>`
+    : `<span class="me-ic">${navIcon(ic)}</span>`;
+  return `<button class="me-item" onclick="${fn}">${left}
     <span><b>${label}</b>${note ? `<i>${note}</i>` : ''}</span>
     <i class="sr-go">&rsaquo;</i></button>`;
+}
+/* Initials, the way every avatar in the app makes them. */
+function meMono(name){
+  return String(name || '?').trim().split(/\s+/).slice(0, 2)
+    .map(w => w.slice(0, 1).toUpperCase()).join('') || '?';
 }
 function meTools(){
   const mine = [
@@ -12588,9 +13449,9 @@ function meTools(){
      own page, where it belongs. Each row goes to that club, which is also
      where an owner assigns its organizers. */
   const club = ((Groups.list || []).filter(g => g.mine)).map(g =>
-    meRow(`Groups.open('${esc(g.id)}')`, g.name, 'members',
-      (g.can_organize ? 'You organize here \u00b7 ' : '')
-      + g.members + ' member' + (g.members === 1 ? '' : 's')));
+    meRow(`Groups.open('${esc(g.id)}')`, esc(g.name), 'members',
+      (g.can_organize ? 'You organize here · ' : '')
+      + g.members + ' member' + (g.members === 1 ? '' : 's'), meMono(g.name)));
   if(Groups.list === null && Live.ready()){
     Groups.load().then(()=>{ if(currentScreen() === 'me') paintMe(); });
   }
@@ -12606,26 +13467,32 @@ function meTools(){
      organizer. Same argument for the season: a season is the group's, not
      yours, and it now lives on the group's own page. */
   if(canOrganize()){
-    org.push(meRow('openResume()', 'Take over a session', 'open'));
+    org.push(meRow('openResume()', 'Take over a session', 'open', '', 'sq'));
     if(Auth.isOrganizer && Auth.isOrganizer())
       org.push(meRow('accessSheet()', 'Role management', 'key',
-                     'Who is an owner, an organizer, a player'));
+                     'Owners, organizers, players', 'sq'));
   }
   if(Auth.isOwner()){
     org.push(meRow("go('roles')", 'Player management', 'members',
-                   'Ratings, aliases, removing somebody'));
-    org.push(meRow("go('audit')", 'Audit log', 'audit'));
+                   'Ratings, aliases, removing somebody', 'sq'));
+    org.push(meRow("go('audit')", 'Audit log', 'audit', '', 'sq'));
   }
 
+  /* Day and night is a state this phone is in, not a screen to go to, so it
+     is a switch. It was a row with an arrow on the end, which promised a
+     page behind it that has never existed. */
   const night = document.documentElement.dataset.theme === 'night';
-  const app = [meRow('toggleTheme()', night ? 'Switch to daylight' : 'Switch to night', 'moon')];
-  if(Auth.signedIn()) app.push(meRow('AuthUI.confirmOut()', 'Sign out', 'leave'));
+  const app = [`<button class="me-item me-tog${night ? ' on' : ''}" onclick="toggleTheme()">
+      <span><b>Switch to night</b></span><span class="me-sw"></span></button>`];
+  /* No arrow on Sign out. An arrow says there is a screen behind this, and
+     what is behind it is a question and then no account. */
+  if(Auth.signedIn())
+    app.push(`<button class="me-item warn" onclick="AuthUI.confirmOut()">
+      <span><b>Sign out</b></span></button>`);
 
-  return meSection('Your account', mine)
-       + meSection(club.length && (Groups.list || []).some(g => g.mine)
-                     ? 'Your clubs' : 'Clubs', club)
+  return meSection('Your clubs', club)
        + meSection('Organizing', org)
-       + meSection('This app', app);
+       + meSection('Account & app', mine.concat(app));
 }
 
 /* Two things, one door. Editing your details and changing your password were
@@ -12792,43 +13659,84 @@ async function paintMe(){
   const roleWord = me.role === 'owner' ? 'Owner' : (me.role === 'organizer' ? 'Organizer' : null);
 
   const shown = me.alias || me.name;
-  box.innerHTML = `<div class="panel">
-      <div class="mem-big">${avatar(shown, me.photo, 'xl')}
-        <b>${esc(shown)}${me.official ? verifiedMark(18) : ''}</b>
-        <span class="id-row">${tierChip(pts.points)}</span></div>
-      ${me.alias ? `<p class="sub" style="text-align:center;margin:0 0 2px">${esc(me.name)}</p>` : ''}
-      ${ratingsRow(me)}
-      <p class="sub" style="text-align:center;margin-bottom:4px">${esc(Auth.email())}${
-        roleWord ? ' \u00b7 <b>' + roleWord.toLowerCase() + '</b>' : ''}${
-        me.official && !roleWord ? ' \u00b7 <b>member</b>' : ''}</p>
-      ${me.phone ? `<p class="sub" style="text-align:center;margin:0">${esc(me.phone)}</p>` : ''}
+  /* The alias is the name; the one on the passport is the footnote. On court
+     nobody is called Angelo Paolo, and a page about a person should lead with
+     what people call them. */
+  const full = me.alias && me.name && me.alias !== me.name ? me.name : '';
 
-      ${me.dupr_id ? `<p class="sub" style="text-align:center;margin:0">
-        DUPR ID <b>${esc(me.dupr_id)}</b></p>` : ''}
-      ${me.birth_month && me.birth_day ? `<p class="sub" style="text-align:center;margin:0">
-        Birthday <b>${esc(Birthday.text(me.birth_month, me.birth_day))}</b></p>` : ''}
-      <div id="me-stats"></div>
-      ${place ? `<div class="rank-card">
-        <span class="rank-big">${place}<small>/${total}</small></span>
-        <span class="rank-txt"><b>Where you stand</b>
-          <span>${rankWord(place, total)}</span></span>
-      </div>` : ''}
+  /* DUPR is a figure somebody typed in about themselves and the club rating
+     is one this app worked out, so they are labelled by where they came from
+     rather than left as two numbers side by side. */
+  const rateBox = (lab, val, note, own) => `<div class="pf-rate${own ? ' own' : ''}">
+    <i>${lab}</i><b>${val}</b><span>${note}</span></div>`;
+  const settled = (me.rating_games || 0) >= 6;
+  const rates = [
+    me.dupr != null ? rateBox('DUPR', Number(me.dupr).toFixed(2), 'self-reported', false) : '',
+    me.rating != null ? rateBox('CLUB', Number(me.rating).toFixed(2),
+      settled ? 'from results' : 'still settling', true) : ''
+  ].filter(Boolean).join('');
+
+  const tier = tierFor(pts.points);
+  const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th'
+    : ['th','st','nd','rd'][n % 10] || 'th');
+
+  box.innerHTML = `
+    <div class="hero-band">
+      <div class="pf-idr">
+        <button class="pf-face" onclick="editProfile()" aria-label="Change your picture">
+          ${avatar(shown, me.photo, 'xl')}
+          ${me.official ? `<span class="pf-tick">${icon('check')}</span>` : ''}
+        </button>
+        <div class="pf-who">
+          <h1>${esc(shown)}</h1>
+          ${full ? `<p>${esc(full)}</p>` : ''}
+          <div class="pf-chips">
+            ${roleWord ? `<span class="pf-chip role">${esc(roleWord)}</span>` : ''}
+            ${tier && tier.at > 0
+              ? `<span class="pf-chip tier" style="--tier:${tier.hue}">${esc(tier.name)}</span>`
+              : '<span class="pf-chip flat">Unranked</span>'}
+          </div>
+        </div>
+      </div>
+      ${rates ? `<div class="pf-rates">${rates}</div>` : ''}
     </div>
+    <div id="me-stats"></div>
+    ${place ? `<div class="pf-stand">
+      <b>${place}<small>${ordinal(place).slice(String(place).length)}</small></b><s></s>
+      <span><i>Where you stand</i><em>${rankWord(place, total)}</em></span>
+    </div>` : ''}
+
     ${tierCardHTML(pts.points, pts.nights, !!(me.official || me.role === 'owner' || me.role === 'organizer'))}
     <!-- What is coming first, then what has been. Reading your own profile,
          "am I playing this week" is the live question; the record underneath
          it is reference. -->
     ${mySessionsHTML()}
     <div id="me-nights"></div>
-    <div class="panel">
-      <h2>Your player ID</h2>
-      <p class="hint tight" style="margin-bottom:10px">Show this at the door and the organizer can add
-        you to a session in one tap.</p>
-      <div class="idcard">
+
+    <div class="sec">
+      <div class="sec-h"><b>Your player ID</b></div>
+      <div class="pf-id">
+        <p>Show this at the door and the organizer adds you to a session in one tap.</p>
         <div id="my-qr" class="id-qr"></div>
-        <span class="id-n">${esc(me.name)}</span>
+        <div class="id-ft">
+          <span><b>${esc(me.name)}</b><em>${esc(Auth.email())}</em></span>
+          <button class="pf-share" onclick="shareMyId()">Share</button>
+        </div>
       </div>
     </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Details</b>
+        <button class="lnk" onclick="editProfile()">Edit</button></div>
+      <div class="sec-c"><div class="pf-facts">
+        ${meFact('Email', esc(Auth.email()))}
+        ${meFact('Phone', me.phone ? esc(me.phone) : '')}
+        ${meFact('Birthday', me.birth_month && me.birth_day
+          ? esc(Birthday.text(me.birth_month, me.birth_day)) : '')}
+        ${meFact('DUPR ID', me.dupr_id ? esc(me.dupr_id) : '')}
+      </div></div>
+    </div>
+
     ${meTools()}`;
   drawQR('my-qr', myIdURL(me.id), 190);
   paintRecord();
@@ -12853,57 +13761,122 @@ async function paintRecord(){
   const strip = document.getElementById('me-stats');
   const list  = document.getElementById('me-nights');
   if(strip) strip.innerHTML =
-    `<div class="ld-block" style="padding:18px 12px"><span class="ld-ball"></span><p>Reading your record…</p></div>`;
+    `<div class="hero-strip"><div class="ld-block" style="padding:8px 0;flex:1">
+      <span class="ld-ball"></span></div></div>`;
 
   let d = null;
   try{
     d = await Live.rpc('sideout_player', { p_club: CONFIG.club || 'sideout', p_member: null });
   }catch(e){
-    if(strip) strip.innerHTML = `<p class="conn warn">Could not read your record just now.</p>`;
+    if(strip) strip.innerHTML = `<div class="sec"><p class="conn warn">Could not read your
+      record just now.</p></div>`;
     return;
   }
 
   const t = (d && d.totals) || null;
   if(!t || !t.nights){
     if(strip) strip.innerHTML =
-      `<p class="conn">No games yet. Your record starts at your first session.</p>`;
+      `<div class="sec"><p class="conn">No games yet. Your record starts at your first
+        session.</p></div>`;
     if(list) list.innerHTML = '';
     return;
   }
 
   const rate = t.games ? Math.round(t.wins / t.games * 100) : 0;
-  const stat = (n, l) => `<div class="ps"><b>${n}</b><i>${l}</i></div>`;
-  if(strip) strip.innerHTML = `<div class="pstats">
+  /* Four, and always the same four. Nights won and crowns used to join the
+     row whenever somebody had any, which meant the strip was four cells wide
+     for most of the club and six for the people at the top — the same screen
+     a different shape depending on who was reading it. The two that came and
+     went are on the night-by-night list below, against the nights they were
+     actually won on. */
+  const stat = (n, l, good) =>
+    `<div class="ps"><b${good ? ' class="good"' : ''}>${n}</b><i>${l}</i></div>`;
+  if(strip) strip.innerHTML = `<div class="hero-strip">
     ${stat(t.nights, t.nights === 1 ? 'night' : 'nights')}
     ${stat(t.games, 'games')}
     ${stat(t.wins, 'won')}
-    ${stat(rate + '%', 'win rate')}
-    ${t.wins_on_the_night ? stat(t.wins_on_the_night, t.wins_on_the_night === 1 ? 'night won' : 'nights won') : ''}
-    ${t.crowns ? stat(t.crowns, t.crowns === 1 ? 'crown' : 'crowns') : ''}
+    ${stat(rate + '%', 'win rate', true)}
   </div>`;
 
   const nights = (d.nights || []);
   if(!list) return;
-  list.innerHTML = `<div class="panel">
-    <h2>Joined sessions</h2>
-    <p class="hint tight" style="margin-bottom:10px">Where you finished each time, out of everybody
-      who got a game.</p>
-    <div class="lad">${nights.map(n =>{
-      const when = n.played_at ? new Date(n.played_at).getTime() : null;
-      const r = n.games ? Math.round(n.wins / n.games * 100) : 0;
-      return `<div class="lad-row rc-tap" onclick="location.href='?r=${encodeURIComponent(n.code)}'">
-        <span class="lad-pos">${n.pos}</span>
-        <span class="lad-n"><span class="nmn">${esc(n.title || 'Open play')}${
-          n.crowns ? ' ' + icon('crown') + ' ' + n.crowns : ''}</span>
-          <em>${when ? esc(longDate(when)) : ''} · ${n.pos} of ${n.field}</em></span>
-        <span class="lad-w">${n.wins}<i>won</i></span>
-        <span class="lad-r">${r}%<i>${n.games} game${n.games === 1 ? '' : 's'}</i></span>
-        <button class="row-share" title="Share this night" aria-label="Share this night"
-          onclick="event.stopPropagation();Recap.share('${esc(n.code)}','${
-            esc((n.title || 'Open play').replace(/'/g, ''))}')">${icon('share')}</button>
-      </div>`;
-    }).join('')}</div>
+  /* Three at a time. The list is every night you have ever played and it
+     grows for as long as somebody keeps turning up, so the whole of it under
+     a heading on a page you opened to check something else is a scroll
+     nobody asked for. See all opens the rest. */
+  const many = nights.length > 3;
+  const rows = (Me.allNights ? nights : nights.slice(0, 3)).map(n =>{
+    const when = n.played_at ? new Date(n.played_at).getTime() : null;
+    const r = n.games ? Math.round(n.wins / n.games * 100) : 0;
+    return `<button class="pf-night" onclick="pastSession('${esc(n.code)}')">
+      <span class="pf-pos${n.pos <= 3 ? ' pod' : ''}">${n.pos}</span>
+      <span class="ni-tx"><b>${esc(n.title || 'Open play')}${
+        n.crowns ? ' ' + icon('crown') + (n.crowns > 1 ? ' ' + n.crowns : '') : ''}</b>
+        <span>${when ? esc(shortDay(when)) : ''} · ${n.pos} of ${n.field}</span></span>
+      <span class="ni-r"><b>${r}%</b><span>${n.wins} of ${n.games}<br>won</span></span>
+    </button>`;
+  }).join('');
+  list.innerHTML = `<div class="sec">
+    <div class="sec-h"><b>Joined sessions</b>${many
+      ? `<button class="lnk" onclick="Me.seeAll()">${Me.allNights ? 'Show less' : 'See all'}</button>`
+      : ''}</div>
+    <p class="sec-note">Where you finished each time, out of everybody who got a game.</p>
+    <div class="sec-c">${rows}</div>
   </div>`;
+}
+
+/* What the profile is currently showing more or less of. One flag, because
+   there is one list on the page with a "see all" on it. */
+const Me = {
+  allNights: false,
+  seeAll(){ this.allNights = !this.allNights; paintRecord(); }
+};
+
+/* Thu 6 Aug — short enough to sit under a session's name without wrapping,
+   which longDate does on any phone narrower than a Pro Max. */
+function shortDay(ms){
+  const d = new Date(ms);
+  return DAYS[d.getDay()].slice(0, 3) + ' ' + d.getDate() + ' ' + MONTH_SHORT[d.getMonth()];
+}
+
+/* A row is left out rather than printed empty. A profile that lists
+   "Phone —" for everybody who has not given one is a page of blanks. */
+function meFact(label, value){
+  return value ? '<div><dt>' + label + '</dt><dd>' + value + '</dd></div>' : '';
+}
+
+/* The ID card, out to whatever the phone does with a link — so somebody who
+   has not got the app in front of them can still be added by the organizer
+   opening what you sent. */
+function shareMyId(){
+  const me = Auth.me;
+  if(!me) return;
+  const url = myIdURL(me.id);
+  const shown = me.alias || me.name || 'me';
+  if(navigator.share){
+    navigator.share({ title: shown, text: shown + ' on picksilog', url })
+      .catch(()=>{});
+    return;
+  }
+  if(legacyCopy(url)) toast('Link copied.');
+  else toast('Could not copy that just now.');
+}
+
+/* A session's link, out to whatever the phone does with one. View.share()
+   is the same errand but it reads View.code, so it only works from the page
+   you are already watching — and the card on Home is not that page. */
+async function shareSession(code, name){
+  if(!code) return;
+  const url = Live.url(code);
+  const ttl = name || 'Open play';
+  if(navigator.share){
+    try{ await navigator.share({ title: ttl, text: 'Playing at ' + ttl, url }); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try{ await navigator.clipboard.writeText(url); toast('Link copied.'); return; }catch(e){}
+  }
+  toast(legacyCopy(url) ? 'Link copied.' : url);
 }
 
 /* Kept because other things link to it. */
@@ -13381,6 +14354,12 @@ function syncDocks(){
 
   const tb = document.getElementById('tabbar');
   const showTabs = TAB_SCREENS.indexOf(scr) >= 0;
+  /* The two screens that open with a coloured band take the app's own bar
+     into it, so the bar is the top of the page rather than a shelf above it.
+     Anywhere else it goes back to being a bar. */
+  const ab = document.getElementById('appbar');
+  if(ab) ab.classList.toggle('onhero', scr === 'me' || scr === 'group');
+
   if(tb){
     tb.hidden = !showTabs;
     /* Marked from the screen we are on rather than from whatever was
@@ -13417,7 +14396,8 @@ function tabPlay(){
    The menu can hold the organizer's tools without them being
    in a player's face all evening.
    ══════════════════════════════════════════════════════ */
-const NAV_TITLE = { me:'Profile', members:'Club Members', roles:'Player Management', audit:'Audit Log',
+const NAV_TITLE = { me:'Profile', group:'Group',
+  members:'Club Members', roles:'Player Management', audit:'Audit Log',
   setup:'Organize an open play',
   play:'Tonight', players:'Manage', stats:'Standings', playoff:'Playoff',
   ladder:'Leaderboard' };
@@ -13480,6 +14460,16 @@ function leaveToHome(){
 }
 
 function showOnly(name){
+  /* The pinned chat frame covers the screen, so it has to come off whenever
+     the app moves anywhere else — including by a route that never touches
+     Chat.leave(), such as the dock. */
+  if(name !== 'chats') document.body.classList.remove('chat-pinned');
+  /* And for the same reason, the finished-night screen stops being a column
+     for a conversation the moment the app is showing something else. */
+  if(name !== 'past'){
+    const sp = document.getElementById('screen-past');
+    if(sp) sp.classList.remove('chatting');
+  }
   navigated = true;
   paintAcctBtn();
   SCREENS.forEach(n=>{
@@ -13724,6 +14714,47 @@ const Feed = {
      on", so it keeps the one filter that changes the answer and drops the
      rest. Sorting soonest-first is what a diary does anyway, and the month
      picker only earns its place when there is more than one month to pick. */
+  /* Which club a night belongs to, as a row you flick through rather than a
+     block of chips that wraps to three lines. Only clubs that actually have
+     something on are offered — a filter that can only ever come back empty
+     is a filter nobody wants, and the list is built from the nights
+     themselves rather than from the groups you are in for exactly that
+     reason.
+
+     Not remembered on the device, on purpose: this is about what you are
+     looking at now, and coming back tomorrow to a home page still filtered to
+     one club is how you miss a night. */
+  group: null,
+  setGroup(id){ this.group = id || null; paintHome(); },
+  clubChips(){
+    const up = this.up || [];
+    if(!up.length) return '';
+    const seen = [];
+    up.forEach(r =>{
+      if(!r.group_id) return;
+      const at = seen.find(x => x.id === r.group_id);
+      if(at) at.n++; else seen.push({ id: r.group_id, n: 1 });
+    });
+    const loose = up.filter(r => !r.group_id).length;
+    /* One club and no strays is not a choice, it is a label. */
+    if(seen.length + (loose ? 1 : 0) < 2) return '';
+    const named = seen.map(x =>{
+      const g = (Groups.list || []).find(y => y.id === x.id);
+      return Object.assign({}, x, { name: (g && g.name) || 'A club' });
+    }).sort((a, b) => b.n - a.n);
+
+    const chip = (id, mono, label, n) => `<button class="hm-club${
+      (this.group || null) === id ? ' on' : ''}" onclick="Feed.setGroup(${
+      id ? "'" + esc(id) + "'" : 'null'})">
+      <span class="mono">${mono}</span>${esc(label)}<i>${n}</i></button>`;
+
+    return `<div class="hm-clubs">
+      ${chip(null, icon('crown'), 'All clubs', up.length)}
+      ${named.map(x => chip(x.id, esc(meMono(x.name)), x.name, x.n)).join('')}
+      ${loose ? chip('none', icon('open'), 'On its own', loose) : ''}
+    </div>`;
+  },
+
   chips(){
     const months = this.monthKeys();
     const pill = (v, label, set, cur) => `<button class="chip${
@@ -13749,6 +14780,8 @@ const Feed = {
   rows(){
     const list = (this.up || []).map(r => Object.assign({}, r, { when: this.ms(r.starts_at) }));
     let out = list;
+    if(this.group === 'none') out = out.filter(r => !r.group_id);
+    else if(this.group) out = out.filter(r => r.group_id === this.group);
     if(this.filter === 'open') out = out.filter(r => !r.cap || r.joined < r.cap);
     if(this.filter === 'live') out = out.filter(r => r.live);
     if(this.month === null) this.month = this.defaultMonth();
@@ -13768,63 +14801,68 @@ const Feed = {
   card(r){
     const when = r.when;
     const soon = when && when > Date.now() ? untilText(when) : null;
-    const full = r.cap > 0 && r.joined >= r.cap;
+    const full = r.cap > 0 && (r.joined || 0) >= r.cap;
     const v = r.venue ? parseVenue(r.venue) : null;
-    const left = r.cap > 0 ? Math.max(0, r.cap - r.joined) : null;
+    const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
+    const pct = r.cap > 0 ? Math.min(100, Math.round((r.joined || 0) / r.cap * 100))
+      : ((r.joined || 0) ? 100 : 0);
     const go = `location.href='?s=${encodeURIComponent(r.code)}'`;
-    /* A court drawn rather than photographed: no image to load, it
-       recolours with the theme, and it never looks like a stock photo
-       of somebody else's club. */
-    return `<article class="sx">
-      <div class="sx-top${r.cover ? ' shot' : ''}" onclick="${go}"${
+    const ttl = esc((r.title || 'Open play').replace(/'/g, ''));
+
+    const under = [];
+    if(left !== null && left > 0) under.push(left + ' left');
+    if(r.waiting) under.push(r.waiting + ' waiting');
+
+    return `<article class="sx2">
+      ${canOrganize() ? `<button class="sx2-dots"
+        onclick="event.stopPropagation();upcomingMenu('${esc(r.code)}','${ttl}',${r.joined || 0})"
+        aria-label="More">⋯</button>` : ''}
+      <div class="sx2-top${r.mine ? ' mine' : ''}${r.cover ? ' shot' : ''}" onclick="${go}"${
         r.cover ? ` style="background-image:url('${esc(r.cover)}')"` : ''}>
-        ${r.cover ? '' : `<svg class="sx-court" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="26" y="12" width="268" height="96" rx="3"/>
-          <line x1="160" y1="12" x2="160" y2="108"/>
-          <rect x="96" y="12" width="128" height="96"/>
-          <line x1="96" y1="60" x2="224" y2="60"/>
-        </svg>`}
-        <span class="sx-veil"></span>
-        <span class="sx-badges">
-          ${r.live ? '<i class="sx-live">Playing now</i>' : ''}
-          ${!r.live && full ? '<i class="sx-full">Full</i>' : ''}
-          ${!r.live && !full && soon ? '<i class="sx-soon">' + esc(soon) + '</i>' : ''}
+        <span class="sx2-tags">
+          ${r.live ? '<i class="sx2-tag live">Playing now</i>' : ''}
+          ${!r.live && soon ? '<i class="sx2-tag">' + esc(soon) + '</i>' : ''}
+          ${full ? '<i class="sx2-tag full">Full</i>' : ''}
+          ${r.mine ? '<i class="sx2-tag in">Joined</i>' : ''}
         </span>
         <h3>${esc(r.title || 'Open play')}</h3>
-        ${r.mine ? '<span class="sx-in">Joined</span>' : ''}
       </div>
-      <div class="sx-body">
-        <div class="sx-line"><span class="sx-ico">\u25F7</span>
-          <span>${when ? esc(longDate(when)) : 'Date to be set'}${
-            when && r.starts_at ? ' \u00b7 ' + clockText(when) : ''}${
-            r.repeat === 'weekly' && when ? ' \u00b7 every ' + DAYS[new Date(when).getDay()] : ''}</span></div>
-        ${v ? `<div class="sx-line"><span class="sx-ico">\u25CE</span>
-          <span>${esc(v.name)}</span></div>` : ''}
-        <div class="sx-line"><span class="sx-ico">\u25CF</span>
-          <span>${r.joined} in${r.cap ? ' of ' + r.cap : ''}${
-            left !== null && left > 0 ? ' \u00b7 ' + left + ' place' + (left === 1 ? '' : 's') + ' left' : ''}${
-            r.waiting ? ' \u00b7 ' + r.waiting + ' waiting' : ''}</span></div>
-        ${r.mine
-          ? `<button class="btn btn-go sx-cta" onclick="${go}">${navIcon('eye')}${
-              r.live ? 'Watch it live' : 'View session'}</button>
-             <button class="btn btn-quiet sx-cta sx-drop"
-               onclick="withdrawFrom('${esc(r.code)}', '${esc((r.title || 'Open play').replace(/'/g, ''))}')">
-               ${navIcon('leave')}Leave session</button>`
-          : `<button class="btn ${full ? 'btn-quiet' : 'btn-go'} sx-cta" onclick="${go}">
-               ${r.live ? 'Watch it live' : (full ? 'Join the waiting list' : 'Join session')}</button>`}
-        <button class="btn btn-quiet sx-cta sx-copy"
-          onclick="event.stopPropagation();copySessionLink('${esc(r.code)}',this)">
-          <span class="sx-cw">\u29C9</span> Copy link</button>
-        ${canOrganize() ? `<div class="sx-admin">
-          <button class="btn btn-quiet"
-            onclick="manageSession('${esc(r.code)}', '${esc((r.title || 'Open play').replace(/'/g, ''))}')">
-            Manage</button>
-          <button class="btn btn-quiet sx-del"
-            onclick="deleteSession('${esc(r.code)}', '${esc((r.title || 'Open play').replace(/'/g, ''))}', ${r.joined || 0})"
-            aria-label="Delete this session">Delete</button>
-        </div>` : ''}
+      <div class="sx2-body">
+        <p class="sx2-when">${when ? esc(longDate(when)) : 'Date to be set'}${
+          when && r.starts_at ? ' · ' + esc(clockText(when)) : ''}${
+          v && v.name ? ' · ' + esc(v.name) : ''}</p>
+        <div class="sx2-fill">
+          <b>${r.joined || 0}${r.cap ? ' of ' + r.cap : ' in'}</b>
+          <span>${esc(under.join(' · '))}</span>
+        </div>
+        <div class="sx2-bar"><i class="${full ? 'full' : ''}" style="width:${pct}%"></i></div>
+        <button class="sx2-cta${r.mine || full ? '' : ' go'}" onclick="${go}">${
+          r.live ? 'Watch it live'
+            : r.mine ? 'View session'
+            : full ? 'Join the waiting list' : 'Join session'}</button>
       </div>
     </article>`;
+  },
+
+  /* Everything else you can do to a night, off the dots. Leaving is in here
+     rather than on the face of the card: it was a full-width button directly
+     under View session, which is a thumb-width from dropping out of a night
+     you meant to open. */
+  menu(code, title, joined){
+    const mine = ((this.up || []).find(r => r.code === code) || {}).mine;
+    openSheet(`<h3>${esc(title || 'Open play')}</h3>
+      <button class="btn btn-quiet" onclick="closeSheet();copySessionLink('${esc(code)}')">
+        ${icon('link')} Copy the link</button>
+      ${mine ? `<button class="btn btn-quiet" style="margin-top:8px"
+        onclick="closeSheet();withdrawFrom('${esc(code)}','${esc(title || '')}')">
+        ${icon('leave')} Leave this session</button>` : ''}
+      ${canOrganize() ? `<button class="btn btn-quiet" style="margin-top:8px"
+        onclick="closeSheet();manageSession('${esc(code)}','${esc(title || '')}')">
+        ${icon('gear')} Manage it</button>
+      <button class="btn btn-risk" style="margin-top:8px"
+        onclick="closeSheet();deleteSession('${esc(code)}','${esc(title || '')}',${joined || 0})">
+        ${icon('trash')} Delete it</button>` : ''}
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
   },
   /* No Reset button on the card. It used to sit right here, on a feed
      people scroll quickly with a thumb, and organizers kept catching it by
@@ -13987,11 +15025,8 @@ const Feed = {
 
   html(){
     const rows = this.rows();
-    const past = this.past || [];
     return `<div class="feed">
-      <div class="feed-h"><h2>What\u2019s on</h2>
-        ${canOrganize() ? `<button class="feed-new" onclick="startOrganizing()"
-          title="Organize an open play">+ New</button>` : ''}
+      <div class="feed-h">
         <div class="feed-tools">
           ${this.chips()}
           <span class="fd-view" role="group" aria-label="How to show the feed">
@@ -14003,7 +15038,9 @@ const Feed = {
         </div>
       </div>
 
-      ${rows.length ? rows.map(r => this.dense ? this.row(r) : this.card(r)).join('')
+      ${rows.length ? (this.dense
+          ? rows.map(r => this.row(r)).join('')
+          : '<div class="fd-strip">' + rows.map(r => this.card(r)).join('') + '</div>')
         : this.up === null
           ? `<div class="ld-block"><span class="ld-ball"></span><p>Looking for what\u2019s on\u2026</p></div>`
           : `<p class="conn">${this.filter === 'all'
@@ -14011,9 +15048,6 @@ const Feed = {
                   ? 'Nothing listed yet. Set one up and it will show here for all clubs.'
                   : 'Nothing listed yet. Your organizer may still be sending links directly.')
                : 'Nothing matches that filter.'}</p>`}
-      ${past.length ? `<h2 style="margin-top:22px">Already played</h2>
-        ${past.slice(0, this.dense ? 30 : 12)
-              .map(r => this.dense ? this.pastRow(r) : this.pastCard(r)).join('')}` : ''}
     </div>`;
   }
 };
@@ -14031,62 +15065,205 @@ function paintHome(){
     return;
   }
   const me = Auth.me || {};
-  const first = String(me.name || '').trim().split(/\s+/)[0] || 'there';
-  /* Home answers one question: what is on. The account lives behind
-     the face in the bar, and signing out lives in the menu — neither
-     is something you want to meet first thing. */
   const m = Club.find(me.id) || {};
-  const shown = m.alias || me.name || 'You';
-  let unread = 0;
-  try{ unread = Notices.unread() || 0; }catch(e){}
+  const shown = m.alias || me.alias || me.name || 'You';
+  const first = String(shown).trim().split(/\s+/)[0];
 
-  /* Who you are, then what is on today, then everything else. The card at the
-     top is not decoration: it is the one place your rating is visible without
-     going and looking for it, and it doubles as the way into your own record.
-     The two counters answer "is anything waiting for me" without making you
-     open either of them to find out. */
-  /* A tinted band across the top and the ordinary page below it. Everything
-     inside the band is about you — who you are, what is waiting, what is on
-     tonight — and everything under it is about the club. The colour is doing
-     the job a heading would otherwise have to do, and it costs no vertical
-     space to say it. */
-  box.innerHTML = `<div class="hm-top">
-    <div class="hm-me" onclick="go('me')">
-      ${avatar(shown, m.photo, 'lg')}
-      <span class="hm-tx"><b>${esc(shown)}</b>
-        ${homeRatings(m, me)}</span>
-      <i class="sr-go">&rsaquo;</i>
-    </div>
-    <div class="hm-pair">
-      <button class="hm-cnt${unread ? ' hot' : ''}" onclick="Notices.open()">
-        <b>${unread}</b><span>notification${unread === 1 ? '' : 's'}</span></button>
-      <button class="hm-cnt${Chat.unread ? ' hot' : ''}" onclick="Chat.open()">
-        <b>${Chat.unread || 0}</b><span>message${Chat.unread === 1 ? '' : 's'}</span></button>
-    </div>
-    ${todayStrip()}
-    </div><!-- /hm-top -->
-    <!-- Birthdays where the code box used to be. Typing a code in is a thing
-         you do a handful of times a year and it already has a home under the
-         + button ("Join with a code"), so it was holding the best slot on the
-         page for something almost nobody needed. Whose birthday it is this
-         month is the opposite: nothing to do, worth seeing. -->
+  /* Your name, today's date, and one line about the week. The old top of this
+     page was a card of your own face and your own rating, which you have seen
+     every other time you opened the app; what you have not seen is what is on
+     between now and Sunday. */
+  const now = new Date();
+  const week = (Feed.up || []).filter(r =>{
+    const t = Feed.ms(r.starts_at);
+    return t && t >= Date.now() && t < Date.now() + 7 * 864e5;
+  }).length;
+  const line = Feed.up === null ? 'Reading the board…'
+    : week === 0 ? 'Nothing on the board this week yet.'
+    : week === 1 ? 'One night on the board this week.'
+    : (week < 10 ? ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine'][week] : week)
+      + ' nights on the board this week.';
+
+  box.innerHTML = `
+    <header class="hm-greet">
+      <h1>Yo, ${esc(first)}</h1>
+      <span class="hm-day">${esc(DAYS[now.getDay()].slice(0,3) + ' ' + now.getDate()
+        + ' ' + MONTH_SHORT[now.getMonth()])}</span>
+      <p>${esc(line)}</p>
+    </header>
+    ${hmNext()}
+    <div id="hm-fig">${hmFigures()}</div>
     ${groupNudge()}
-    ${birthdayStrip()}
-    ${mySessionsHTML()}
-    <!-- Back, but as one row rather than the panel with a heading and a line
-         of explanation that used to sit above everything. Typing a code in is
-         a real thing people do — somebody reads you five letters across a car
-         park — it just is not the first thing anybody comes to Home for. -->
-    <div class="panel code-panel">
-      <div class="add-row">
-        <input type="text" id="home-code" placeholder="Got a code? Type it here"
-          autocomplete="off" aria-label="Session code"
-          onkeydown="if(event.key==='Enter')joinByCode()">
-        <button class="btn btn-go" onclick="joinByCode()">Join</button>
+    <div class="hm-sec">
+      <div class="hm-sh"><h2>What’s on</h2>
+        ${canOrganize() ? `<button class="hm-new" onclick="startOrganizing()"
+          title="Organize an open play">+ New</button>` : ''}
       </div>
-      <p class="fx-err" id="code-err" hidden></p>
+      <p class="hm-sub">Grab a slot before the good players do.</p>
+      ${Feed.clubChips()}
+      ${Feed.html()}
     </div>
-    ${Feed.html()}`;
+    <!-- Typing a code in is a real thing people do — somebody reads you five
+         letters across a car park — it just is not the first thing anybody
+         comes to Home for. -->
+    <div class="hm-code">
+      <input type="text" id="home-code" placeholder="Got a code? Type it here"
+        autocomplete="off" aria-label="Session code"
+        onkeydown="if(event.key==='Enter')joinByCode()">
+      <button onclick="joinByCode()">Join</button>
+    </div>
+    <p class="fx-err" id="code-err" hidden></p>
+    ${birthdayStrip()}
+    ${hmPlayed()}`;
+  hmTick();
+}
+
+/* The night that is next, at the size of a decision rather than a diary
+   entry. Yours first: a session you have joined is the one you are counting
+   down to, and only if you are in none does the soonest one on the board take
+   the slot — where the button says Join rather than I'm in. */
+function hmNext(){
+  const up = (Feed.up || []).map(r => Object.assign({}, r, { when: Feed.ms(r.starts_at) }))
+    .filter(r => r.when && r.when > Date.now() && !r.ended)
+    .sort((a, b) => a.when - b.when);
+  if(!up.length) return '';
+  const r = up.find(x => x.mine) || up[0];
+  const v = r.venue ? parseVenue(r.venue) : null;
+  const g = (Groups.list || []).find(x => x.id === r.group_id);
+  const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
+  const full = r.cap > 0 && (r.joined || 0) >= r.cap;
+
+  /* Faces off the club roster rather than off the session: the roster is
+     already on the device and the session's list of who is in is not, so this
+     costs nothing and is honest about being a sample — it is `+n` for the
+     rest, not a claim to be everybody. */
+  const faces = (Club.list || []).slice(0, 3).map(x =>
+    avatar(x.alias || x.name, x.photo, 'sm')).join('');
+  const rest = Math.max(0, (r.joined || 0) - 3);
+
+  const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
+  return `<section class="hm-next" id="hm-next" data-at="${r.when}">
+    <div class="hm-nh"><b><i></i>Up next</b>
+      ${g ? `<span>${esc(g.name)}</span>` : ''}</div>
+    <div class="hm-cd" id="hm-cd">${hmClock(r.when)}</div>
+    <h2>${esc(r.title || 'Open play')}</h2>
+    <p class="hm-nwhen">${esc(shortDay(r.when))} · ${esc(clockText(r.when))}${
+      v && v.name ? ' · ' + esc(v.name) : ''}</p>
+    <div class="hm-nwho">
+      ${faces ? `<span class="hm-faces">${faces}${rest
+        ? `<span class="hm-more">+${rest}</span>` : ''}</span>` : ''}
+      <span class="hm-nct">${r.joined || 0} in${left !== null
+        ? ' · ' + left + ' place' + (left === 1 ? '' : 's') + ' left' : ''}</span>
+    </div>
+    <div class="hm-nacts">
+      <button class="btn ${r.mine ? 'hm-in' : 'hm-in'}" onclick="${go}">${
+        r.mine ? "I'm in" : (full ? 'Join the list' : 'Join this one')}</button>
+      ${v && v.url ? `<a class="hm-nact" href="${esc(v.url)}" target="_blank" rel="noopener"
+        aria-label="Open in Maps" title="Open in Maps">${icon('pin')}</a>` : ''}
+      <button class="hm-nact" onclick="shareSession('${esc(r.code)}','${
+        esc((r.title || 'Open play').replace(/'/g, ''))}')"
+        aria-label="Share this session" title="Share this session">${icon('link')}</button>
+    </div>
+  </section>`;
+}
+
+/* Three pairs of digits and their labels. Split out because the tick rewrites
+   exactly this and nothing else on the card — redrawing the whole thing every
+   second threw away the picture and made it blink. */
+function hmClock(at){
+  const left = Math.max(0, at - Date.now());
+  const hrs = Math.floor(left / 3600000);
+  const min = Math.floor(left / 60000) % 60;
+  const sec = Math.floor(left / 1000) % 60;
+  const pad = n => String(n).padStart(2, '0');
+  const u = (n, l, cls) => `<span class="hm-cu${cls ? ' ' + cls : ''}">
+    <b>${n}</b><i>${l}</i></span>`;
+  return u(hrs > 99 ? hrs : pad(hrs), hrs === 1 ? 'hr' : 'hrs')
+    + '<span class="hm-csep">:</span>' + u(pad(min), 'min')
+    + '<span class="hm-csep">:</span>' + u(pad(sec), 'sec', 'ticking');
+}
+/* One interval for the whole page, started when Home paints and stopped the
+   moment the card is no longer in the document — a timer left running against
+   an element that has been replaced is the classic way a single-page app ends
+   up with six of them. */
+let hmT = null;
+function hmTick(){
+  clearInterval(hmT); hmT = null;
+  const el = document.getElementById('hm-cd');
+  if(!el) return;
+  hmT = setInterval(()=>{
+    const box = document.getElementById('hm-cd');
+    const card = document.getElementById('hm-next');
+    /* Leaving Home does not empty it — the section is hidden, not cleared —
+       so the card is still in the document and the check has to be "is Home
+       the screen", not "is the card there". Without it this ticks forever
+       against a page nobody is looking at. */
+    if(!box || !card || currentScreen() !== 'home'){ clearInterval(hmT); hmT = null; return; }
+    const at = Number(card.dataset.at || 0);
+    if(!at || at <= Date.now()){ clearInterval(hmT); hmT = null; paintHome(); return; }
+    box.innerHTML = hmClock(at);
+  }, 1000);
+}
+
+/* Four figures about you, in the order somebody asks for them: what the club
+   reckons you are, how often you win, where that puts you, how much of it
+   there is. Nothing is invented — a figure that has not been read yet is left
+   out and the strip fills in when the ladder lands. */
+function hmFigures(){
+  const me = Auth.me || {};
+  const m = Club.find(me.id) || {};
+  /* The rating comes off the club roster, which Home already waits for. The
+     other three come off the ladder, which is read quietly a couple of
+     seconds after boot and had nothing telling Home about it — so the strip
+     painted once with a single figure on it and stayed that way. It asks for
+     the ladder itself now, and fills in the moment it lands. That is what
+     #hm-fig is for: the rest of the page does not need redrawing. */
+  const rows = Club.ladderCache;
+  if(!rows && Live.ready() && !hmFigures.asked){
+    hmFigures.asked = true;
+    Club.ladder().then(()=>{
+      const box = document.getElementById('hm-fig');
+      if(box && currentScreen() === 'home') box.innerHTML = hmFigures();
+    }).catch(()=>{});
+  }
+  let rec = null, place = null;
+  if(rows){
+    const at = rows.findIndex(x => x.member === me.id
+      || x.key === 'n:' + String(me.name || '').trim().toLowerCase());
+    if(at >= 0){ rec = rows[at]; place = at + 1; }
+  }
+  const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th'
+    : ['th','st','nd','rd'][n % 10] || 'th');
+  const cell = (n, l, good) =>
+    `<div class="ps"><b${good ? ' class="good"' : ''}>${n}</b><i>${l}</i></div>`;
+  const bits = [];
+  if(m.rating != null) bits.push(cell(Number(m.rating).toFixed(2), 'club'));
+  if(rec && rec.games) bits.push(cell(Math.round(rec.wins / rec.games * 100) + '%', 'wins', true));
+  if(place) bits.push(cell(ord(place), 'rank'));
+  if(rec && rec.games) bits.push(cell(rec.games, 'games'));
+  if(!bits.length) return '';
+  return `<div class="hm-fig">${bits.join('')}</div>`;
+}
+
+/* What has already been played, as rows with the results on the end. Four,
+   because this is the bottom of a page about what is coming — the whole list
+   is a tab of its own. */
+function hmPlayed(){
+  const past = (Feed.past || []);
+  if(!past.length) return '';
+  return `<div class="hm-sec">
+    <div class="hm-sh"><h2>Already played</h2>
+      <button class="lnk" onclick="Games.tab='done';go('games')">See all</button></div>
+    ${past.slice(0, 4).map(r =>{
+      const t = Feed.ms(r.played_at);
+      return `<button class="hm-done" onclick="pastSession('${esc(r.code || '')}')">
+        <span class="dn-tx"><b>${esc(r.title || 'Open play')}</b>
+          <span>${t ? esc(shortDay(t)) : ''} · ${r.players} played${
+            r.owing ? ' · ' + r.owing + ' still to pay' : ' · everybody paid'}</span></span>
+        <span class="hm-res">Results</span>
+      </button>`;
+    }).join('')}
+  </div>`;
 }
 /* Somebody who has signed up and joined nothing sees a home page of other
    people's nights with no way of telling which of them are anything to do
@@ -14112,41 +15289,6 @@ function groupNudge(){
   </button>`;
 }
 
-/* What is on today, lifted out of the feed and put above it. A session
-   tonight is a different kind of thing from one in three weeks: you are
-   deciding whether to leave the house, not whether to put it in the diary.
-   Nothing is fetched for this — it is the feed the screen already holds. */
-function todayStrip(){
-  const up = (Feed.up || []);
-  if(!up.length) return '';
-  const now = new Date();
-  const sameDay = t =>{
-    if(!t) return false;
-    const d = new Date(t);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-        && d.getDate() === now.getDate();
-  };
-  const today = up.filter(r => sameDay(Feed.ms(r.starts_at)));
-  if(!today.length) return '';
-  return `<div class="hm-today"><h2>Today</h2>
-    ${today.map(r =>{
-      const t = Feed.ms(r.starts_at);
-      /* The night's own cover if it has one, the club mark if it does not.
-         A row of plain text in a column of cards with pictures on them reads
-         as the odd one out, and this is the row that matters most. */
-      const pic = r.cover
-        ? `<span class="hm-shot" style="background-image:url(${r.cover})"></span>`
-        : `<span class="hm-shot none">${icon('paddle')}</span>`;
-      return `<button class="hm-sess" onclick="location.href='?s=' + encodeURIComponent('${esc(r.code)}')">
-        ${pic}
-        <span class="hm-when">${t ? esc(clockText(t)) : 'Today'}</span>
-        <span class="hm-stx"><b>${esc(r.title || 'Open play')}</b>
-          <span>${r.cap ? (r.joined || 0) + ' of ' + r.cap
-                        : (r.joined || 0) + ' in'}</span></span>
-        <i class="sr-go">&rsaquo;</i></button>`;
-    }).join('')}
-  </div>`;
-}
 
 /* What happened that night: who won it, how long it ran, how many
    turned out. Read from the results table, which is the only thing
@@ -14160,6 +15302,10 @@ function todayStrip(){
    dismiss, and a thumb can reach the bottom of a phone. Reset is deliberately
    not in here — it stays inside the night itself, behind typing the code,
    because this menu is one tap from a scrolling feed. */
+/* The dots on an upcoming card. A named function rather than Feed.menu in
+   the markup, so the two card menus read the same at the call site. */
+function upcomingMenu(code, title, joined){ Feed.menu(code, title, joined); }
+
 function pastCardMenu(code, title, hasCover){
   if(!canOrganize() || !code) return;
   openSheet(`<h3>${esc(title || 'That night')}</h3>
@@ -14351,6 +15497,13 @@ const Chat = {
   /* Put down whatever was open inline, so a tab that is no longer showing
      stops polling and does not paint into a box somebody else is using. */
   dropInline(){
+    document.body.classList.remove('chat-pinned');
+    /* Above the inline guard on purpose: whatever else is true, a screen that
+       is no longer showing a chat must stop being a column for one. */
+    ['viewer','screen-past'].forEach(id =>{
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('chatting');
+    });
     if(!this.inline) return;
     clearInterval(this.t); this.t = null;
     this.at = null; this.inline = false; this.into = 'chats-box';
@@ -14381,7 +15534,7 @@ const Chat = {
     this.msgs = []; this.since = null; this.err = null; this.pulling = false;
     /* Painted before the messages are asked for, so without this the room
        said "Nothing said yet" over a conversation with thirty-seven messages
-       in it until the read came back @EM@ which on a phone is long enough to
+       in it until the read came back — which on a phone is long enough to
        read, believe and screenshot. */
     this.loading = true;
     const row = (this.list || []).find(c => String(c.id) === String(id));
@@ -14395,6 +15548,7 @@ const Chat = {
   },
   leave(){
     this.popClose();
+    document.body.classList.remove('chat-pinned');
     this.at = null; this.replyTo = null; this.pending = null;
     this.err = null; this.pulling = false;
     clearInterval(this.t); this.t = null;
@@ -14403,6 +15557,7 @@ const Chat = {
   },
   back(){
     if(this.at) return this.leave();
+    document.body.classList.remove('chat-pinned');
     clearInterval(this.t); this.t = null;
     go(this.from === 'chats' ? 'home' : this.from);
   },
@@ -14576,6 +15731,10 @@ const Chat = {
         </form>
       </div>
     </div>`;
+
+    const wrap = box.querySelector('.ch-wrap');
+    if(wrap) wrap.classList.toggle('pinned', !this.inline);
+    document.body.classList.toggle('chat-pinned', !this.inline && !!this.at);
 
     const st = document.getElementById('ch-stream');
     if(st) st.scrollTop = st.scrollHeight;
@@ -15228,8 +16387,8 @@ const Past = {
     this.from = from || currentScreen() || 'home';
     this.tab = 'details';
     /* Straight through to the standings when that is what was asked for.
-       The night still has to be read first @EM@ openResults needs the data to
-       title the screen @EM@ so it is a wish that load() grants, not a second
+       The night still has to be read first — openResults needs the data to
+       title the screen — so it is a wish that load() grants, not a second
        route in. */
     this.wantRes = !!toResults;
     const c = this.cache[code];
@@ -15273,6 +16432,8 @@ const Past = {
 
   setTab(t){
     this.tab = t;
+    const sc = document.getElementById('screen-past');
+    if(sc) sc.classList.toggle('chatting', t === 'chat');
     document.querySelectorAll('#past-tabs button').forEach(b =>
       b.classList.toggle('on', b.dataset.pt === t));
     this.paint();
@@ -15314,7 +16475,18 @@ const Past = {
 
     if(this.tab === 'players'){
       const rows = (d.standings || []).slice().sort(nightOrder);
-      box.innerHTML = rows.length
+      /* Settling up sits above the people it is about. It was on Details
+         beside the standings, but taking money is a job you do while looking
+         down a list of names, and that list is this tab. */
+      const pay = canOrganize()
+        ? '<button class="pv-results" style="margin-bottom:12px" onclick="Takings.open(&quot;'
+          + esc(this.code) + '&quot;,&quot;'
+          + esc(String((this.data && this.data.title) || 'That night').replace(/["\\]/g, '')) + '&quot;)">'
+          + '<span class="pv-tr pv-cash">' + icon('cash') + '</span>'
+          + '<span class="pv-rt"><b>Payment record</b><span>Who has settled up, and who has not</span></span>'
+          + '<i class="sr-go">&rsaquo;</i></button>'
+        : '';
+      box.innerHTML = pay + (rows.length
         ? '<div class="vw-plist">' + rows.map(r =>{
             const m = (Club.list || []).find(x =>
               String(x.alias || x.name).toLowerCase() === String(r.name).toLowerCase());
@@ -15326,7 +16498,7 @@ const Past = {
               + ' · ' + r.wins + '–' + r.losses + '</span></span>'
               + (m ? '<i class="sr-go">&rsaquo;</i>' : '') + '</button>';
           }).join('') + '</div>'
-        : '<div class="empty">Nobody got on court.</div>';
+        : '<div class="empty">Nobody got on court.</div>');
       return;
     }
 
@@ -15339,17 +16511,6 @@ const Past = {
       + '<span class="pv-tr">' + icon('trophy') + '</span>'
       + '<span class="pv-rt"><b>Results</b><span>Standings and every game played</span></span>'
       + '<i class="sr-go">&rsaquo;</i></button>'
-      /* Settling up, for whoever runs the club. It used to live in a sheet
-         that nothing opens any more, so the one screen about a finished
-         night had no way to the one job left to do on it — and somebody
-         always pays the following week. Beside the standings is where it
-         belongs: they are the two reasons to open a night that is over. */
-      + (canOrganize() ? '<button class="pv-results" onclick="Takings.open(&quot;'
-          + esc(this.code) + '&quot;,&quot;'
-          + esc(String((this.data && this.data.title) || 'That night').replace(/["\\]/g, '')) + '&quot;)">'
-          + '<span class="pv-tr pv-cash">' + icon('cash') + '</span>'
-          + '<span class="pv-rt"><b>Payment record</b><span>Who has settled up, and who has not</span></span>'
-          + '<i class="sr-go">&rsaquo;</i></button>' : '')
       + this.cardBtn()
       + '<div class="vw-facts">'
       + fact('Played', 'season', t ? longDate(t) : '')
@@ -16631,7 +17792,7 @@ function birthdayStrip(){
   const now = new Date();
   return `<div class="bd-strip">
     <div class="bd-head">
-      <b>Birthdays in ${esc(MONTHS[now.getMonth()])}</b>
+      <b>Birthdays this month</b>
       ${list.length > 1 ? `<i>${list.length}</i>` : ''}
     </div>
     <div class="bd-list">
@@ -16953,9 +18114,16 @@ function navIcon(kind){
             + '<path d="M12.9 8.3 6.5 14.7a3 3 0 0 0-.8 1.6L5.1 20l3.7-.6a3 3 0 0 0 1.6-.8l6.4-6.4z"/>'
             + '<path d="M8.7 12.5l2.8 2.8"/>',
     undo:     '<path d="M4.6 9.8h7.1a5.3 5.3 0 1 1 0 10.6H7.2"/><path d="M7.8 6 4.2 9.8l3.6 3.8"/>',
-    gear:     '<circle cx="12" cy="12" r="3"/>'
-            + '<path d="M12 3.4v2.2M12 18.4v2.2M20.6 12h-2.2M5.6 12H3.4"/>'
-            + '<path d="m18.1 5.9-1.6 1.6M7.5 16.5l-1.6 1.6M18.1 18.1l-1.6-1.6M7.5 7.5 5.9 5.9"/>',
+    /* A circle with rays coming off it is a sun, which is what this drew and
+       what it read as. A cog has teeth. */
+    gear:     '<circle cx="12" cy="12" r="3.1"/>'
+            + '<path d="M19.1 14.9a1.5 1.5 0 0 0 .3 1.7l.05.05a1.9 1.9 0 1 1-2.7 2.7l-.05-.05a1.5 1.5 0 0 0'
+            + ' -1.7-.3 1.5 1.5 0 0 0-.9 1.4v.15a1.9 1.9 0 1 1-3.8 0V20.4a1.5 1.5 0 0 0-1-1.4 1.5 1.5 0 0 0'
+            + ' -1.7.3l-.05.05a1.9 1.9 0 1 1-2.7-2.7l.05-.05a1.5 1.5 0 0 0 .3-1.7 1.5 1.5 0 0 0-1.4-.9H3.6'
+            + ' a1.9 1.9 0 1 1 0-3.8h.15a1.5 1.5 0 0 0 1.4-1 1.5 1.5 0 0 0-.3-1.7l-.05-.05a1.9 1.9 0 1 1'
+            + ' 2.7-2.7l.05.05a1.5 1.5 0 0 0 1.7.3h.05a1.5 1.5 0 0 0 .9-1.4V3.6a1.9 1.9 0 1 1 3.8 0v.15'
+            + ' a1.5 1.5 0 0 0 .9 1.4 1.5 1.5 0 0 0 1.7-.3l.05-.05a1.9 1.9 0 1 1 2.7 2.7l-.05.05a1.5 1.5 0 0 0'
+            + ' -.3 1.7v.05a1.5 1.5 0 0 0 1.4.9h.15a1.9 1.9 0 1 1 0 3.8H20.5a1.5 1.5 0 0 0-1.4.9z"/>',
     bell:     '<path d="M18 9.4a6 6 0 1 0-12 0c0 5.2-2 6.6-2 6.6h16s-2-1.4-2-6.6z"/>'
             + '<path d="M13.7 19.6a2 2 0 0 1-3.4 0"/>',
     /* the outline mark, not the gradient logo: it is a button in our own
@@ -17547,7 +18715,16 @@ function paintAcctBtn(){
     b.title = 'This device is running a session';
   }
 }
+/* Signed in, this had two buttons on it and both of them are on the profile
+   screen now — the profile itself, and Sign out at the bottom of Account &
+   app. A menu whose every item is one tap further away on a page you can
+   already reach is a stop on the way to somewhere, so it goes there instead.
+
+   The sheet is kept for the one thing the profile cannot answer: a device
+   running a session with nobody signed in on it. There is no profile to send
+   that to, and it still needs a way in. */
 function accountMenu(){
+  if(Auth.signedIn()){ go('me'); return; }
   const me = Auth.me || {};
   const signedIn = Auth.signedIn();
   const running = !!(S.active || S.live);
@@ -18858,14 +20035,15 @@ const Push = {
      database before it sends anything, so a device cannot announce something
      that did not happen. Failure here is silent on purpose: the join itself
      already worked, and nobody should see an error about a notification. */
-  async announce(code, kind){
+  async announce(code, kind, member){
     if(!Live.ready() || !Auth.signedIn() || !code) return;
     try{
       const h = await Auth.headers();
       await fetch(Live.base() + '/functions/v1/push', {
         method: 'POST',
         headers: Object.assign({ apikey: Live.key(), 'Content-Type': 'application/json' }, h || {}),
-        body: JSON.stringify({ club: CONFIG.club || 'sideout', code: code, kind: kind })
+        body: JSON.stringify({ club: CONFIG.club || 'sideout', code: code, kind: kind,
+                               member: member || null })
       });
     }catch(e){}
   }
@@ -19745,6 +20923,16 @@ const View = {
       return;
     }
     ttl.textContent = s2.title || 'Open Play';
+    const cov = document.getElementById('vw-cover');
+    if(cov){
+      cov.hidden = !s2.cover;
+      /* the poll runs every few seconds and a cover is most of a megabyte of
+         data URL, so only touch it when it is genuinely a different picture */
+      if(s2.cover && cov.dataset.src !== s2.cover){
+        cov.style.backgroundImage = 'url(' + s2.cover + ')';
+        cov.dataset.src = s2.cover;
+      }
+    }
     const want = (s2.title || 'Open Play') + ' \u00b7 Sideout Society';
     if(document.title !== want) document.title = want;
     const cd = this.countdownHTML(s2);
@@ -19773,11 +20961,18 @@ const View = {
        "Round 0" to somebody who opened the link early reads like something
        has gone wrong. And modeName has to be guarded: a mode with no entry in
        MODE_NAME used to print the word "undefined" here. */
-    sub.textContent = (s2.date ? s2.date + ' \u00b7 ' : '') + (s2.ended
-      ? 'Finished'
-      : (s2.modeName || 'Open play')
-        + (s2.round > 0 ? ' \u00b7 Round ' + s2.round : ' \u00b7 not started yet')
-        + (s2.timed || !s2.target ? '' : ' \u00b7 first to ' + s2.target));
+    /* Date, then how many, then where the night has got to — the same three
+       things in the same order as the line under a finished night's title.
+       The head count was missing here, and it is the first thing anybody
+       opening the link before it starts wants to know. */
+    const heads = (s2.roster || []).filter(r => r.s !== 'left').length;
+    sub.textContent = (s2.date ? s2.date + ' \u00b7 ' : '')
+      + (heads ? heads + (s2.ended ? ' played' : ' going') + ' \u00b7 ' : '')
+      + (s2.ended
+        ? 'Finished'
+        : (s2.modeName || 'Open play')
+          + (s2.round > 0 ? ' \u00b7 Round ' + s2.round : ' \u00b7 not started yet')
+          + (s2.timed || !s2.target ? '' : ' \u00b7 first to ' + s2.target));
     if(s2.ended && this.t){ clearInterval(this.t); this.t = setInterval(()=> this.tick(), 15000); }
 
     this.paintJoin(s2);
@@ -19854,15 +21049,18 @@ const View = {
   /* The night's own picture, across the top of Details. It used to be drawn
      small inside the venue card, where it answered the wrong question - a
      poster tells you what the night is, not where it is. */
-  heroHTML(s2){
-    return (s2 && s2.cover)
-      ? `<div class="vw-hero" style="background-image:url(${s2.cover})"></div>` : '';
-  },
+  /* Returns nothing now, and the comment above it no longer describes what
+     happens: the poster moved up into the header, beside the name of the
+     night, which is where a finished night has always kept it. Left as a
+     function because two branches of paint() still call it. */
+  heroHTML(){ return ''; },
 
   /* \u2500\u2500\u2500 the three tabs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   tab: 'details', pTab: 'in',
   setTab(t){
     this.tab = t;
+    const vw = document.getElementById('viewer');
+    if(vw) vw.classList.toggle('chatting', t === 'chat');
     document.getElementById('vw-body').dataset.tab = t;
     document.querySelectorAll('#vw-tabs button').forEach(b =>
       b.classList.toggle('on', b.dataset.vt === t));
@@ -19943,14 +21141,62 @@ const View = {
 
   /* Lets somebody in off the waiting list. Only reachable when this device is
      the one running the session, which is the only place the list exists. */
+  /* Approving by position was wrong, and wrong in the way that looks like
+     nothing happening.
+
+     The number came off the row in the published snapshot and went straight
+     into S.waiting, which is the host's own list. Those two agree only for as
+     long as nothing changes — and the whole point of a waiting list is that
+     it changes. Somebody joins or drops between polls, the lists shift by
+     one, and tapping Approve on the third row lets in whoever is third on the
+     host's copy. The person tapped stays where they are, so it reads as the
+     button doing nothing, and they reappear on the next poll because they
+     never left.
+
+     Matched by club record, then by name — the same rule taking somebody
+     off already uses, and for the same reason: the snapshot carries no
+     internal ids by design. If the row cannot be found the list has moved
+     under us, and saying so beats letting in the wrong person. */
   approve(i){
     if(!(canOrganize() && S.live && S.liveCode === this.code)) return;
-    const w = S.waiting[i];
-    if(!w) return;
-    if(typeof waitPromote === 'function') waitPromote(i);
+    const row = ((this.snap && this.snap.waiting) || [])[i];
+    if(!row) return;
+    const norm = v => String(v || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    let k = -1;
+    if(row.m) k = S.waiting.findIndex(w => w.mid === row.m);
+    if(k < 0) k = S.waiting.findIndex(w => norm(w.name) === norm(row.n));
+    if(k < 0){ toast('That request has already been dealt with.'); return; }
+
+    const told = row.m || null;
+    if(typeof waitPromote === 'function') waitPromote(k);
+    /* Somebody sitting on a waiting list has no way of knowing they are in
+       unless they keep opening the app, which is the one thing a waiting list
+       should save them from. Sent after the publish rather than before it —
+       the function checks the roster before it will say anything, which is
+       also what stops this being a way to pester people who are still
+       waiting. */
     if(this.snap){
-      this.snap.waiting = (this.snap.waiting || []).filter((_, k) => k !== i);
+      this.snap.waiting = (this.snap.waiting || []).filter((_, j) => j !== i);
       this.paintPeople(this.snap);
+    }
+    /* Published at once rather than on the usual debounce, and the page read
+       back after. Otherwise a poll landing in that window fetches a snapshot
+       that still has them waiting and puts them back on screen, which is the
+       other half of what "it did not work" looked like. */
+    if(S.live && Live.ready()){
+      Live.saveAll()
+        .then(()=>{
+          if(told) Push.announce(this.code, 'in', told);
+          if(currentScreen() === 'view') this.tick();
+        })
+        .catch(e =>{
+          /* Put back on screen rather than left looking done. A row that
+             vanishes and returns four seconds later is the same fault
+             wearing a disguise. */
+          toast('Could not publish that — ' +
+            String(e.detail || e.message || 'no connection').slice(0, 60));
+          if(currentScreen() === 'view') this.tick();
+        });
     }
   },
 
@@ -20102,7 +21348,19 @@ const View = {
         : `<div class="vw-empty"><p>Nobody has joined yet.</p>
            <p class="sub">Be the first \u2014 the join button is on Details.</p></div>`;
     }
-    box.innerHTML = tabs + list;
+    /* The same row a finished night puts at the top of its Players tab.
+       Taking money is a job you do while looking down a list of names, and a
+       night you are about to run and a night you have just run should not
+       keep it in two different places — an organizer learns one screen or
+       neither. */
+    const pay = canOrganize() && this.code
+      ? '<button class="pv-results" style="margin-bottom:12px" onclick="Dues.open(&quot;'
+        + esc(this.code) + '&quot;)">'
+        + '<span class="pv-tr pv-cash">' + icon('cash') + '</span>'
+        + '<span class="pv-rt"><b>Payment record</b><span>Who has settled up, and who has not</span></span>'
+        + '<i class="sr-go">&rsaquo;</i></button>'
+      : '';
+    box.innerHTML = pay + tabs + list;
   },
 
   /* kept out of the polling repaint, so a half-typed name survives */
@@ -20166,9 +21424,7 @@ const View = {
   staffBar(){
     if(!Auth.signedIn() || !canOrganize() || !this.code) return '';
     return `<button class="btn btn-quiet vw-manage" onclick="manageSession('${esc(this.code)}')">
-      ${icon('gear')} Manage this session</button>
-      <button class="btn btn-quiet vw-manage" onclick="Dues.open('${esc(this.code)}')">
-      ${icon('cash')} Payment record</button>`;
+      ${icon('gear')} Manage this session</button>`;
   },
   /* Only when the host is running a timed round. A score-based round
      has no clock to show, and an empty box is worse than none. */
@@ -22789,8 +24045,9 @@ function shareCanvas(c, name, title){
      still happens later in Auth.boot(). */
   try{ Auth.load(); }catch(e){}
   /* accept the British spelling too, so older links keep working */
-  let wantsOrganize = params.has('organize') || params.has('organise')
+  const askedOrganize = params.has('organize') || params.has('organise')
     || /^#?\/?organi[sz]e$/i.test(location.hash || '');
+  let wantsOrganize = askedOrganize;
   /* Only when it was just asked for. ?organize is pushed so the back button
      works, which also means the browser keeps it: pressing Back, or pulling
      down to refresh, replays that entry and lands you on the session editor
@@ -22808,8 +24065,16 @@ function shareCanvas(c, name, title){
      ?organize so the back button works, and it stayed there — so the next
      time the app was opened, or resumed from the background, it read the
      old request off its own address bar and went straight to the setup
-     screen again. Home is the front page; you get to setup by asking. */
-  if(wantsOrganize){
+     screen again. Home is the front page; you get to setup by asking.
+
+     Taken off whether or not it was honoured, which is the part that was
+     wrong: it was tidied only when it was acted on, so the one case that
+     matters — a reload, where the flag is deliberately ignored — left
+     ?organize sitting in the address bar. The next launch the browser called
+     a navigation rather than a reload read it again and went straight to the
+     editor. That is why the app kept coming back to setup however many times
+     it was sent home: nothing ever cleared the request. */
+  if(askedOrganize){
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
   }
   /* a reset link brings its own session in the fragment; deal with
@@ -22825,6 +24090,12 @@ function shareCanvas(c, name, title){
   /* a screen showing the board and nothing else */
   const cast = (params.get('tv') || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
   if(cast){ Cast.start(cast); return; }
+  /* An invite link to a group. Not a door like the three above — it does not
+     replace the app, it picks a screen inside it — and it has to wait for
+     Auth, because whether you are in this group, and whether the Join button
+     should say Join or Ask, are both answers about who is looking. Held here
+     and opened once boot has said. */
+  const wantsGroup = (params.get('g') || '').trim();
 
   Clock.setDefault(S.mins * 60);
   if(S.active && !S.roundStart) S.roundStart = Date.now();
@@ -22857,7 +24128,12 @@ function shareCanvas(c, name, title){
        the session is gone, and gateScreens takes it from there — which is the
        front page. Before this, an expired token left somebody inside the app
        looking at empty screens. */
-    if(wantsOrganize) startOrganizing(); else gateScreens();
+    if(wantsOrganize) startOrganizing();
+    else if(wantsGroup && Auth.signedIn()){
+      try{ history.replaceState(null, '', location.pathname); }catch(e){}
+      Groups.open(wantsGroup);
+    }
+    else gateScreens();
     renderAll();
     /* after Auth, because it needs to know who you are before it can know
        which sessions are yours */
