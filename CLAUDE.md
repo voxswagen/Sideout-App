@@ -250,6 +250,25 @@ for the name before using it, and prefer a prefixed one (`me-tog`, `ticking`).
 
 ---
 
+**What is still on was decided by a flag one phone writes.** `sideout_upcoming`
+filtered on `not (snapshot->>'ended')::boolean` and nothing else, and that flag
+is published by whichever device is hosting. Bank a night from a phone that
+closes before its last beat and it stays false for ever, so a played night sat
+at the top of What’s on with its own results under Already played a few
+centimetres below. It now also refuses anything with rows in `results`, and
+anything due to have started more than 36 hours ago. Same rule as everywhere
+else: the results own a night, not the session.
+
+**Deleting a session did not stick, and the door was `beat()`, not `resume()`.**
+`sideout_save` ended in an upsert, so the next beat from any phone still
+holding the night re-inserted the row — and re-inserted its `session_keys` row
+from the PIN that phone was carrying, so even the key check passed.
+`session_tombs` records a deleted code for 30 days and `sideout_save` raises
+`session deleted` against it. Server-side on purpose: the phone doing the
+resurrecting is usually one that will not see a new build for days.
+
+---
+
 ## Known cruft
 
 `fallbackCopy()` and `legacyCopy()` do nearly the same job — the first toasts

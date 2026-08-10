@@ -3124,6 +3124,22 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .hm-nh span{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
   font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);
   max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-lock{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;font-style:normal;
+  padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.3);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9.5px;
+  letter-spacing:.13em;text-transform:uppercase}
+.hm-lock .ic{width:11px;height:11px}
+/* A night you are already on, or one nobody may join: still the way in, but
+   not dressed as the thing to do next.
+
+   Not .hm-view — that is the round 36px grid/list toggle beside the What's
+   on heading, and this button quietly took its width, its height and its
+   display:grid, so the one action on the card came out as a squashed
+   circle. Fourth time a name in this file has turned out to be spoken for. */
+.hm-quiet{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;
+  box-shadow:none}
+.hm-quiet .ic{width:15px;height:15px}
 .hm-cd{position:relative;display:flex;align-items:flex-start;gap:4px;margin-bottom:14px}
 .hm-cu{flex:0 1 auto;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
 .hm-cu b{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(38px,12.4vw,56px);
@@ -3226,6 +3242,16 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .sx2-tag.in{background:rgba(255,255,255,.22);color:#fff}
 .sx2-top h3{margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
   font-size:clamp(22px,6vw,28px);line-height:.98;letter-spacing:.02em}
+.sx2-tag.shut{background:rgba(9,22,38,.55);color:#fff;border:1px solid rgba(255,255,255,.35);
+  display:inline-flex;align-items:center;gap:5px}
+.sx2-tag.shut .ic{width:11px;height:11px}
+/* The club under the name. A night belongs to somebody, and on a home page
+   that now mixes three of them the name alone does not say which. */
+.sx2-club{display:block;margin-top:5px;font-style:normal;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.66)}
+.sx2-cta{display:flex;align-items:center;justify-content:center;gap:7px}
+.sx2-cta .ic{width:14px;height:14px}
 .sx2-body{padding:12px 14px 13px}
 .sx2-when{margin:0;font-size:13px;color:var(--ink-2)}
 .sx2-fill{display:flex;align-items:baseline;gap:8px;margin:9px 0 0}
@@ -3244,6 +3270,150 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .sx2-dots{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;
   border-radius:50%;display:grid;place-items:center;color:#fff;font-size:18px;line-height:1;
   background:rgba(9,22,38,.4);border:1px solid rgba(255,255,255,.3)}
+
+/* ── the card, as the club will see it ── */
+/* A drawing of a card, and it has to read as one.
+
+   Left plain it was a card with a full-width green JOIN SESSION on it, which
+   is the most tappable thing on the screen — so it read as the next step
+   rather than as a picture of what other people will get. pointer-events
+   alone does not help: nothing happening when you tap is a bug, not an
+   explanation.
+
+   So it is held inside a dashed frame, tucked in from the edges, tagged, and
+   the whole thing sits back a little. The card inside is untouched. */
+.sp-prev{position:relative;margin:0 0 14px;padding:26px 12px 12px;
+  border:2px dashed var(--edge-2);border-radius:calc(var(--r) + 6px);
+  background:var(--paper-2);pointer-events:none;user-select:none}
+.sp-prev .sx2{margin-bottom:0;opacity:.88;box-shadow:none}
+.sp-prev-tag{position:absolute;top:7px;left:13px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+.sp-bin{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  margin-top:14px;padding:13px;border-radius:var(--r);background:var(--fault-soft);
+  color:var(--fault);font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.sp-bin .ic{width:16px;height:16px}
+
+/* ── a player on the list ──
+   Two lines. Who they are on top, what you can change about them underneath,
+   so a three-way level control and a name are not fighting over the same
+   forty pixels of a phone. */
+.pl{background:var(--card);border:1px solid var(--edge);border-radius:var(--r);
+  padding:10px 11px 11px;margin-bottom:8px}
+.pl-top{display:flex;align-items:center;gap:10px}
+.pl-face{position:relative;flex:0 0 auto}
+.pl-face .av{width:36px;height:36px;font-size:13px}
+/* the side, on the face, because in this format it is part of who they are */
+.pl-sx{position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-radius:50%;
+  display:grid;place-items:center;font-style:normal;font-size:8.5px;font-weight:800;
+  font-family:'Barlow Condensed',sans-serif;color:#fff;border:2px solid var(--card)}
+.pl-sx.m{background:var(--court)}
+.pl-sx.f{background:#B23A6B}
+.pl-nm{flex:1;min-width:0}
+.pl-nm b{display:block;font-size:14.5px;font-weight:600;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-nm>span{display:block;margin-top:1px;font-size:11.5px;color:var(--ink-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-nm .pl-r{font-style:normal;font-weight:800;color:var(--court-ink);
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.02em}
+.pl-nm svg{width:11px;height:11px;vertical-align:-1px}
+.pl .x{flex:0 0 auto}
+.pl-set{display:flex;gap:7px;margin-top:9px}
+.pl-set .seg-pick{flex:1 1 auto;min-width:0}
+.pl-set .seg-pick[data-kind="sex"]{flex:0 0 auto}
+
+/* ── what the list adds up to, and what it is filtered to ── */
+.ros-sum{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12.5px;
+  letter-spacing:.06em;color:var(--ink-3)}
+.ros-sum b{color:var(--court-ink);font-weight:800}
+.ros-sum em{font-style:normal;color:var(--fault);font-weight:800}
+.ros-chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px;
+  scrollbar-width:none;-ms-overflow-style:none}
+.ros-chips::-webkit-scrollbar{display:none}
+.ros-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;
+  border-radius:99px;background:var(--card);border:1px solid var(--edge-2);
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.ros-chip i{font-style:normal;font-size:11px;color:var(--ink-3)}
+.ros-chip.on{background:var(--brand-navy);border-color:var(--brand-navy);color:#fff}
+.ros-chip.on i{color:var(--ball)}
+/* Three sides and four sorts do not fit one line on a phone, and the loser
+   was the side filter -- it shrank to thirty-five pixels and its buttons
+   spilled over the sort chips, which read as two controls drawn on top of
+   each other. It wraps instead: they share a line where there is room and
+   take one each where there is not. */
+.ros-row2{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+.ros-side{flex:1 1 210px;min-width:0}
+.ros-row2 .sortbar{flex:1 1 auto;display:flex;gap:5px;margin:0;justify-content:flex-end;
+  overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.ros-row2 .sortbar::-webkit-scrollbar{display:none}
+.ros-row2 .sortbar .sortb{flex:0 0 auto}
+
+/* ── drafting a team ── */
+.dr-team{padding:13px 13px 14px}
+.dr-team.set{border-color:var(--grass)}
+.dr-head{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.dr-pen{flex:0 0 auto;display:grid;place-items:center;color:var(--ink-3)}
+.dr-pen .ic{width:15px;height:15px}
+/* A heading you can type over. Borderless reads as a title and nobody tries
+   it; a form box reads as a form. The dotted rule underneath is the middle:
+   plainly editable, still a heading. */
+.dr-team .dr-name{flex:1;min-width:0;border:0!important;background:none!important;
+  box-shadow:none!important;border-radius:0;padding:2px 0;
+  border-bottom:1px dashed var(--edge-2)!important;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:19px;
+  letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
+.dr-name:focus{outline:none;border-bottom:2px solid var(--court)}
+.dr-kill{flex:0 0 auto;width:32px;height:32px;border-radius:50%;display:grid;
+  place-items:center;color:var(--ink-3)}
+.dr-kill:hover{background:var(--fault-soft);color:var(--fault)}
+.dr-kill .ic{width:16px;height:16px}
+/* Two by two, because a team is two men and two women and the shape should
+   say so before you read a word of it. */
+.dr-slots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dr-hint{margin:13px 0 7px;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+.dr-slot{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--r-s);
+  background:var(--card-2);border:1px dashed var(--edge-2);text-align:left;min-width:0}
+.dr-slot.on{border-style:solid;border-color:var(--edge-2);background:var(--card)}
+.dr-slot .av{width:28px;height:28px;font-size:11px;flex:0 0 auto}
+.dr-add{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card);border:1px solid var(--edge-2);color:var(--ink-3);font-size:16px;line-height:1}
+.dr-n{flex:1;min-width:0;font-size:13px;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-slot:not(.on) .dr-n{color:var(--ink-3)}
+.dr-x{flex:0 0 auto;font-style:normal;font-size:15px;color:var(--ink-3)}
+
+/* ── the order the ties are played in ── */
+.fx-list{display:flex;flex-direction:column;margin-top:11px;border-radius:var(--r-s);
+  border:1px solid var(--edge);overflow:hidden}
+.fx-row{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--card)}
+.fx-row+.fx-row{border-top:1px solid var(--edge)}
+.fx-n{flex:0 0 auto;width:20px;font-family:'Bebas Neue',sans-serif;font-size:16px;
+  color:var(--ink-3);text-align:center}
+.fx-t{flex:1;min-width:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:14px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fx-t i{font-style:normal;font-weight:600;color:var(--ink-3);text-transform:none;
+  letter-spacing:0;font-size:12px;padding:0 3px}
+.fx-b{flex:0 0 auto;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+  background:var(--card-2);border:1px solid var(--edge);color:var(--ink-2);font-size:13px}
+.fx-b[disabled]{opacity:.35;pointer-events:none}
+.fx-b.kill:hover{background:var(--fault-soft);border-color:var(--fault);color:var(--fault)}
+.tm-rec{text-align:right}
+.tm-rec .dif{display:block;font-style:normal;font-size:10px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.1em;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800}
+.tm-rec .dif s{display:block;text-decoration:none;letter-spacing:.05em;margin-top:1px;
+  font-weight:700;opacity:.8}
+/* a team on the night's table: the name, then who is in it */
+.tm-row{align-items:center}
+.tm-tx{flex:1;min-width:0}
+.tm-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:15px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
+.tm-tx span{display:block;font-size:11.5px;color:var(--ink-3);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── the code box ── */
 #home-box .nudge{margin-top:16px}
@@ -4172,6 +4342,10 @@ body.casting{overflow:hidden}
          one is a blank page, the other is edits other people will see — so
          the screen says which it is before you touch anything. -->
     <div class="sp-mode" id="sp-mode"></div>
+    <!-- The card as the club will see it on Home. Not a mock-up: it is
+         Feed.card() itself, fed a row built from S, so it cannot drift from
+         the real thing the way two drawings of the same card always do. -->
+    <div id="sp-preview"></div>
     <div class="panel">
       <h2 id="sp-name-h">Name it</h2>
     <input type="text" id="sess-title" class="title-in" maxlength="60"
@@ -4192,6 +4366,9 @@ body.casting{overflow:hidden}
       <button class="sumrow" onclick="GroupPick.open()">
         <span class="sr-t">Group</span>
         <span class="sr-v" id="sum-group">—</span><i class="sr-go">›</i></button>
+      <button class="sumrow" id="sum-teams-row" onclick="setupPage('teams')" hidden>
+        <span class="sr-t">Teams</span>
+        <span class="sr-v" id="sum-teams">&mdash;</span><i class="sr-go">&rsaquo;</i></button>
       <button class="sumrow" onclick="setupPage('players')">
         <span class="sr-t">Players</span>
         <span class="sr-v" id="sum-players">—</span><i class="sr-go">›</i></button>
@@ -4199,6 +4376,7 @@ body.casting{overflow:hidden}
         <span class="sr-t">Online</span>
         <span class="sr-v" id="sum-live">—</span><i class="sr-go">›</i></button>
     </div>
+    <div id="sp-discard" hidden></div>
   </div>
 
   <div class="setup-page" id="sp-details" hidden>
@@ -4266,6 +4444,18 @@ body.casting{overflow:hidden}
         <button class="on" data-l="1" onclick="setListed(true)">Listed to the club</button>
       </div>
       <p class="hint tight" id="listed-hint" style="margin-top:7px"></p>
+    </div>
+    <!-- Finding a night and getting on it are two different questions, and a
+         season with fixed teams is the case that needs them separated: it
+         should be on everybody's home page, and nobody should be able to put
+         themselves on it. -->
+    <div class="field">
+      <span class="label">Who can join</span>
+      <div class="seg" id="closed-seg">
+        <button class="on" data-j="0" onclick="setClosed(false)">Anyone can join</button>
+        <button data-j="1" onclick="setClosed(true)">Invite only</button>
+      </div>
+      <p class="hint tight" id="closed-hint" style="margin-top:7px"></p>
     </div>
     <div class="field">
       <span class="label">Repeats</span>
@@ -4367,6 +4557,10 @@ body.casting{overflow:hidden}
           <span class="glyph" data-ic="trophy"></span>
           <span><b>Court Wars</b><span>A pool on each court that plays itself out: everyone partners everyone once, same games, same rest. Then the bottom of each court swaps with the top of the one below.</span></span>
         </button>
+        <button class="mode" id="mode-mlp" aria-pressed="false" onclick="setMode('mlp')">
+          <span class="glyph" data-ic="shield"></span>
+          <span><b>MLP teams</b><span>Teams of four, two men and two women. Each tie is women's doubles, men's doubles and two mixed &mdash; a point a game, and a DreamBreaker if it finishes level. You pick the teams.</span></span>
+        </button>
         <button class="mode" id="mode-tour" aria-pressed="false" onclick="setMode('tour')">
           <span class="glyph" data-ic="trophy"></span>
           <span><b>Tournament</b><span>Pools and a round robin, then a knockout bracket. Pick this before you start — the pools are drawn first.</span></span>
@@ -4447,6 +4641,13 @@ body.casting{overflow:hidden}
     </div>
   </div>
 
+  </div>
+
+  <!-- Teams are only a thing in MLP, so the row that opens this is hidden
+       everywhere else rather than sitting there meaning nothing. -->
+  <div class="setup-page" id="sp-teams" hidden>
+    <button class="sp-back" onclick="setupBack()"><span>&lsaquo;</span>Back</button>
+    <div id="mlp-teams"></div>
   </div>
 
   <div class="setup-page" id="sp-players" hidden>
@@ -4546,6 +4747,7 @@ body.casting{overflow:hidden}
         <button id="fmt-mixed"    onclick="switchFormat('mixed')"><span class="lic" data-ic="mixed"></span> Mixed Doubles</button>
         <button id="fmt-river"    onclick="switchFormat('river')"><span class="lic" data-ic="swords"></span> Up &amp; Down the River</button>
         <button id="fmt-wars"     onclick="switchFormat('wars')"><span class="lic" data-ic="trophy"></span> Court Wars</button>
+        <button id="fmt-mlp"      onclick="switchFormat('mlp')"><span class="lic" data-ic="shield"></span> MLP teams</button>
         <button id="fmt-tour"     onclick="switchFormat('tour')"><span class="lic" data-ic="trophy"></span> Tournament</button>
       </div>
     </div>
@@ -5192,6 +5394,10 @@ const Live = {
     renderLive();
   },
 
+  deadSession(e){
+    return /session deleted/i.test(String((e && e.detail) || '') + ' ' + String((e && e.message) || ''));
+  },
+
   /* Putting down a session that is no longer there. Everything that could
      publish it has to stop, not only S.live: joinT left running polls for
      joiners against a code that is gone, and Live.code left set means the
@@ -5309,7 +5515,7 @@ const Live = {
       venue: (S.venue || '').trim(), venueName: (S.venueName || '').trim(),
       started: !!S.active,
       cover: S.cover || null,
-      cap: S.cap || 0, approve: !!S.approve, groupId: S.groupId || null,
+      cap: S.cap || 0, approve: !!S.approve, closed: !!S.closed, groupId: S.groupId || null,
       waiting: S.waiting.map(w => ({ n: w.name, m: w.mid || null })),
       repeat: S.repeat === 'weekly' ? 'weekly' : null,
       listed: !!S.listed,
@@ -5469,7 +5675,11 @@ const Live = {
       S.liveCode = this.code;
       try{ S.pulled = await this.saveAll(); saved = true; }
       catch(e){
-        const clash = /PIN/i.test(String(e.detail || '') + ' ' + String(e.message || ''));
+        /* Two ways a code can be spoken for: somebody else holds it, or it
+           belonged to a night that was deleted and is still headstoned. Both
+           mean roll again rather than give up. */
+        const clash = /PIN/i.test(String(e.detail || '') + ' ' + String(e.message || ''))
+          || this.deadSession(e);
         if(clash && !resuming){ S.liveCode = null; continue; }   /* someone else has it — roll again */
         S.live = false;
         this.lastError = clash
@@ -5657,6 +5867,11 @@ const Live = {
           if(this.offline){ this.offline = false; renderLive(); }
         })
         .catch(e =>{
+          /* The server says this night was deleted. That is not a network
+             fault to retry through — it is the answer, and beating on
+             regardless is what put a deleted session back on everybody's Home
+             from whichever phone still had it open. */
+          if(this.deadSession(e)){ this.orphaned(); toast('That session was deleted.'); return; }
           if(!this.offline){ this.offline = true; renderLive(); }
         });
     }, 700);
@@ -5760,7 +5975,7 @@ let mem = null; // fallback when localStorage is unavailable
 function blank(){
   return {
     v:3, players:{}, order:[], courts:[], queue:[], bracket:null,
-    nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', venueName:'', cap:0, waiting:[], approve:false, groupId:null, groupName:null, repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
+    nCourts:3, mins:8, timed:true, target:11, instant:true, pool:[], restAfter:4, scores:false, live:false, liveCode:null, pin:null, pulled:0, title:'', details:'', rosterSort:'added', rosterQ:'', logQ:'', logAll:false, pairs:{}, startsAt:null, endsAt:null, dateOn:null, startHM:'', endHM:'', venue:'', venueName:'', cap:0, waiting:[], approve:false, closed:false, groupId:null, groupName:null, repeat:'none', listed:true, hist:{p:{},o:{}}, roundStart:null, mode:'gauntlet', split:true, courtLevels:['adv','int','beg'], levelsTouched:false,
     next:null, planRound:-1,
     round:0, games:0, active:false, started:null,
     /* called off is its own state: ended, but with nothing banked and a
@@ -5769,6 +5984,12 @@ function blank(){
     /* Court Wars: the fixture list each pool drew, how far through it each
        court is, and whether it has been all the way through once */
     warPlan:null, warAt:null, warDone:null, warAsked:false,
+    mlpDraw:'robin', mlpPlan:[],
+    /* MLP. teams are drafted rather than drawn, so they are part of the
+       session rather than something a planner works out; fixtures are the
+       order the ties are dealt in, and pts is the running score of the
+       night. A court carries its own tie — see MLP.deal(). */
+    teams:[], mlpFix:null, mlpAt:0, mlpPts:null, mlpDone:[],
     log:[], snap:null
   };
 }
@@ -6004,6 +6225,19 @@ function countdownUnits(ms){
    moving; past that the queue turns into standing about. */
 /* One link, pinned in the group chat, that keeps pointing at the
    next session instead of a new one every week. */
+function setClosed(v){
+  S.closed = !!v;
+  syncClosed(); save(); if(S.live) Live.beat();
+}
+function syncClosed(){
+  document.querySelectorAll('#closed-seg button').forEach(b =>{
+    b.classList.toggle('on', (b.dataset.j === '1') === !!S.closed);
+  });
+  const h = document.getElementById('closed-hint');
+  if(h) h.textContent = S.closed
+    ? 'It still shows on the club\u2019s home page, with a lock on it. Only you can add players.'
+    : 'Anyone who can see it can put themselves on the list.';
+}
 function setListed(v){
   S.listed = !!v;
   syncListed(); save(); if(S.live) Live.beat();
@@ -6991,9 +7225,32 @@ function clearRosterQ(btn){
   document.querySelectorAll('.ros-q').forEach(e =>{ e.value = ''; });
   if(inp) inp.focus();
 }
+/* What the list adds up to, which is the question an organizer actually has
+   in front of a night: how many, what mix, and who still owes. The mix line
+   is the one MLP needs @DASH@ two men and two women a team, so 6M/4F says at a
+   glance that only one team can be made. */
+function rosterCounts(){
+  const ids = S.order.filter(id => P(id));
+  const m = ids.filter(id => sexOf(id) === 'm').length;
+  const f = ids.filter(id => sexOf(id) === 'f').length;
+  const owe = ids.filter(id => P(id).paid === false).length;
+  const shown = rosterShown(ids).length;
+  const bits = [];
+  bits.push('<b>' + shown + '</b>' + (shown === ids.length ? '' : ' of ' + ids.length));
+  if(m || f) bits.push(m + 'M / ' + f + 'F');
+  return '<span class="ros-sum">' + bits.join(' · ')
+    + (owe ? ' · <em>' + owe + ' owe' + (owe === 1 ? 's' : '') + '</em>' : '') + '</span>';
+}
+
 function rosterTools(){
   const n = S.order.length;
   if(n < 6) return '';
+  const ids = S.order.filter(id => P(id));
+  const lvN = k => ids.filter(id => P(id).level === k).length;
+  const chip = (v, label, count) => `<button class="ros-chip${rosterLv === v ? ' on' : ''}"
+    onclick="setRosterLv('${v}')">${label}${count != null ? '<i>' + count + '</i>' : ''}</button>`;
+  const side = (v, label) => `<button class="${rosterSx === v ? 'on' : ''}"
+    onclick="setRosterSx('${v}')">${label}</button>`;
   return `<div class="ros-tools">
     <div class="find">
       <svg class="find-i" viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 18 18"/></svg>
@@ -7002,10 +7259,18 @@ function rosterTools(){
       <button class="ros-clear" onclick="clearRosterQ(this)" aria-label="Clear the search"
         ${S.rosterQ ? '' : 'hidden'}>\u2715</button>
     </div>
-    <div class="sortbar" role="group" aria-label="Sort the list">
-      <span class="sortbar-l">Sort</span>
-      ${Object.keys(SORTS).map(k => `<button class="sortb" aria-pressed="${(S.rosterSort||'added')===k}"
-        onclick="setRosterSort('${k}')">${SORTS[k]}</button>`).join('')}
+    <div class="ros-chips">
+      ${chip('all', 'All levels', ids.length)}
+      ${chip('adv', 'Adv', lvN('adv'))}
+      ${chip('int', 'Int', lvN('int'))}
+      ${chip('beg', 'Beg', lvN('beg'))}
+    </div>
+    <div class="ros-row2">
+      <div class="seg ros-side">${side('all','Everyone')}${side('m','Men')}${side('f','Women')}</div>
+      <div class="sortbar" role="group" aria-label="Sort the list">
+        ${Object.keys(SORTS).map(k => `<button class="sortb" aria-pressed="${(S.rosterSort||'added')===k}"
+          onclick="setRosterSort('${k}')">${SORTS[k]}</button>`).join('')}
+      </div>
     </div>
   </div>`;
 }
@@ -7104,6 +7369,16 @@ function courtTag(i, n, lv){
   if(S.mode === 'mixed') return 'Mixed';
   /* how far this pool is through its own fixture list, which is the thing
      players keep asking: how many more before we move */
+  /* Plain text, like every other tag: this is published into the snapshot
+     and rendered as text by watchers and by the big screen. */
+  if(S.mode === 'mlp'){
+    const c = S.courts[i];
+    if(!c || !c.tie) return 'Free';
+    const a = MLP.team(c.tie.a), b = MLP.team(c.tie.b);
+    const nmA = (a && a.name) || 'Team', nmB = (b && b.name) || 'Team';
+    return nmA + ' v ' + nmB + ' · ' + MLP.GAMES[c.tie.g]
+      + ' · ' + c.tie.won[0] + '–' + c.tie.won[1];
+  }
   if(S.mode === 'wars' && S.warPlan){
     const p = Wars.progress(i);
     return tierName(i, n) + (p.of ? ' · ' + Math.min(p.at + 1, p.of) + '/' + p.of : '');
@@ -7225,8 +7500,8 @@ function toggleTheme(){
    date, the big screen, and the story card. */
 const MODE_NAME = { gauntlet:'Gauntlet', mix:'Social mix', levels:'Skill-based',
                     kotc:'King of the Court', mixed:'Mixed doubles', tour:'Tournament',
-                    river:'Up & Down the River', wars:'Court Wars' };
-const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river','wars'];
+                    river:'Up & Down the River', wars:'Court Wars', mlp:'MLP teams' };
+const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river','wars','mlp'];
 /* One mark per format, in the brand's own colours — gold for the ones about
    winning something, green for the ones about who plays whom. A format is the
    single thing people scan a session for, and eight words in a column all look
@@ -7237,7 +7512,7 @@ const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river','wars'];
    more place that list has to be kept whole. */
 const MODE_ICON = { gauntlet:['swords','y'], mix:['shuffle','g'], levels:['standings','g'],
                     kotc:['crown','y'], mixed:['mixed','g'], tour:['trophy','y'],
-                    river:['season','g'], wars:['playoff','y'] };
+                    river:['season','g'], wars:['playoff','y'], mlp:['shield','y'] };
 function modeIcon(mode){
   const m = MODE_ICON[mode];
   if(!m) return '';
@@ -7452,7 +7727,7 @@ const Tour = {
     return out;
   }
 };
-const SPECIAL_MODES = ['kotc','mixed','tour','river','wars'];
+const SPECIAL_MODES = ['kotc','mixed','tour','river','wars','mlp'];
 function toggleSpecial(force){
   const el = document.getElementById('special');
   if(!el) return;
@@ -7587,6 +7862,7 @@ function syncRoundEndUI(){
   syncRepeat();
   syncApprove();
   syncListed();
+  syncClosed();
   try{ Cover.paint(); }catch(e){}
   const dw = document.getElementById('detail-wrap');
   if(S.details && dw && dw.hasAttribute('hidden')) toggleDetails();
@@ -7610,7 +7886,7 @@ function syncRoundEndUI(){
    once any more. Empty string is the summary, anything else is that panel
    on its own. Nothing is moved or rebuilt, so every control keeps the id
    and the handler it always had. */
-const SETUP_PAGES = ['details','format','courts','players','live'];
+const SETUP_PAGES = ['details','format','courts','teams','players','live'];
 let setupAt = '';
 
 /* Everything on S that a panel could be said to have changed. The rest is
@@ -7698,11 +7974,64 @@ function setupPage(k){
     const el = document.getElementById('sp-' + n);
     if(el) el.hidden = n !== setupAt;
   });
+  if(setupAt === 'teams'){ try{ Draft.paint(); }catch(e){} }
   syncSetupDock();
   if(!setupAt) paintSetupSummary();
   /* Coming back should put you where you left, not halfway down the last
      screen you were reading. */
   try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
+}
+
+/* What the club will see on Home, drawn by the same function that draws it
+   there. A second rendering of the same card is the thing that made the two
+   story cards drift apart until they looked like two different clubs had run
+   the night; one renderer, fed a row, cannot.
+
+   The row is assembled out of S rather than out of the feed, because the
+   night being set up is not in the feed yet — and on a night that is
+   already online the two agree anyway, since the feed row is built from the
+   same snapshot this is built from. */
+function setupPreviewRow(){
+  const when = sessionWhen();
+  const heads = S.mode === 'mlp'
+    ? MLP.live().length * 4
+    : Object.keys(S.players || {}).length;
+  return {
+    code: S.liveCode || 'PREVIEW',
+    title: sessionTitle() || 'Open play',
+    starts_at: when || null,
+    when: when || null,
+    ends_at: S.endsAt || null,
+    venue: S.venue || '',
+    venue_name: (S.venueName || '').trim(),
+    closed: !!S.closed,
+    repeat: S.repeat || 'none',
+    cap: S.cap || 0,
+    joined: heads,
+    waiting: (S.waiting || []).length,
+    live: false,
+    ended: false,
+    /* Joined is about other people. On your own preview it would put a
+       "Joined" tag on a night nobody has been offered yet. */
+    mine: false,
+    cover: S.cover || null,
+    group_id: S.groupId || null
+  };
+}
+
+function paintSetupPreview(){
+  const box = document.getElementById('sp-preview');
+  if(!box) return;
+  /* Nothing worth previewing until it has a name or a date — a card
+     reading "Open play, date to be set, 0 in" is not a preview of anything,
+     it is the empty state of a form said twice. */
+  const named = !!(S.title || '').trim();
+  const bare = !named && !sessionWhen() && !Object.keys(S.players || {}).length;
+  if(bare){ box.innerHTML = ''; return; }
+  let card = '';
+  try{ card = Feed.card(setupPreviewRow(), true); }catch(e){ box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="sp-prev"><span class="sp-prev-tag">Preview</span>'
+    + card + '</div>';
 }
 
 /* What each row says when it is closed. Worth the effort: this is the only
@@ -7746,6 +8075,19 @@ function paintSetupSummary(){
 
   set('sum-format', MODE_NAME[S.mode] || 'Gauntlet');
 
+  /* Only MLP has teams. The row is hidden rather than disabled everywhere
+     else: a row that cannot be tapped is still a row to read past. */
+  const trow = document.getElementById('sum-teams-row');
+  if(trow) trow.hidden = S.mode !== 'mlp';
+  if(S.mode === 'mlp'){
+    const ready = MLP.live().length, all = (S.teams || []).length;
+    set('sum-teams',
+      !all ? 'nobody picked yet'
+        : ready + (ready === 1 ? ' team' : ' teams') + ' ready'
+          + (all > ready ? ' · ' + (all - ready) + ' half-picked' : ''),
+      ready < 2);
+  }
+
   const rounds = S.timed ? (S.mins + ' min rounds') : ('first to ' + S.target);
   set('sum-courts', (S.nCourts === 1 ? '1 court' : S.nCourts + ' courts') + ' · ' + rounds);
 
@@ -7773,6 +8115,44 @@ function paintSetupSummary(){
   set('sum-players', n ? (n + (n === 1 ? ' player' : ' players')) : 'nobody yet', !n);
 
   set('sum-live', S.live ? ('online · ' + (S.liveCode || '')) : 'not shared yet', !S.live);
+  try{ paintSetupPreview(); }catch(e){}
+  try{ paintDiscard(); }catch(e){}
+}
+
+/* Throwing the night away. Two very different acts wearing one word, so they
+   are asked as two different questions.
+
+   Nothing shared yet: the form is the only copy and clearing it costs
+   whoever is holding the phone a few minutes. That is a light confirmation.
+
+   Already online: people have joined, the link is out, and the code is on
+   somebody's group chat. That is not discarding a draft, it is deleting a
+   session, and it goes through the same door as deleting one from its card
+   — which already names the head count and says they will not be told. */
+function paintDiscard(){
+  const box = document.getElementById('sp-discard');
+  if(!box) return;
+  const live = !!(S.live && S.liveCode);
+  const heads = Object.keys(S.players || {}).length;
+  const bare = !(S.title || '').trim() && !sessionWhen() && !heads && !live;
+  box.hidden = bare;
+  if(bare) return;
+  box.innerHTML = `<button class="sp-bin" onclick="discardSetup()">
+    ${icon('trash')} ${live ? 'Delete this session' : 'Discard this setup'}</button>`;
+}
+
+function discardSetup(){
+  if(S.live && S.liveCode){
+    deleteSession(S.liveCode, sessionTitle(), Object.keys(S.players || {}).length);
+    return;
+  }
+  const heads = Object.keys(S.players || {}).length;
+  openSheet(`<h3>Discard this setup?</h3>
+    <p class="sub">Nothing here has been shared, so nobody else has seen it.
+      ${heads ? '<b>' + heads + '</b> ' + (heads === 1 ? 'player' : 'players')
+        + ' on the list and everything you have filled in goes.' : 'Everything you have filled in goes.'}</p>
+    <button class="btn btn-risk" onclick="closeSheet();freshSession();toast('Cleared.')">Discard it</button>
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep it</button>`);
 }
 /* A pasted Maps link is unreadable in a row, so show what it resolved to. */
 function venueName(v){
@@ -7977,20 +8357,53 @@ function loadDemo(){
 function noHits(what){
   return `<div class="empty"><span class="glyph">${icon('search')}</span>Nobody called “${esc(S.rosterQ)}” ${what}.</div>`;
 }
+/* Two filters over the same list: what standard, and which side. Both are
+   about looking rather than about the night, so neither is saved — come
+   back tomorrow to a list showing three of your thirty and you would think
+   people had dropped out. */
+let rosterLv = 'all', rosterSx = 'all';
+function setRosterLv(v){ rosterLv = v; renderRoster(); }
+function setRosterSx(v){ rosterSx = v; renderRoster(); }
+function rosterShown(ids){
+  return ids.filter(id =>{
+    const p = P(id); if(!p) return false;
+    if(rosterLv !== 'all' && p.level !== rosterLv) return false;
+    if(rosterSx === 'm' && p.sex !== 'm') return false;
+    if(rosterSx === 'f' && p.sex !== 'f') return false;
+    return true;
+  });
+}
+
 function rosterRows(){
   const base = (S.rosterSort && S.rosterSort !== 'added')
     ? S.order : S.order.slice().sort((a,b)=> strength(a) - strength(b));
-  const rows = sortedRoster(base).map(id=>{
+  /* Two lines, not one.
+
+     Everything used to sit on a single row: the face, the name, the rating,
+     a three-way level control and the paid pill. On a phone the name is the
+     only part that can give, so it did — the list came out as a column of
+     "L…", "A…", "J…" and you could not tell who anybody was, which is
+     the one thing a list of players is for.
+
+     Who they are on the top line, what you can change about them underneath.
+     The controls stop competing with the name for the same forty pixels. */
+  const rows = sortedRoster(rosterShown(base)).map(id =>{
     const p = P(id);
-    const tag = S.mode === 'mixed' ? sexSeg(id, p.sex) : levelSeg(id, p.level);
     const when = timeAgo(p.at);
-    return `<div class="pr">
-      ${avatar(p.name, pPhoto(p), 'sm')}
-      <span class="nm"><span class="nmn">${esc(p.name)}${staffTag(p.mid)}</span>${(() => { const b = partnerOf(id);
-        return b ? `<em class="when pairtag">${icon('link')} with ${esc(nm(b))}</em>`
-                 : (when ? `<em class="when">joined ${when}</em>` : ''); })()}</span>
-      <span class="pr-end">${duprBadge(p.dupr, true)}${tag}${paidPill(id, p.paid)}</span>
-      <button class="x" onclick="askRemovePlayer('${id}')" aria-label="Take ${esc(p.name)} off">✕</button>
+    const b = partnerOf(id);
+    return `<div class="pl">
+      <div class="pl-top">
+        <span class="pl-face">${avatar(p.name, pPhoto(p), 'sm')}${
+          p.sex ? '<i class="pl-sx ' + p.sex + '">' + (p.sex === 'm' ? 'M' : 'F') + '</i>' : ''}</span>
+        <span class="pl-nm"><b>${esc(p.name)}${staffTag(p.mid)}</b>
+          <span>${p.dupr != null ? '<i class="pl-r">' + duprText(p.dupr) + '</i>' : ''}${
+            b ? icon('link') + ' with ' + esc(nm(b))
+              : (when ? (p.dupr != null ? ' ' + '·' + ' ' : '') + 'joined ' + when : '')}</span></span>
+        ${paidPill(id, p.paid)}
+        <button class="x" onclick="askRemovePlayer('${id}')"
+          aria-label="Take ${esc(p.name)} off">✕</button>
+      </div>
+      <div class="pl-set">${levelSeg(id, p.level)}${sexSeg(id, p.sex)}</div>
     </div>`;
   }).join('');
   return rows || noHits('on the list');
@@ -8027,7 +8440,8 @@ function playingRows(){
 function renderRoster(){
   const box = document.getElementById('roster');
   const ids = S.order;
-  document.getElementById('roster-count').textContent = ids.length + ' in';
+  const rc = document.getElementById('roster-count');
+  if(rc) rc.innerHTML = ids.length ? rosterCounts() : '0 in';
   const cr = document.getElementById('clear-roster');
   if(cr) cr.hidden = ids.length === 0 || S.active;
   document.querySelectorAll('.dupr-link').forEach(e => { e.hidden = withDupr() === 0; });
@@ -8210,16 +8624,25 @@ function startSession(anyway, confirmed){
        telling them off for it every week would be the fastest way to teach
        them to ignore this sheet. */
     const canFile = (Groups.list || []).some(x => x.can_organize);
+    /* Asked for, and it holds rather than warns now: a night with no group
+       never reaches a group's page or its table, and there is no putting that
+       right afterwards without unbanking the results.
+
+       Still only when there is a group to file it under. Somebody who runs no
+       groups is not being careless by leaving it blank, and a wall they
+       cannot get past would end the night before it started. */
+    if(!S.groupId && canFile){
+      openSheet(`<h3>Which group is this under?</h3>
+        <p class="sub">A night has to belong to one before it starts. It is what puts
+          it on that group's page, on its table, and in the conversation about it
+          afterwards — and it cannot be set once the results are banked.</p>
+        <button class="btn btn-go" onclick="closeSheet();GroupPick.open()">Choose a group</button>
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not now</button>`);
+      return;
+    }
     openSheet(`<h3>Start the session?</h3>
       <p class="sub">${ids.length} on the list. The first round is drawn straight away and
         everybody watching the link sees the courts.</p>
-      ${!S.groupId && canFile ? `<div class="warn-box">
-        <b>This night is not under a group.</b>
-        <span>It will not show on any group's page and its results will not reach a group
-          table. The club ladder still gets them either way.</span>
-      </div>
-      <button class="btn btn-quiet" style="margin-top:10px"
-        onclick="closeSheet();GroupPick.open()">Choose a group first</button>` : ''}
       <button class="btn btn-go" style="margin-top:10px"
         onclick="closeSheet();startSession(${anyway ? 'true' : 'false'}, true)">
         Yes, start it</button>
@@ -8277,6 +8700,7 @@ function seed(ids, n){
      and leaves every other format's planner untouched. */
   if(S.mode === 'river'){ seedClimb(ids, n); return; }
   if(S.mode === 'wars'){ warsSeed(ids, n); return; }
+  if(S.mode === 'mlp'){ MLP.seed(n); return; }
   if(S.mode === 'mixed'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMixed(false))); return; }
   if(S.mode === 'gauntlet'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planGauntlet(false))); return; }
   if(S.mode === 'levels'){
@@ -8352,6 +8776,17 @@ function nextRound(){
      pool. Taken before the shared planner so nothing else changes. */
   if(S.mode === 'river'){ climbRound(); return; }
   if(S.mode === 'wars'){ warsRound(); return; }
+  /* Each court moves its own tie on. No shared plan, and no waiting for the
+     slowest court beyond the round itself. */
+  if(S.mode === 'mlp'){
+    S.courts.forEach((c, i) => MLP.advance(i));
+    S.round++;
+    Clock.reset();
+    renderAll(); TV.paint(); save();
+    window.scrollTo({ top:0, behavior:'smooth' });
+    toast('Next games are up.');
+    return;
+  }
   const plan = honourPairs(applyRest((S.mode === 'kotc') ? planKOTC() : (S.next || planRound())));
   if(plan){
     if(plan.crowned) plan.crowned.forEach(id => { if(P(id)) P(id).crowns++; });
@@ -8400,7 +8835,7 @@ function planRound(){
 function refreshPlan(){
   /* river deals per tier at the end of the round, so there is no shared plan
      to build — the same reason kotc is excluded. */
-  if(!S.active || ['kotc','river','wars'].indexOf(S.mode) >= 0){ S.next = null; return; }
+  if(!S.active || ['kotc','river','wars','mlp'].indexOf(S.mode) >= 0){ S.next = null; return; }
   if(!S.next || S.planRound !== S.round){ S.next = planRound(); S.planRound = S.round; }
 }
 
@@ -12960,6 +13395,493 @@ function fillClimb(){
 
    Not to be confused with Up & Down the River above, which re-ranks the
    entire field every single round. This one lets a court settle first.   */
+/* ═══════════════════════════════════════════════════
+   MLP TEAMS
+   ═══════════════════════════════════════════════════
+   Major League Pickleball's team format. A team is four: two men and two
+   women. Two teams meet in a tie of four games — women's doubles, men's
+   doubles, and the two mixed pairings — worth a point each, and a tie that
+   finishes 2—2 is settled by a DreamBreaker.
+
+   The two mixed games use opposite pairings, so every player plays exactly
+   two of the four. Equal court time falls out of the format rather than
+   having to be engineered, which is what the sit-out tie-break in
+   planGauntlet exists to do everywhere else.
+
+   Unlike every format except Court Wars, this does not plan a round across
+   all the courts. A court owns a tie and walks its own four games while the
+   court beside it is on a different game of a different tie: forcing them to
+   step together would leave a court that finished 3—1 standing idle while
+   its neighbour played a DreamBreaker.                                     */
+const MLP = {
+  /* what each game of a tie is called, in the order they are played */
+  GAMES: ["Women's doubles", "Men's doubles", 'Mixed doubles', 'Mixed doubles',
+          'DreamBreaker'],
+
+  team(id){ return (S.teams || []).find(t => t.id === id) || null; },
+  ready(t){ return !!(t && (t.m || []).filter(Boolean).length === 2
+                        && (t.w || []).filter(Boolean).length === 2); },
+  /* Only teams that are actually four people take the court. A half-drafted
+     team is not an error to shout about — it is a team you have not finished
+     picking — so it simply does not get dealt a tie. */
+  live(){ return (S.teams || []).filter(t => this.ready(t)); },
+
+  /* The four on court for one game of a tie. The two mixed games take the
+     opposite pairings on purpose: that is what gives everybody two games. */
+  side(t, g){
+    if(!t) return [];
+    if(g === 0) return [t.w[0], t.w[1]];
+    if(g === 1) return [t.m[0], t.m[1]];
+    if(g === 2) return [t.m[0], t.w[0]];
+    if(g === 3) return [t.m[1], t.w[1]];
+    /* The DreamBreaker is a singles relay, and the app does not try to
+       referee the rotation: all four go up, they play it out between them,
+       and somebody taps who won. A court that made you tap every four points
+       would be worse than a rule the players already know. */
+    return [t.m[0], t.w[0], t.m[1], t.w[1]];
+  },
+
+  /* Every team against every other, once. Ordered so a team does not play
+     twice in a row where that can be helped. */
+  fixtures(ids){
+    const out = [];
+    for(let i = 0; i < ids.length; i++)
+      for(let j = i + 1; j < ids.length; j++) out.push([ids[i], ids[j]]);
+    return out;
+  },
+
+  /* The next tie waiting to be dealt that does not use a team already on
+     another court. Returns null when there is nothing left to deal. */
+  nextFix(busy){
+    const fix = S.mlpFix || [];
+    for(let i = S.mlpAt; i < fix.length; i++){
+      const [a, b] = fix[i];
+      if(busy.has(a) || busy.has(b)) continue;
+      /* taken out of the queue rather than skipped, so the order holds */
+      fix.splice(i, 1);
+      return [a, b];
+    }
+    return null;
+  },
+
+  busyTeams(exceptCourt){
+    const out = new Set();
+    (S.courts || []).forEach((c, i) =>{
+      if(i === exceptCourt || !c.tie) return;
+      out.add(c.tie.a); out.add(c.tie.b);
+    });
+    return out;
+  },
+
+  /* Put a tie on a court, at whichever of its games it has reached. */
+  dress(ci){
+    const c = S.courts[ci];
+    if(!c || !c.tie){ if(c){ c.teams = [[], []]; c.win = null; c.sc = null; } return; }
+    const a = this.team(c.tie.a), b = this.team(c.tie.b);
+    c.teams = [this.side(a, c.tie.g).filter(Boolean), this.side(b, c.tie.g).filter(Boolean)];
+    c.win = null; c.sc = null; c.ws = undefined;
+  },
+
+  /* Deal a court its next tie, or empty it when the fixtures run out. */
+  deal(ci){
+    const c = S.courts[ci];
+    if(!c) return;
+    const fix = this.nextFix(this.busyTeams(ci));
+    c.tie = fix ? { a: fix[0], b: fix[1], g: 0, won: [0, 0] } : null;
+    this.dress(ci);
+  },
+
+  /* One game has been reported on this court. Move the tie on. */
+  advance(ci){
+    const c = S.courts[ci];
+    if(!c || !c.tie || c.win === null) return;
+    const t = c.tie;
+    t.won[c.win]++;
+
+    /* Four games played and level: the DreamBreaker. Otherwise on to the
+       next game of the same tie, on the same court, which is the whole
+       point of one tie per court. */
+    if(t.g < 3){ t.g++; this.dress(ci); return; }
+    if(t.g === 3 && t.won[0] === t.won[1]){ t.g = 4; this.dress(ci); return; }
+
+    /* The tie is over. Its points go on the night's board and the court
+       takes the next fixture. */
+    const pts = S.mlpPts || (S.mlpPts = {});
+    pts[t.a] = (pts[t.a] || 0) + t.won[0];
+    pts[t.b] = (pts[t.b] || 0) + t.won[1];
+    (S.mlpDone || (S.mlpDone = [])).unshift({
+      a: t.a, b: t.b, won: t.won.slice(), db: t.g === 4, at: Date.now() });
+    this.deal(ci);
+  },
+
+  /* Where the night stands: a row per team, most games won first. */
+  table(){
+    const pts = S.mlpPts || {};
+    return this.live().map(t =>{
+      const played = (S.mlpDone || []).filter(d => d.a === t.id || d.b === t.id);
+      const wins = played.filter(d =>
+        (d.a === t.id ? d.won[0] > d.won[1] : d.won[1] > d.won[0])).length;
+      return { id: t.id, name: t.name, pts: pts[t.id] || 0, ties: played.length, wins };
+    }).sort((x, y) => y.pts - x.pts || y.wins - x.wins);
+  },
+
+  /* The order the ties are dealt in. Round robin works it out; set by hand
+     it is whatever the organizer listed, and anything they left out simply
+     is not played. */
+  plan(){
+    const ids = this.live().map(t => t.id);
+    if(S.mlpDraw === 'manual'){
+      const ok = new Set(ids);
+      return (S.mlpPlan || []).filter(f => ok.has(f[0]) && ok.has(f[1]));
+    }
+    return this.fixtures(ids);
+  },
+
+  /* Called when the format is chosen and when play starts. Teams the
+     organizer drafted are kept; anything half-finished is left alone. */
+  seed(n){
+    S.mlpFix = this.plan();
+    S.mlpAt = 0;
+    S.mlpPts = {};
+    S.mlpDone = [];
+    S.courts = new Array(n).fill(0).map(()=> ({ teams:[[], []], win:null, tie:null }));
+    S.courts.forEach((c, i) => this.deal(i));
+    S.queue = [];
+  }
+};
+
+/* Drafting. The organizer picks every team by hand, which is what makes a
+   team night worth having — the argument about who is with whom is half the
+   evening. Everything here is deliberately reversible: a slot can be emptied,
+   a player swapped, a team deleted, right up until play starts. */
+const Draft = {
+  paint(){
+    const box = document.getElementById('mlp-teams');
+    if(!box) return;
+    const teams = S.teams || [];
+    const taken = new Set();
+    teams.forEach(t => [...(t.m||[]), ...(t.w||[])].forEach(id => { if(id) taken.add(id); }));
+    const act = activeIds();
+    const free = act.filter(id => !taken.has(id));
+    const noSex = free.filter(id => !sexOf(id));
+    const freeM = free.filter(id => sexOf(id) === 'm').length;
+    const freeW = free.filter(id => sexOf(id) === 'f').length;
+
+    box.innerHTML = `
+      <div class="panel">
+        <h2>Teams</h2>
+        <p class="hint tight">Four to a team — two men, two women. Every player takes
+          two of the four games, so a team of four is a night's play for all of them.</p>
+        ${noSex.length ? `<div class="warn-box" style="margin-top:11px">
+          <b>${noSex.length} ${noSex.length === 1 ? 'player has' : 'players have'} no side set.</b>
+          <span>This format needs to know who is a man and who is a woman before it
+            can pick the doubles. Set it on the Players list and they can be drafted.</span>
+          <button class="btn btn-quiet" style="margin-top:9px"
+            onclick="setupPage('players')">Go to the players</button>
+        </div>` : ''}
+        <p class="hint tight" style="margin-top:10px">${free.length
+          ? freeM + (freeM === 1 ? ' man' : ' men') + ' and ' + freeW
+            + (freeW === 1 ? ' woman' : ' women') + ' still to be picked'
+          : (act.length ? 'Everybody is on a team.' : 'Nobody on the list yet.')}</p>
+      </div>
+
+      ${teams.map((t, i) => Draft.card(t, i)).join('')}
+
+      <button class="btn btn-quiet" style="width:100%" onclick="Draft.add()">
+        ${icon('plus')} Add a team</button>
+      ${MLP.live().length >= 2 ? Draft.drawHTML() : ''}
+      ${(freeM >= 2 && freeW >= 2) ? `<button class="btn btn-quiet" style="width:100%;margin-top:8px"
+        onclick="Draft.fill()">${icon('shuffle')} Fill the rest by rating</button>` : ''}`;
+  },
+
+  card(t, i){
+    const slot = (kind, n) =>{
+      const id = (t[kind] || [])[n];
+      const p = id ? P(id) : null;
+      const what = kind === 'm' ? 'man' : 'woman';
+      return p
+        ? `<button class="dr-slot on" onclick="Draft.clear('${esc(t.id)}','${kind}',${n})">
+             ${avatar(p.name, pPhoto(p), 'sm')}
+             <span class="dr-n">${esc(p.name)}</span>
+             <i class="dr-x">&times;</i></button>`
+        : `<button class="dr-slot" onclick="Draft.pick('${esc(t.id)}','${kind}',${n})">
+             <span class="dr-add">+</span><span class="dr-n">Pick a ${what}</span></button>`;
+    };
+    const ready = MLP.ready(t);
+    return `<div class="panel dr-team${ready ? ' set' : ''}">
+      <div class="dr-head">
+        <label class="dr-pen" aria-hidden="true">${icon('pencil')}</label>
+        <input class="dr-name" type="text" value="${esc(t.name || '')}" maxlength="24"
+          placeholder="Name this team" aria-label="Team name"
+          oninput="Draft.rename('${esc(t.id)}', this.value)">
+        <button class="dr-kill" onclick="Draft.remove('${esc(t.id)}')"
+          aria-label="Remove this team">${icon('trash')}</button>
+      </div>
+      <div class="dr-slots">${slot('m',0)}${slot('m',1)}${slot('w',0)}${slot('w',1)}</div>
+    </div>`;
+  },
+
+  add(){
+    S.teams = S.teams || [];
+    const n = S.teams.length + 1;
+    S.teams.push({ id: 't' + Math.random().toString(36).slice(2, 8),
+                   name: 'Team ' + n, m: [null, null], w: [null, null] });
+    save(); this.paint(); paintSetupSummary();
+  },
+  remove(id){
+    S.teams = (S.teams || []).filter(t => t.id !== id);
+    save(); this.paint(); paintSetupSummary();
+  },
+  rename(id, v){
+    const t = MLP.team(id); if(!t) return;
+    t.name = v; save(); paintSetupSummary();
+    /* not repainted: the caret is in that box */
+  },
+  clear(id, kind, n){
+    const t = MLP.team(id); if(!t) return;
+    t[kind][n] = null; save(); this.paint(); paintSetupSummary();
+  },
+
+  /* Who is eligible for this slot: the right side, and not already on a
+     team. Somebody already picked is offered nowhere, so a player cannot end
+     up on two teams by a misplaced thumb.
+
+     Anybody whose side has never been recorded is offered underneath, and
+     tapping them sets it and drafts them in the one action. This used to be a
+     dead end that said "everybody is already on a team" — which was the one
+     reason it had thought of, and never the true one on a fresh night where
+     nobody has a side at all. Sending an organizer to the Players list to set
+     thirty-four of them one at a time, then back here, was the rest of it. */
+  pick(id, kind, n){
+    const t = MLP.team(id); if(!t) return;
+    const want = kind === 'm' ? 'm' : 'f';
+    const word = kind === 'm' ? 'man' : 'woman';
+    const taken = new Set();
+    (S.teams || []).forEach(x => [...(x.m||[]), ...(x.w||[])].forEach(p => { if(p) taken.add(p); }));
+    const act = activeIds();
+    const free  = act.filter(p => !taken.has(p) && sexOf(p) === want);
+    const unset = act.filter(p => !taken.has(p) && !sexOf(p));
+    const named = act.filter(p => sexOf(p) === want).length;
+
+    const row = (p, setTo) => `<button class="pr pr-go" style="width:100%;text-align:left"
+        onclick="Draft.set('${esc(id)}','${kind}',${n},'${esc(p)}'${
+          setTo ? ",'" + setTo + "'" : ''})">
+        ${avatar(P(p).name, pPhoto(P(p)), 'sm')}
+        <span class="nm"><span class="nmn">${esc(P(p).name)}</span></span>
+        ${duprBadge(P(p).dupr, true)}</button>`;
+
+    /* Which of the three reasons it actually is. */
+    const why = !act.length
+      ? 'Nobody is on the list yet. Add players first and they can be drafted.'
+      : !named
+        ? 'Nobody on the list has been set as a ' + word + ' yet.'
+        : 'Everybody set as a ' + word + ' is already on a team.';
+
+    /* Kept on the object rather than in the sheet, because the sheet is
+       rebuilt on every keystroke and an input that rebuilds itself loses what
+       you typed. Cleared on the way in so a team is never opened already
+       filtered to whatever you searched for on the last one. */
+    this.pq = '';
+    this.pickAt = { id: id, kind: kind, n: n };
+    this.pickPaint();
+  },
+  pq: '',
+  pickAt: null,
+  find(q){
+    this.pq = q;
+    const box = document.getElementById('pk-list');
+    if(box) box.innerHTML = this.pickRows();
+  },
+  norm(v){ return String(v || '').toLowerCase().replace(/s+/g, ' ').trim(); },
+
+  /* The two lists the sheet shows, filtered by whatever is typed. Split out
+     so searching repaints only the names and leaves the box alone. */
+  pickRows(){
+    const at = this.pickAt; if(!at) return '';
+    const t = MLP.team(at.id); if(!t) return '';
+    const want = at.kind === 'm' ? 'm' : 'f';
+    const word = at.kind === 'm' ? 'man' : 'woman';
+    const taken = new Set();
+    (S.teams || []).forEach(x => [...(x.m||[]), ...(x.w||[])].forEach(p => { if(p) taken.add(p); }));
+    const act = activeIds();
+    const q = this.norm(this.pq);
+    const hit = p => !q || this.norm(P(p).name).includes(q);
+    const free  = act.filter(p => !taken.has(p) && sexOf(p) === want && hit(p));
+    const unset = act.filter(p => !taken.has(p) && !sexOf(p) && hit(p));
+    const named = act.filter(p => sexOf(p) === want).length;
+
+    const row = (p, setTo) => `<button class="pr pr-go" style="width:100%;text-align:left"
+        onclick="Draft.set('${esc(at.id)}','${at.kind}',${at.n},'${esc(p)}'${
+          setTo ? ",'" + setTo + "'" : ''})">
+        ${avatar(P(p).name, pPhoto(P(p)), 'sm')}
+        <span class="nm"><span class="nmn">${esc(P(p).name)}</span></span>
+        ${duprBadge(P(p).dupr, true)}</button>`;
+
+    /* Which of the reasons it actually is — and "nothing matches what you
+       typed" is now one of them. */
+    const why = q ? 'Nobody on the list is called “' + esc(this.pq) + '”.'
+      : !act.length
+        ? 'Nobody is on the list yet. Add players first and they can be drafted.'
+        : !named
+          ? 'Nobody on the list has been set as a ' + word + ' yet.'
+          : 'Everybody set as a ' + word + ' is already on a team.';
+
+    return (free.length
+        ? `<div class="roster">${free.map(p => row(p)).join('')}</div>`
+        : `<p class="sub" style="margin:2px 0 0">${why}</p>`)
+      + (unset.length ? `<p class="dr-hint">${free.length ? 'No side set yet' : 'Not set yet'}
+          — tap to mark as a ${word} and add</p>
+        <div class="roster">${unset.map(p => row(p, want)).join('')}</div>` : '');
+  },
+
+  pickPaint(){
+    const at = this.pickAt; if(!at) return;
+    const t = MLP.team(at.id); if(!t) return;
+    const word = at.kind === 'm' ? 'man' : 'woman';
+    const many = activeIds().length > 8;
+    openSheet(`<h3>${esc(t.name || 'Team')} — pick a ${word}</h3>
+      ${many ? `<input class="in" type="search" id="pk-find" autocomplete="off"
+        placeholder="Search the list" aria-label="Search players"
+        oninput="Draft.find(this.value)" style="margin-bottom:10px">` : ''}
+      <div id="pk-list" style="max-height:52vh;overflow:auto">${this.pickRows()}</div>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
+    /* A search box you have to reach for is a search box nobody uses on a
+       list of forty. Not focused below that, because opening the keyboard
+       over a list of six is in the way rather than helpful. */
+    if(many){ const el = document.getElementById('pk-find'); if(el) el.focus(); }
+  },
+
+  set(id, kind, n, pid, setTo){
+    const t = MLP.team(id); if(!t) return;
+    /* Drafted from the "not set yet" list: recording the side is part of
+       picking them, not a second errand somewhere else. */
+    if(setTo && P(pid) && !P(pid).sex){
+      P(pid).sex = setTo;
+      try{ renderRoster(); renderPlayers(); }catch(e){}
+    }
+    t[kind][n] = pid;
+    closeSheet(); save(); this.paint(); paintSetupSummary();
+  },
+
+  /* ── the order they meet in ───────────────────────────────────────── */
+  setDraw(v){
+    S.mlpDraw = v === 'manual' ? 'manual' : 'robin';
+    save(); this.paint(); paintSetupSummary();
+  },
+  addFix(){
+    const live = MLP.live();
+    if(live.length < 2){
+      toast('Two finished teams are needed before you can set a tie.');
+      return;
+    }
+    const opt = t => `<option value="${esc(t.id)}">${esc(t.name || 'Team')}</option>`;
+    openSheet(`<h3>Add a tie</h3>
+      <p class="sub">Two teams, four games. Add as many as the night has room for —
+        the same two can meet more than once.</p>
+      <div class="field"><span class="label">Home</span>
+        <select id="fx-a" class="in">${live.map(opt).join('')}</select></div>
+      <div class="field"><span class="label">Away</span>
+        <select id="fx-b" class="in">${live.slice(1).concat(live[0]).map(opt).join('')}</select></div>
+      <p class="fx-err" id="fx-err" hidden></p>
+      <button class="btn btn-go" onclick="Draft.saveFix()">Add it</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
+  },
+  saveFix(){
+    const a = (document.getElementById('fx-a') || {}).value;
+    const b = (document.getElementById('fx-b') || {}).value;
+    const err = document.getElementById('fx-err');
+    if(a === b){
+      if(err){ err.textContent = 'A team cannot play itself.'; err.hidden = false; }
+      return;
+    }
+    S.mlpPlan = (S.mlpPlan || []).concat([[a, b]]);
+    closeSheet(); save(); this.paint(); paintSetupSummary();
+  },
+  dropFix(i){
+    S.mlpPlan = (S.mlpPlan || []).filter((_, n) => n !== i);
+    save(); this.paint();
+  },
+  moveFix(i, d){
+    const p = (S.mlpPlan || []).slice();
+    const j = i + d;
+    if(j < 0 || j >= p.length) return;
+    const [x] = p.splice(i, 1); p.splice(j, 0, x);
+    S.mlpPlan = p; save(); this.paint();
+  },
+
+  drawHTML(){
+    const live = MLP.live();
+    const manual = S.mlpDraw === 'manual';
+    const list = manual
+      ? (S.mlpPlan || []).filter(f => live.some(t => t.id === f[0]) && live.some(t => t.id === f[1]))
+      : MLP.fixtures(live.map(t => t.id));
+    const nm = id => { const t = MLP.team(id); return esc((t && t.name) || 'Team'); };
+    return `<div class="panel">
+      <h2>How they meet</h2>
+      <div class="seg" style="margin:10px 0 0">
+        <button class="${manual ? '' : 'on'}" onclick="Draft.setDraw('robin')">Round robin</button>
+        <button class="${manual ? 'on' : ''}" onclick="Draft.setDraw('manual')">I'll set them</button>
+      </div>
+      <p class="hint tight" style="margin-top:9px">${manual
+        ? 'Only the ties you list are played, in this order. A court takes the next one whose teams are both free.'
+        : 'Every team plays every other team once. A court takes the next tie whose teams are both free.'}</p>
+      ${list.length ? `<div class="fx-list">${list.map((f, i) => `<div class="fx-row">
+          <span class="fx-n">${i + 1}</span>
+          <span class="fx-t">${nm(f[0])} <i>v</i> ${nm(f[1])}</span>
+          ${manual ? `<button class="fx-b" onclick="Draft.moveFix(${i},-1)"
+              aria-label="Move up" ${i === 0 ? 'disabled' : ''}>&uarr;</button>
+            <button class="fx-b" onclick="Draft.moveFix(${i},1)"
+              aria-label="Move down" ${i === list.length - 1 ? 'disabled' : ''}>&darr;</button>
+            <button class="fx-b kill" onclick="Draft.dropFix(${i})"
+              aria-label="Remove">&times;</button>` : ''}
+        </div>`).join('')}</div>`
+        : `<p class="conn" style="margin-top:11px">${manual
+            ? 'No ties set yet.' : 'Two finished teams and the fixtures appear here.'}</p>`}
+      ${manual ? `<button class="btn btn-quiet" style="width:100%;margin-top:10px"
+        onclick="Draft.addFix()">${icon('plus')} Add a tie</button>` : ''}
+    </div>`;
+  },
+
+  /* A convenience, not a replacement for picking: it only fills the slots
+     still empty, strongest with weakest so the teams come out level, and
+     anything already drafted is left exactly as it is. */
+  fill(){
+    const taken = new Set();
+    (S.teams || []).forEach(x => [...(x.m||[]), ...(x.w||[])].forEach(p => { if(p) taken.add(p); }));
+    const rank = ids => ids.slice().sort((a, b) =>
+      (P(b).dupr || P(b).rating || 0) - (P(a).dupr || P(a).rating || 0));
+    const men   = rank(activeIds().filter(p => !taken.has(p) && sexOf(p) === 'm'));
+    const women = rank(activeIds().filter(p => !taken.has(p) && sexOf(p) === 'f'));
+
+    /* Strongest with weakest, so the teams come out level rather than one of
+       them collecting the top four. */
+    const finish = t =>{
+      for(let i = 0; i < 2; i++){
+        if(!t.m[i]) t.m[i] = i === 0 ? men.shift() : men.pop();
+        if(!t.w[i]) t.w[i] = i === 0 ? women.shift() : women.pop();
+      }
+    };
+    const wants = t => ({ m: 2 - (t.m || []).filter(Boolean).length,
+                          w: 2 - (t.w || []).filter(Boolean).length });
+
+    /* Teams the organizer already started come first. Finishing what somebody
+       began is what "fill the rest" means; making new teams around a
+       half-picked one and leaving it stranded is not. */
+    (S.teams || []).filter(t => !MLP.ready(t)).forEach(t =>{
+      const need = wants(t);
+      if(men.length >= need.m && women.length >= need.w) finish(t);
+    });
+
+    /* Then whole teams out of whoever is left. Never a half one: a team of
+       three cannot play, and it would eat the players a real team needed. */
+    while(men.length >= 2 && women.length >= 2){
+      this.add();
+      finish(S.teams[S.teams.length - 1]);
+    }
+    save(); this.paint(); paintSetupSummary();
+  }
+};
+
 const Wars = {
   /* max(1, a quarter) each way: 4 -> 1, 8 -> 2, 10 -> 3, 16 -> 4 */
   moves(n){ return Math.max(1, Math.round(n / 4)); },
@@ -14917,7 +15839,7 @@ const Feed = {
     });
     return out;
   },
-  card(r){
+  card(r, preview){
     const when = r.when;
     const soon = when && when > Date.now() ? untilText(when) : null;
     const full = r.cap > 0 && (r.joined || 0) >= r.cap;
@@ -14933,7 +15855,7 @@ const Feed = {
     if(r.waiting) under.push(r.waiting + ' waiting');
 
     return `<article class="sx2">
-      ${canOrganize() ? `<button class="sx2-dots"
+      ${canOrganize() && !preview ? `<button class="sx2-dots"
         onclick="event.stopPropagation();upcomingMenu('${esc(r.code)}','${ttl}',${r.joined || 0})"
         aria-label="More">⋯</button>` : ''}
       <div class="sx2-top${r.mine ? ' mine' : ''}${r.cover ? ' shot' : ''}" onclick="${go}"${
@@ -14942,22 +15864,27 @@ const Feed = {
           ${r.live ? '<i class="sx2-tag live">Playing now</i>' : ''}
           ${!r.live && soon ? '<i class="sx2-tag">' + esc(soon) + '</i>' : ''}
           ${full ? '<i class="sx2-tag full">Full</i>' : ''}
+          ${r.closed ? '<i class="sx2-tag shut">' + icon('lock') + ' Invite only</i>' : ''}
           ${r.mine ? '<i class="sx2-tag in">Joined</i>' : ''}
         </span>
-        <h3>${esc(r.title || 'Open play')}</h3>
+        <span class="sx2-h">
+          <h3>${esc(r.title || 'Open play')}</h3>
+          ${clubOf(r) ? '<em class="sx2-club">' + esc(clubOf(r)) + '</em>' : ''}
+        </span>
       </div>
       <div class="sx2-body">
         <p class="sx2-when">${when ? esc(longDate(when)) : 'Date to be set'}${
           when && r.starts_at ? ' · ' + esc(clockText(when)) : ''}${
-          v && v.name ? ' · ' + esc(v.name) : ''}</p>
+          venueLabel(r) ? ' · ' + esc(venueLabel(r)) : ''}</p>
         <div class="sx2-fill">
           <b>${r.joined || 0}${r.cap ? ' of ' + r.cap : ' in'}</b>
           <span>${esc(under.join(' · '))}</span>
         </div>
         <div class="sx2-bar"><i class="${full ? 'full' : ''}" style="width:${pct}%"></i></div>
-        <button class="sx2-cta${r.mine || full ? '' : ' go'}" onclick="${go}">${
+        <button class="sx2-cta${r.mine || full || r.closed ? '' : ' go'}" onclick="${go}">${
           r.live ? 'Watch it live'
             : r.mine ? 'View session'
+            : r.closed ? icon('lock') + ' Invite only'
             : full ? 'Join the waiting list' : 'Join session'}</button>
       </div>
     </article>`;
@@ -15137,17 +16064,21 @@ const Feed = {
     paintHome();
   },
 
+  /* Which club a night is under, for the card. Nothing when the groups have
+     not been read yet or the night is under none — a card that says "A
+     club" for two seconds and then a name is worse than one that waits. */
+
   /* Everything a card says, in one line: when, what, where, how full. */
   row(r){
     const t = Feed.ms(r.starts_at);
     const d = t ? new Date(t) : null;
     const full = r.cap > 0 && (r.joined || 0) >= r.cap;
     const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
-    const p = r.venue && typeof parseVenue === 'function' ? parseVenue(r.venue) : null;
     const bits = [];
     if(r.cap) bits.push((r.joined || 0) + ' of ' + r.cap);
     else bits.push((r.joined || 0) + ' in');
-    if(p && p.name) bits.push(p.name);
+    const where = venueLabel(r);
+    if(where) bits.push(where);
     return `<button class="fd-dense" onclick="location.href='?s=' + encodeURIComponent('${esc(r.code)}')">
       <span class="fd-when">
         <b>${d ? esc(clockText(t).replace(/\s?(am|pm)$/i, '')) : '\u2014'}</b>
@@ -15279,11 +16210,12 @@ function hmNext(){
   const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
   return `<section class="hm-next" id="hm-next" data-at="${r.when}">
     <div class="hm-nh"><b><i></i>Up next</b>
+      ${r.closed ? `<em class="hm-lock">${icon('lock')} Invite only</em>` : ''}
       ${g ? `<span>${esc(g.name)}</span>` : ''}</div>
     <div class="hm-cd" id="hm-cd">${hmClock(r.when)}</div>
     <h2>${esc(r.title || 'Open play')}</h2>
     <p class="hm-nwhen">${esc(shortDay(r.when))} · ${esc(clockText(r.when))}${
-      v && v.name ? ' · ' + esc(v.name) : ''}</p>
+      venueLabel(r) ? ' · ' + esc(venueLabel(r)) : ''}</p>
     <div class="hm-nwho">
       ${faces ? `<span class="hm-faces">${faces}${rest
         ? `<span class="hm-more">+${rest}</span>` : ''}</span>` : ''}
@@ -15291,8 +16223,14 @@ function hmNext(){
         ? ' · ' + left + ' place' + (left === 1 ? '' : 's') + ' left' : ''}</span>
     </div>
     <div class="hm-nacts">
-      <button class="btn ${r.mine ? 'hm-in' : 'hm-in'}" onclick="${go}">${
-        r.mine ? "I'm in" : (full ? 'Join the list' : 'Join this one')}</button>
+      ${/* This card was written before invite-only existed and offered Join
+             on a night nobody may join. Being on the roster counts as being in
+             now too, so it stops offering to add somebody it is already
+             showing the face of. */''}
+      <button class="btn ${r.mine || r.closed ? 'hm-quiet' : 'hm-in'}" onclick="${go}">${
+        r.mine ? "I'm in"
+          : r.closed ? icon('lock') + ' Invite only'
+          : (full ? 'Join the list' : 'Join this one')}</button>
       ${v && v.url ? `<a class="hm-nact" href="${esc(v.url)}" target="_blank" rel="noopener"
         aria-label="Open in Maps" title="Open in Maps">${icon('pin')}</a>` : ''}
       <button class="hm-nact" onclick="shareSession('${esc(r.code)}','${
@@ -15439,6 +16377,28 @@ function groupNudge(){
    because this menu is one tap from a scrolling feed. */
 /* The dots on an upcoming card. A named function rather than Feed.menu in
    the markup, so the two card menus read the same at the call site. */
+/* Where it is, as a place rather than as an instruction.
+
+   parseVenue() can only read a name out of a full Maps URL; a shortened
+   maps.app.goo.gl link has nothing in it to read, so it returned "Open in
+   Maps" and that is what every card printed where the venue should be. The
+   organizer's own typed name is the better answer and always was — it just
+   never travelled with the feed row until now. */
+function venueLabel(r){
+  const typed = (r && (r.venue_name || r.venueName) || '').trim();
+  if(typed) return typed;
+  const v = r && r.venue ? parseVenue(r.venue) : null;
+  /* Rather than the fallback wording: a card saying nothing about where it
+     is beats a card saying "Open in Maps" where the place should be. */
+  return (v && v.resolved !== false && v.name) ? v.name : '';
+}
+
+function clubOf(r){
+  if(!r || !r.group_id) return '';
+  const g = (Groups.list || []).find(x => x.id === r.group_id);
+  return (g && g.name) || '';
+}
+
 function upcomingMenu(code, title, joined){ Feed.menu(code, title, joined); }
 
 function pastCardMenu(code, title, hasCover){
@@ -18175,6 +19135,10 @@ function navIcon(kind){
     manage:   '<path d="M4 7h16M4 12h16M4 17h10"/>',
     standings:'<path d="M5 19V11M12 19V5M19 19v-5M3 21h18"/>',
     playoff:  '<path d="M4 5h5v6H4zM4 13h5v6H4zM11 8h4v8h-4zM15 12h5"/>',
+    /* a shield: a team badge, for the one format where you play for a side
+       rather than for yourself */
+    shield:   '<path d="M12 3.2l7 2.6v5.4c0 4.3-2.9 8-7 9.6-4.1-1.6-7-5.3-7-9.6V5.8z"/>'
+            + '<path d="M9.3 12.2l1.9 1.9 3.6-3.9"/>',
     plus:     '<path d="M12 5v14M5 12h14"/>',
     open:     '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/>',
     /* an eye: looking at the night, not doing anything to it */
@@ -19510,6 +20474,10 @@ function changeCourtsLive(d){
    RENDER — STATS
    ═══════════════════════════════════════════════════ */
 function renderStats(){
+  /* A team night is won by a team. The individual ladder is still worth
+     having underneath -- people want their own record -- but the answer to
+     "who is winning" is the table, so the table goes first. */
+  if(S.mode === 'mlp'){ renderTeamStats(); return; }
   const ids = S.order.filter(id => P(id));
   const rows = ids.slice().sort(nightOrder);
   document.getElementById('lb').innerHTML = rows.length && S.games ? rows.map((id,i)=>{
@@ -19530,6 +20498,30 @@ function renderStats(){
   document.getElementById('st-elapsed').textContent =
     S.started ? Math.round((Date.now()-S.started)/60000) + 'm' : '0m';
 
+  renderLog();
+}
+
+function renderTeamStats(){
+  const table = MLP.table();
+  const box = document.getElementById('lb');
+  if(box) box.innerHTML = table.length
+    ? table.map((r, i) =>{
+        const t = MLP.team(r.id) || {};
+        const four = [...(t.m || []), ...(t.w || [])].filter(Boolean);
+        return `<div class="lb-row tm-row${i < 3 ? ' podium' : ''}">
+          <span class="rk">${i + 1}</span>
+          <span class="tm-tx"><b>${esc(r.name || 'Team')}</b>
+            <span>${four.map(id => esc(nm(id))).join(' · ')}</span></span>
+          <span class="rec tm-rec"><b>${r.pts}</b><i class="dif">${r.pts === 1 ? 'point' : 'points'}<s>${r.ties ? 'won ' + r.wins + ' of ' + r.ties : 'yet to play'}</s></i></span>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Pick two teams and the table starts here.</div>';
+
+  document.getElementById('st-round').textContent   = S.round;
+  document.getElementById('st-games').textContent   = S.games;
+  document.getElementById('st-players').textContent = S.order.length;
+  document.getElementById('st-elapsed').textContent =
+    S.started ? Math.round((Date.now() - S.started) / 60000) + 'm' : '0m';
   renderLog();
 }
 
@@ -20803,6 +21795,17 @@ const Recap = {
                        record: (top.wins || 0) + '–' + (top.losses || 0),
                        face: face ? await loadImg(face) : null } : null,
         next: await this.nextNight(d.group && d.group.id)
+      }));
+    } else if((d.teams || []).length){
+      /* Banked with the night by sideout_archive, so a card made a year
+         later still names the side that won rather than falling back to
+         whoever happened to top the individual table. */
+      drawLeaderCard(x, W, Object.assign(base, {
+        eyebrow: 'TEAM STANDINGS',
+        stats: [['TEAMS', d.teams.length, PAL.gold]]
+                 .concat(gameStat)
+                 .concat([['PLAYERS', d.players || rows.length, '#fff']]),
+        rows: teamRows(d.teams)
       }));
     } else {
       const faces = await Promise.all(rows.slice(0, 10).map(r =>{
@@ -23557,7 +24560,10 @@ function drawLeaderCard(x, W, o){
 
   /* The eyebrow says how many are actually on the card. "TOP 10" over a
      night six people turned up to is a small lie it does not need. */
-  cardEyebrow(x, 248, 'TOP ' + Math.min(10, o.rows.length) + ' LEADERBOARD', GOLD);
+  /* A team night's card is a table of teams, and saying "TOP 10 LEADERBOARD"
+     over four team names would be describing a different card. */
+  cardEyebrow(x, 248, o.eyebrow
+    || ('TOP ' + Math.min(10, o.rows.length) + ' LEADERBOARD'), GOLD);
   cardTitle(x, W, o.title, 264, 98);
 
   /* ── where everything below sits ───────────────────────────────────
@@ -23685,6 +24691,23 @@ function drawLeaderCard(x, W, o){
    them; nothing here invents a fact to fill a box out. — the LEVEL tile
    comes from the courts' own levels, so a night whose courts were all set
    the same says so, and one that was graded across three says that. */
+/* A team on the podium. The card takes rows of { name, record, face } and
+   asks nothing about what a row is, so a team goes on the same podium the
+   players stand on and the whole layout is untouched. No face: a team is
+   four people and a photo of one of them would be a lie about which.
+
+   The line under the name is the two figures that decide the night — the
+   points, and how many ties they came from. */
+function teamRows(teams){
+  return (teams || []).map(t => ({
+    name: t.name || 'Team',
+    crowns: 0,
+    face: null,
+    record: (t.pts || 0) + (t.pts === 1 ? ' pt' : ' pts')
+      + (t.ties ? '  ·  ' + (t.wins || 0) + '/' + t.ties : '')
+  }));
+}
+
 function drawSessionCard(x, W, o){
   const PAD = CARD_PAD;
   const PAL = cardPaint(o.accent);
@@ -24028,6 +25051,16 @@ async function makeCard(){
                      record: (P(top).w || 0) + '–' + (P(top).l || 0),
                      face: await faceFor(top) } : null,
       next: await Recap.nextNight(S.groupId)
+    }));
+  } else if(S.mode === 'mlp'){
+    /* Read from MLP.table() rather than from the players: on a team night the
+       thing anybody wants to post is which side won. */
+    const table = MLP.table();
+    if(!table.length){ toast('No teams picked yet.'); return; }
+    drawLeaderCard(x, W, Object.assign(base, {
+      eyebrow: 'TEAM STANDINGS',
+      stats: [['TEAMS', table.length], ['GAMES', S.games], ['ROUNDS', S.round]],
+      rows: teamRows(table)
     }));
   } else {
     const faces = await Promise.all(ranked.slice(0, 10).map(faceFor));

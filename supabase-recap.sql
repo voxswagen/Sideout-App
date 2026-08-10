@@ -119,6 +119,18 @@ as $$
       from public.sessions s
      where s.club = coalesce(p_club, 'sideout') and s.code = p_code
   ),
+  -- A team night is won by a team, and the card has to be able to say which.
+  -- Read from session_teams rather than from the session's own state: state is
+  -- the working copy and is deleted when a night is cleaned up, and a card
+  -- shared a year later should still name the side that won it.
+  teams as (
+    select coalesce(jsonb_agg(jsonb_build_object(
+             'name', t.name, 'players', t.players,
+             'pts', t.pts, 'wins', t.wins, 'ties', t.ties)
+             order by t.pos), '[]'::jsonb) as rows
+      from public.session_teams t
+     where t.club = coalesce(p_club, 'sideout') and t.code = p_code
+  ),
   -- The logo is a data URL of about 20–40 kB, small beside the cover this
   -- payload already carries, and public already through sideout_groups.
   -- Nothing new is exposed by putting it here.
@@ -145,6 +157,7 @@ as $$
       'group',     (select row       from grp),
       'cover',     (select img       from pic),
       'standings', (select rows      from board),
+      'teams',     (select rows      from teams),
       'games',     (select rows      from games))
   end;
 $$;
