@@ -5088,7 +5088,17 @@ const Live = {
     Clock.reset();
     this.startHost();
     renderAll(); renderLadder(); renderBracket(); TV.paint(); syncRoundEndUI();
-    go(S.active ? 'play' : 'setup');
+    /* This used to end with go(S.active ? 'play' : 'setup'), and taking a
+       session on is not the only reason adopt runs. resume() calls it on
+       every cold open where the server's copy is ahead of this device's —
+       which is any night somebody else has joined since you last looked — so
+       opening the app and tapping Groups put you in the session editor half a
+       second later, over and over, with nothing on screen to say why.
+
+       Adopting is picking up the session's state. Going to look at it is a
+       separate decision, and it belongs to the three callers that mean it:
+       taking a night over, reopening a finished one, and opening one by code
+       and PIN. All three navigate for themselves now. */
     try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
     return true;
   },
@@ -5137,9 +5147,35 @@ const Live = {
     this.code = S.liveCode;
     let got = null;
     try{ got = await this.fetchState(S.liveCode); }catch(e){ this.offline = true; renderLive(); return; }
-    if(got && got.state && got.at > (S.pulled || 0) + 1500) this.adopt(got.state, S.liveCode, S.pin);
+    /* The query came back and there is no such row. That night has been
+       banked and its session cleaned up, or somebody put it down from another
+       device — either way it is over and this phone is the last thing still
+       holding a copy of it.
+
+       Starting the host loop here is what brought it back from the dead: the
+       first beat POSTs the whole state to `sessions` and the row reappears,
+       so an organizer opening an ended night on an old phone republished it
+       and the club got a second copy on Home. A missing row is an answer, not
+       a gap to fill in. */
+    if(!got || !got.state){ this.orphaned(); return; }
+    if(got.at > (S.pulled || 0) + 1500) this.adopt(got.state, S.liveCode, S.pin);
     else this.startHost();
     renderLive();
+  },
+
+  /* Putting down a session that is no longer there. Everything that could
+     publish it has to stop, not only S.live: joinT left running polls for
+     joiners against a code that is gone, and Live.code left set means the
+     next save() beats the whole thing straight back up. */
+  orphaned(){
+    clearInterval(this.joinT); this.joinT = null;
+    try{ clearInterval(this.timer); this.timer = null; }catch(e){}
+    this.code = null;
+    S.live = false; S.liveCode = null; S.pin = null;
+    /* written directly rather than through save(), which would call beat() */
+    try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+    renderLive();
+    try{ renderAll(); }catch(e){}
   },
 
   async push(snap){
@@ -22113,6 +22149,9 @@ async function doResume(){
   if(!state){ say('bad', 'That session has nothing saved yet.'); return; }
   closeSheet();
   Live.adopt(state, code, pin);
+  /* adopt() no longer navigates on its own. Typing a code and a PIN in is
+     unambiguously "open this", so this one goes. */
+  go(S.active ? 'play' : 'setup');
   toast('Session opened \u2014 you are hosting from this device.');
 }
 
