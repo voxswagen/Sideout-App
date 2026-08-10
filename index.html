@@ -2716,6 +2716,24 @@ textarea:focus{border-color:var(--court)}
   border-bottom:1px solid var(--edge)}
 @media (min-width:900px){ .hm-top{margin-left:-24px;margin-right:-24px;padding-left:24px;padding-right:24px} }
 
+/* One row of filters, and it scrolls.
+
+   There were three: what, then month, then the view toggle, each a flex item
+   of the same short row, so they broke into ragged little columns down the
+   left of the page. Three stacked filters above a list of two sessions is
+   also just more chrome than there is content. They are one scrolling row
+   now, with the toggle pinned on the end where it does not move. */
+/* width:100% because .feed-h around it is itself a flex row, and a flex item
+   sizes to its content unless it is told not to — without this the bar grew
+   to the width of every chip laid end to end and pushed the page sideways. */
+.fd-bar{display:flex;align-items:center;gap:9px;width:100%;min-width:0}
+.fd-chips{flex:1 1 auto;min-width:0;display:flex;gap:7px;overflow-x:auto;
+  padding:2px 0 4px;scrollbar-width:none;-ms-overflow-style:none}
+.fd-chips::-webkit-scrollbar{display:none}
+.fd-chips>*{flex:0 0 auto}
+.fd-sep{width:1px;align-self:stretch;margin:5px 2px;background:var(--edge-2)}
+.fd-bar .fd-view{flex:0 0 auto}
+
 /* filter pills, in place of three native dropdowns */
 .chips{display:flex;gap:7px;overflow-x:auto;padding:1px 0 3px;margin-bottom:7px;
   scrollbar-width:none;-ms-overflow-style:none}
@@ -14774,6 +14792,13 @@ const Feed = {
     const loose = up.filter(r => !r.group_id).length;
     /* One club and no strays is not a choice, it is a label. */
     if(seen.length + (loose ? 1 : 0) < 2) return '';
+    /* The names live on the groups list, which is loaded lazily — open the
+       app straight onto Home and it is not there yet, so every chip said "A
+       club". Read it, once, and paint again when it lands. */
+    if(Groups.list === null && Live.ready() && !Feed.askedGroups){
+      Feed.askedGroups = true;
+      Groups.load().then(()=>{ if(currentScreen() === 'home') paintHome(); }).catch(()=>{});
+    }
     const named = seen.map(x =>{
       const g = (Groups.list || []).find(y => y.id === x.id);
       return Object.assign({}, x, { name: (g && g.name) || 'A club' });
@@ -14799,12 +14824,14 @@ const Feed = {
     const what = [['all','All'],['open','Places left'],['live','Playing now']]
       .map(([v, l]) => pill(v, l, `Feed.filter='${v}'`, this.filter)).join('');
 
+    /* The month only earns a place when there is more than one to choose
+       between, and it earns it in the same row rather than a second one. */
     const when = months.length > 1
-      ? `<div class="chips">${pill('', 'Any month', 'Feed.month=null', this.month || '')}${
-          months.map(k => pill(k, this.monthLabel(k), `Feed.month='${k}'`, this.month || '')).join('')}</div>`
+      ? '<span class="fd-sep"></span>' + pill('', 'Any month', 'Feed.month=null', this.month || '')
+        + months.map(k => pill(k, this.monthShort(k), `Feed.month='${k}'`, this.month || '')).join('')
       : '';
 
-    return `<div class="chips">${what}</div>` + when;
+    return what + when;
   },
 
   ms(v){
@@ -15000,6 +15027,14 @@ const Feed = {
     });
     return seen.sort();
   },
+  /* "August", and the year only when it is not this one — four full
+     "August 2026"s on one row is the year said four times for nothing. */
+  monthShort(k){
+    const p = k.split('-');
+    const y = Number(p[0]);
+    const nm = MONTHS[Number(p[1]) - 1] || k;
+    return y === new Date().getFullYear() ? nm : nm + ' ' + y;
+  },
   monthLabel(k){
     const p = k.split('-');
     const d = new Date(Number(p[0]), Number(p[1]) - 1, 1);
@@ -15063,8 +15098,8 @@ const Feed = {
     const rows = this.rows();
     return `<div class="feed">
       <div class="feed-h">
-        <div class="feed-tools">
-          ${this.chips()}
+        <div class="fd-bar">
+          <div class="fd-chips">${this.chips()}</div>
           <span class="fd-view" role="group" aria-label="How to show the feed">
             <button class="${this.dense ? '' : 'on'}" onclick="Feed.setDense(false)"
               aria-pressed="${!this.dense}" aria-label="Cards" title="Cards">${icon('grid')}</button>
