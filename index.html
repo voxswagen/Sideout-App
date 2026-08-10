@@ -2726,13 +2726,15 @@ textarea:focus{border-color:var(--court)}
 /* width:100% because .feed-h around it is itself a flex row, and a flex item
    sizes to its content unless it is told not to — without this the bar grew
    to the width of every chip laid end to end and pushed the page sideways. */
-.fd-bar{display:flex;align-items:center;gap:9px;width:100%;min-width:0}
-.fd-chips{flex:1 1 auto;min-width:0;display:flex;gap:7px;overflow-x:auto;
+.hm-view{flex:0 0 auto;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card);border:1px solid var(--edge);color:var(--ink-3)}
+.hm-view:hover{border-color:var(--court);color:var(--court-ink)}
+.hm-view .ic{width:17px;height:17px}
+.fd-chips{display:flex;gap:7px;overflow-x:auto;
   padding:2px 0 4px;scrollbar-width:none;-ms-overflow-style:none}
 .fd-chips::-webkit-scrollbar{display:none}
 .fd-chips>*{flex:0 0 auto}
 .fd-sep{width:1px;align-self:stretch;margin:5px 2px;background:var(--edge-2)}
-.fd-bar .fd-view{flex:0 0 auto}
 
 /* filter pills, in place of three native dropdowns */
 .chips{display:flex;gap:7px;overflow-x:auto;padding:1px 0 3px;margin-bottom:7px;
@@ -15060,6 +15062,21 @@ const Feed = {
      a preference rather than a per-visit toggle. */
   dense: (()=>{ try{ return localStorage.getItem('sideout_feed_dense') === '1'; }
                 catch(e){ return false; } })(),
+  /* One button that swaps, rather than a two-button segmented pill wedged
+     onto the end of the filter row. It was fighting the scroller for the
+     last 40px of the line — the chip beside it was always half under it —
+     and it is not a filter anyway: it is how you would like the same list
+     drawn, which is a preference and belongs beside the heading.
+
+     It shows the view you would get, not the view you are in. A control that
+     shows its current state reads as a label; one that shows what it does
+     reads as a button. */
+  viewBtn(){
+    return `<button class="hm-view" onclick="Feed.setDense(${!this.dense})"
+      aria-label="${this.dense ? 'Show as cards' : 'Show as a list'}"
+      title="${this.dense ? 'Show as cards' : 'Show as a list'}">${
+      icon(this.dense ? 'grid' : 'rows')}</button>`;
+  },
   setDense(on){
     this.dense = !!on;
     try{ localStorage.setItem('sideout_feed_dense', on ? '1' : '0'); }catch(e){}
@@ -15098,15 +15115,7 @@ const Feed = {
     const rows = this.rows();
     return `<div class="feed">
       <div class="feed-h">
-        <div class="fd-bar">
-          <div class="fd-chips">${this.chips()}</div>
-          <span class="fd-view" role="group" aria-label="How to show the feed">
-            <button class="${this.dense ? '' : 'on'}" onclick="Feed.setDense(false)"
-              aria-pressed="${!this.dense}" aria-label="Cards" title="Cards">${icon('grid')}</button>
-            <button class="${this.dense ? 'on' : ''}" onclick="Feed.setDense(true)"
-              aria-pressed="${!!this.dense}" aria-label="List" title="List">${icon('rows')}</button>
-          </span>
-        </div>
+        <div class="fd-chips">${this.chips()}</div>
       </div>
 
       ${rows.length ? (this.dense
@@ -15167,6 +15176,7 @@ function paintHome(){
     ${groupNudge()}
     <div class="hm-sec">
       <div class="hm-sh"><h2>What’s on</h2>
+        ${Feed.viewBtn()}
         ${canOrganize() ? `<button class="hm-new" onclick="startOrganizing()"
           title="Organize an open play">+ New</button>` : ''}
       </div>
