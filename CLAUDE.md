@@ -22,6 +22,24 @@ The `supabase-*.sql` files are copies of what is deployed, not to-dos. Anything
 applied to the database should be written back into one, so the repo and the
 project do not quietly disagree.
 
+Two exceptions, both marked at the top of the file itself and both waiting on
+a project nobody could reach:
+
+* `supabase-feed.sql` is a **proposal**, not a copy — the posts, reactions
+  and comments the handoff's Today needs and the front page already
+  advertises. Nothing in the client reads it, deliberately: client code
+  written against a schema nobody has run is where the bugs hide.
+* `supabase-past.sql` has gained a per-caller `place` on `sideout_past`
+  that **has not been applied**. The client wires it defensively — every
+  use is conditional and the card is exactly what it was when the column is
+  missing — so deploying it turns the feature on and not deploying it costs
+  nothing.
+
+`.mcp.json` invoked the server through `cmd /c`, which is Windows and does
+not exist on macOS, so the Supabase MCP server failed to start with
+`ENOENT: cmd`. Fixed to call `npx` directly. It still needs
+`SUPABASE_ACCESS_TOKEN` in the environment the server is spawned from.
+
 ---
 
 ## Conventions that are easy to get wrong
