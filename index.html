@@ -70,7 +70,7 @@ const CONFIG = {
    a neon ball, and gold for the King's Court.
    ═══════════════════════════════════════════════════ */
 :root{
-  /* ── picksilog brand ──────────────────────────────────────────────────
+  /* ── Sideout Society brand ──────────────────────────────────────────────────
      Fixed, and deliberately not themeable. A club picks the accent the app
      wears; these three are the product's own and stay put whichever club
      you are looking at, which is the whole reason the sign-in page is not
@@ -827,7 +827,7 @@ body.nodock{padding-bottom:0}
 /* ── sign in ────────────────────────────────────────────────────────────
    The product's own page rather than a club's. It uses the brand tokens
    directly and Outfit throughout, so whichever club you belong to and
-   whatever colour they have chosen, the door into picksilog looks the
+   whatever colour they have chosen, the door into Sideout Society looks the
    same. On a phone the navy panel is a hero with the form beneath it; from
    900px the two sit side by side, which is the desktop layout. */
 .au{max-width:420px;margin:0 auto;padding-bottom:34px;
@@ -964,7 +964,7 @@ body.nodock{padding-bottom:0}
 .au-keep input:focus-visible+i{outline:2px solid var(--brand-navy);outline-offset:2px}
 /* the green rule under the link, straight off the brand sheet */
 .au-swap .linky{border-bottom:2px solid var(--brand-green);color:var(--ink);font-weight:600}
-/* This page is picksilog's, not a club's, so the small print takes the brand
+/* This page is Sideout Society's, not a club's, so the small print takes the brand
    greys rather than whatever accent the club happens to be wearing — a club
    in bright green would otherwise get acid-green "Show" and "Forgot?". */
 .au .pw-eye{color:var(--brand-slate);font-family:'Outfit',sans-serif;font-weight:500;
@@ -1020,7 +1020,7 @@ input.bad{border-color:var(--fault)!important}
 /* One screen, no scroll: the hero takes whatever is left after the
    footer, so the page ends where the phone ends. */
 /* ── the front page ─────────────────────────────────────────────────────
-   picksilog's own, so it uses the brand tokens rather than --court: whatever
+   Sideout Society's own, so it uses the brand tokens rather than --court: whatever
    colour a club has chosen, the door into the product looks the same. */
 /* Edge to edge. .wrap insets every screen by 14px, which is right for a page
    of cards and wrong for this one — it left a strip of page background down
@@ -1206,7 +1206,7 @@ input.bad{border-color:var(--fault)!important}
 /* The quarter turn is the send arrow's alone — it is drawn pointing up and
    wants to point right. Written as `.ch-send button .ic` it also caught the
    camera beside it, which sat on its side in every conversation in the app. */
-/* picksilog's own line across the conversation. Not a bubble: nobody said
+/* Sideout Society's own line across the conversation. Not a bubble: nobody said
    it, and giving it an author's shape would put a name on a thing the app
    did by itself. */
 .ch-note{margin:14px auto;max-width:min(92%,340px);padding:13px 15px;text-align:center;
@@ -5126,6 +5126,19 @@ body.casting{overflow:hidden}
   text-align:left;display:flex;align-items:center;gap:10px;min-height:56px;padding:9px 16px}
 .nw-grp-v{flex:none;font-size:14.5px;color:var(--sos-dim)}
 .nw-grp-row svg{flex:none}
+/* The four stages: where you are, what you have done, what is left. Tappable
+   backwards and to anything already reached, so it is the navigation as well
+   as the progress. */
+.nw-steps{display:flex;gap:6px;margin:0 16px 16px}
+.nw-step{flex:1;min-width:0;min-height:34px;border-radius:9px;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:600;letter-spacing:-.01em;
+  background:var(--sos-fill);border:0;color:var(--sos-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nw-step.done{background:var(--sos-tint);color:var(--sos-accent)}
+.nw-step.on{background:var(--sos-accent);color:var(--sos-on-accent)}
+.nw-step[disabled]{cursor:default;opacity:.5}
+.nw-note2{margin:9px 16px 0;font-size:13px;line-height:1.45;color:var(--sos-dim);
+  text-wrap:pretty}
 .nw-bar{padding:8px 16px 0}
 .nw-cancel{display:flex;align-items:center;min-height:44px;padding:0 6px;margin-left:-6px;
   background:none;border:0;cursor:pointer;font-family:inherit;font-size:16px;
@@ -5702,7 +5715,7 @@ body.casting{overflow:hidden}
   <button class="ab-face" id="ab-face" onclick="go('me')" aria-label="Your profile"></button>
   <button class="ab-plus" id="ab-plus" onclick="PlaySheet.open()"
     aria-label="Start something">+</button>
-  <!-- The product's mark, not the club's name. This is picksilog's bar — the
+  <!-- The product's mark, not the club's name. This is Sideout Society's bar — the
        club you are looking at is already named on every screen under it, and a
        wordmark of one club at the top of an app that holds several was the
        thing that made it look like a single-club app. -->
@@ -7722,7 +7735,6 @@ const Live = {
           if(m.dupr != null && P(id).dupr == null){ P(id).dupr = m.dupr; P(id).level = duprLevel(m.dupr); }
         }
       }
-      if(S.active && id && !S.queue.includes(id)) S.queue.unshift(id);
       added.push(nmv);
     });
     if(gone.length) fillFromWait();
@@ -7813,14 +7825,14 @@ const BADGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAFACAMAAAD6TlW
 /* The club's own name, as text. It used to be a wordmark PNG of one club,
    which is not a thing an app holding several can have in its furniture. */
 try{ document.getElementById('brand-name').textContent = CONFIG.clubName || 'Sideout Society'; }catch(e){}
-/* ── the picksilog mark ──────────────────────────────────────────────────
+/* ── the sosMark mark ──────────────────────────────────────────────────
    Drawn rather than fetched. It has to sit on navy in one place and inside
    a white disc in another, it has to survive being scaled from 26px to
    420px, and it has to render before anything has come back off the
    network — a base64 PNG does none of those. The clip path needs a unique
    id per copy, because two SVGs on one page sharing an id means the second
    one silently clips against the first.
-   Sideout Society keeps its own wordmark: it is a club inside picksilog
+   Sideout Society keeps its own wordmark: it is a club inside Sideout Society
    now, not the product. */
 let markN = 0;
 /* A court, in the brand's colours, for anywhere a venue needs a face.
@@ -7841,7 +7853,7 @@ function courtTile(){
   </svg>`;
 }
 
-function picksilog(px, opts){
+function sosMark(px, opts){
   const o = opts || {};
   const id = 'psg' + (++markN);
   const disc = o.onDark ? '#fff' : 'var(--brand-navy)';
@@ -7871,7 +7883,7 @@ function picksilog(px, opts){
     <circle cx="135" cy="101" r="4.6" fill="${disc}"/></svg>`;
 }
 /* The sign-in screen wears the club's own mark as an image now, cropped in
-   the markup, so there is nothing here to draw. picksilog() still renders
+   the markup, so there is nothing here to draw. sosMark() still renders
    the old mark for the screens that have not been redesigned yet. */
 document.getElementById('tv-mark').src = LOGO_LIGHT;
 document.getElementById('brand-badge').src = BADGE;
@@ -9449,7 +9461,9 @@ function go(name){
        the summary rather than whichever panel was last open quietly took it
        out from behind that guard. */
     if(!canOrganize()){ gateScreens(); return; }
-    if(S.active){ toast('End the session to change the setup.'); return; }
+    /* Editing a night while it runs is a normal thing to want — the venue
+       changed, somebody asked for the fee, the cap needs lifting because two
+       more turned up. It used to be refused outright. */
     showOnly('setup'); setupPage(''); return;
   }
   /* Before the fall-through below, which rewrites any organizer screen to
@@ -9458,6 +9472,10 @@ function go(name){
      same shape of trap as go('setup') not meaning "start a new night". */
   if(name === 'new'){
     if(!canOrganize()){ gateScreens(); return; }
+    /* Back to stage one each time it is opened. Otherwise somebody who set a
+       night up on Monday comes back on Thursday and lands on stage four of
+       the last one. */
+    if(currentScreen() !== 'new') NewFlow.start();
     showOnly('new'); renderNew(); return;
   }
   if(name === 'me'){ showOnly('me'); paintMe(); return; }
@@ -9472,7 +9490,6 @@ function go(name){
   }
 
   if(!canOrganize()){ gateScreens(); return; }
-  if(name === 'setup' && S.active){ toast('End the session to change the setup.'); return; }
   if(!S.active && !S.bracket) name = 'setup';
   showOnly(name);
   /* Play was the one session screen go() did not draw, so it showed whatever
@@ -10233,7 +10250,20 @@ function addPlayer(name, level, force){
      put anybody in — so the usual case stays the two cheap renders it has
      always been. The beat is debounced, so a run of names is still one
      write however many there are. */
+  /* Onto the queue, here, once. Five callers used to do this for themselves
+     and three of them forgot — including both add buttons on the Players
+     screen — so somebody added mid-session went onto the roster and nowhere
+     else. In every format but the pool ones `waitingIds()` reads S.queue, so
+     a name missing from it is a person who is on the list all night, never
+     shown as waiting and never dealt onto a court. That is the "names get
+     lost" bug, and putting the insert beside the pool one is what stops it
+     coming back the next time somebody adds a sixth way in.
+
+     To the front because they have catching up to do — which is also what
+     the courtside add always did. In a pool format poolsSync() below places
+     them instead, and waitingIds() reads the pools there, not the queue. */
   const pooled = poolsSync();
+  if(S.active && !(pooled && pooled.length) && !S.queue.includes(id)) S.queue.unshift(id);
   renderRoster(); renderLadder(); save();
   if(pooled && pooled.length){
     renderAll(); TV.paint();
@@ -11646,14 +11676,67 @@ function newPick(m){
   renderNew();
 }
 
+/* ═══════════════════════════════════════════════════
+   SETTING A NIGHT UP, IN FOUR STAGES
+   It was one form with every decision on it at once —
+   name, date, time, venue, group, courts, nine formats
+   and six joining rules — which is a wall on a phone,
+   and worse, it gave no sense of how much was left.
+
+   Four stages, each answering one question: when is it,
+   where is it, how is it played, who can come. Nothing
+   is required except a date, because a night with no
+   name is "Tuesday Open Play" and a night with no venue
+   is still a night. You can jump to any stage you have
+   reached from the bar at the top, and Back never loses
+   anything — every field writes straight through to S
+   on the way past, the same setters the old panels used.
+
+   The last stage publishes. Before that the button says
+   Next, so publishing is never something you do by
+   accident while still filling it in.
+   ═══════════════════════════════════════════════════ */
+const NewFlow = {
+  step: 0,
+  STEPS: ['When', 'Where', 'How', 'Who'],
+
+  /* The furthest stage that makes sense to show. Only the date gates
+     anything — everything else has a sensible default, so holding somebody
+     on stage two for want of a venue would be inventing a rule. */
+  reach(){ return S.dateOn ? 3 : 0; },
+
+  go(i){
+    const max = this.reach();
+    this.step = Math.max(0, Math.min(i, Math.max(this.step, max)));
+    renderNew();
+    const box = document.getElementById('new-box');
+    if(box) box.scrollTop = 0;
+    try{ (document.querySelector('.wrap') || document.scrollingElement).scrollTop = 0; }catch(e){}
+  },
+
+  next(){
+    if(this.step >= 3){ newPublish(); return; }
+    if(this.step === 0 && !S.dateOn){ toast('Pick a date first.'); return; }
+    this.go(this.step + 1);
+  },
+
+  back(){
+    if(this.step === 0){ go('home'); return; }
+    this.go(this.step - 1);
+  },
+
+  /* Opened fresh each time, or somebody who set a night up on Monday comes
+     back on Thursday and lands on stage four of the last one. */
+  start(){ this.step = 0; }
+};
+
 function renderNew(){
   const box = document.getElementById('new-box');
   if(!box) return;
   const cap = S.cap > 0 ? S.cap : 0;
   const members = (Club.list || []).length;
-  /* courts x 8 — four to a court and four waiting, which is what "fit
-     comfortably" means on a rotating night. */
-  const fits = (S.nCourts || 1) * 8;
+  const st = NewFlow.step;
+  const last = st === 3;
 
   const tog = (on, act, label, sub) => `<button class="sos-row nw-tog" onclick="${act}">
       <span class="sos-row-v">
@@ -11663,51 +11746,54 @@ function renderNew(){
       <span class="sos-tog${on ? ' on' : ''}"><i></i></span>
     </button>`;
 
-  box.innerHTML = `
-    <div class="sos-bar nw-bar">
-      <button class="nw-cancel" onclick="go('home')">Cancel</button>
-      <button class="sos-act" onclick="newSaveDraft()">Save draft</button>
-    </div>
-    <div class="nw-head">
-      <h1 class="sos-t-sc">${S.live ? 'Edit this night' : 'New open play'}</h1>
-      <p class="sos-sub">${S.live
-        ? 'Changes reach everybody who has the link on their next refresh.'
-        : 'Members get a notification the moment you publish.'}</p>
-    </div>
+  /* The bar is the progress and the navigation at once: four words, the one
+     you are on in ink, the ones you have reached tappable, the rest grey.
+     A step count ("2 of 4") says how far you are and not what is left. */
+  const reach = NewFlow.reach();
+  const steps = NewFlow.STEPS.map((w, i) =>{
+    const done = i < st, here = i === st, open = i <= Math.max(st, reach);
+    return `<button class="nw-step${here ? ' on' : ''}${done ? ' done' : ''}"
+      ${open ? `onclick="NewFlow.go(${i})"` : 'disabled'}>${esc(w)}</button>`;
+  }).join('');
 
-    <h2 class="sos-t-grp nw-grp">BASICS</h2>
+  /* ── 1. when ── */
+  const when = `
+    <h2 class="sos-t-grp nw-grp">WHEN IS IT</h2>
     <div class="sos-list">
-      <div class="sos-field nw-row">
-        <span>Name</span>
-        <input type="text" id="nw-title" value="${esc(S.title || '')}"
-          placeholder="${esc(defaultTitle())}" oninput="setTitle(this.value)">
-      </div>
-      <span class="sos-sep"></span>
       <div class="sos-field nw-row">
         <span>Date</span>
         <input type="date" id="nw-date" value="${esc(S.dateOn || '')}"
-          oninput="setDateOn(this.value)">
+          oninput="setDateOn(this.value);newFootnote()">
       </div>
       <span class="sos-sep"></span>
       <div class="sos-field nw-row nw-time">
         <span>Time</span>
         <input type="time" id="nw-start" value="${esc(S.startHM || '')}"
-          oninput="setStartTime(this.value)">
+          oninput="setStartTime(this.value);newFootnote()">
         <em>–</em>
         <input type="time" id="nw-end" value="${esc(S.endHM || '')}"
-          oninput="setEndTime(this.value)">
+          oninput="setEndTime(this.value);newFootnote()">
       </div>
       <span class="sos-sep"></span>
+      <div class="sos-field nw-row">
+        <span>Name</span>
+        <input type="text" id="nw-title" value="${esc(S.title || '')}"
+          placeholder="${esc(defaultTitle())}" oninput="setTitle(this.value)">
+      </div>
+    </div>
+    <p class="nw-note2">The name is optional — left blank it is
+      “${esc(defaultTitle())}”.</p>`;
+
+  /* ── 2. where ── */
+  const where = `
+    <h2 class="sos-t-grp nw-grp">WHERE IS IT</h2>
+    <div class="sos-list">
       <div class="sos-field nw-row">
         <span>Venue</span>
         <input type="text" id="nw-venue" value="${esc(S.venueName || '')}"
           placeholder="Where it is" oninput="setVenueName(this.value)">
       </div>
       <span class="sos-sep"></span>
-      ${/* The one thing the old Setup screen had that this did not, and it is
-            not cosmetic: a night filed under a group lands on that group's
-            table and its chat keys on the same id. Leaving it out meant the
-            redesigned flow could only ever make ungrouped nights. */''}
       <button class="sos-row sos-row-2 nw-grp-row" onclick="GroupPick.open()">
         <span class="sos-row-v">
           <span class="sos-t-row">Group</span>
@@ -11729,11 +11815,13 @@ function renderNew(){
       <div class="nw-picks">${[1,2,3,4,5,6].map(n =>
         `<button class="nw-pick${S.nCourts === n ? ' on' : ''}"
           onclick="setCourts(${n})">${n}</button>`).join('')}</div>
-      <p class="nw-note">${fits} players fit comfortably with four to a court
-        and four waiting.</p>
-    </div>
+      <p class="nw-note">${(S.nCourts || 1) * 8} players fit comfortably with four to a
+        court and four waiting.</p>
+    </div>`;
 
-    <h2 class="sos-t-grp nw-grp">FORMAT</h2>
+  /* ── 3. how ── */
+  const how = `
+    <h2 class="sos-t-grp nw-grp">HOW IT IS PLAYED</h2>
     <div class="sos-list">${MODES.map(m => `
       <button class="sos-row sos-row-2 nw-fmt" onclick="newPick('${m}')">
         <span class="sos-row-v">
@@ -11746,20 +11834,23 @@ function renderNew(){
       </button>
       <span class="sos-sep"></span>`).join('')}
     </div>
+    <p class="nw-note2">You can change the format mid-session if it is not working.</p>`;
 
-    <h2 class="sos-t-grp nw-grp">JOINING</h2>
+  /* ── 4. who ── */
+  const who = `
+    <h2 class="sos-t-grp nw-grp">WHO CAN COME</h2>
     <div class="sos-list">
+      <div class="sos-field nw-row">
+        <span>Places</span>
+        <input type="number" id="nw-cap" min="0" max="200" inputmode="numeric"
+          value="${cap || ''}" placeholder="No limit" oninput="setCap(this.value);newCapNote()">
+      </div>
+      <span class="sos-sep"></span>
       <div class="sos-field nw-row">
         <span>Court fee</span>
         <input type="text" id="nw-fee" inputmode="numeric" value="${S.fee ? S.fee : ''}"
           placeholder="None" oninput="setFee(this.value)">
         <span class="nw-cur">${S.fee ? 'AED' : ''}</span>
-      </div>
-      <span class="sos-sep"></span>
-      <div class="sos-field nw-row">
-        <span>Places</span>
-        <input type="number" id="nw-cap" min="0" max="200" inputmode="numeric"
-          value="${cap || ''}" placeholder="No limit" oninput="setCap(this.value);newCapNote()">
       </div>
       <span class="sos-sep"></span>
       ${tog(S.approve, 'setApprove(!S.approve);renderNew()', 'Approve each join',
@@ -11771,18 +11862,56 @@ function renderNew(){
       ${tog(S.listed, 'setListed(!S.listed);renderNew()', 'Show it on the board',
         'Where the club sees what is on')}
     </div>
-
     <p class="nw-cap-note" id="nw-cap-note"${cap ? '' : ' hidden'}>${cap
       ? cap + ' places. Anybody after that goes on the waiting list and comes in when somebody drops out.'
-      : ''}</p>
+      : ''}</p>`;
 
-    <button class="sos-btn sos-btn-go nw-go" onclick="newPublish()">${S.live
-      ? 'Done' : members ? 'Publish to ' + members + ' member' + (members === 1 ? '' : 's')
-      : 'Publish it'}</button>
-    <p class="nw-foot">${S.live
-      ? 'It is already online — this just saves what you have changed.'
-      : 'Publishing puts it on the board and sends the club a notification.'}</p>
+  const pane = [when, where, how, who][st];
+
+  box.innerHTML = `
+    <div class="sos-bar nw-bar">
+      <button class="nw-cancel" onclick="NewFlow.back()">${st === 0 ? 'Cancel' : 'Back'}</button>
+      <button class="sos-act" onclick="newSaveDraft()">Save draft</button>
+    </div>
+    <div class="nw-head">
+      <h1 class="sos-t-sc">${S.live ? 'Edit this night' : 'New open play'}</h1>
+      <p class="sos-sub" id="nw-foot">${newFootText()}</p>
+    </div>
+    <div class="nw-steps">${steps}</div>
+
+    ${pane}
+
+    <button class="sos-btn sos-btn-go nw-go" onclick="NewFlow.next()">${last
+      ? (S.live ? 'Done' : members
+          ? 'Publish to ' + members + ' member' + (members === 1 ? '' : 's')
+          : 'Publish it')
+      : 'Next'}</button>
+    <p class="nw-foot">${last
+      ? (S.live
+        ? 'It is already online — this just saves what you have changed.'
+        : 'Publishing puts it on the board and sends the club a notification.')
+      : 'Nothing is shared until you publish.'}</p>
     <div class="sos-tail"></div>`;
+}
+
+/* The line under the title, which is the one thing on the page that answers
+   "what have I actually set". Its own function because the date and time
+   fields update it without repainting the form they are being typed into. */
+function newFootText(){
+  if(S.live) return 'Changes reach everybody who has the link on their next refresh.';
+  const t = sessionWhen && sessionWhen();
+  if(S.dateOn) return (t ? longDate(t) : S.dateOn)
+    + (S.startHM ? ' · ' + esc(S.startHM) : '')
+    + (S.venueName ? ' · ' + esc(S.venueName) : '');
+  return 'Members get a notification the moment you publish.';
+}
+function newFootnote(){
+  const el = document.getElementById('nw-foot');
+  if(el) el.innerHTML = newFootText();
+  /* the bar unlocks as soon as there is a date */
+  document.querySelectorAll('.nw-step[disabled]').forEach(b =>{
+    if(S.dateOn) b.disabled = false;
+  });
 }
 
 /* Saving a draft is what the old screen did on every keystroke anyway — the
@@ -13166,8 +13295,7 @@ function addLate(){
     return;
   }
   invalidatePlan();
-  const id = addPlayer(n, newLevel);
-  if(id && S.active){ S.queue.unshift(id); }   // to the front: they have catching up to do
+  const id = addPlayer(n, newLevel);   /* addPlayer queues them */
   input.value = '';
   renderAll(); save(); if(S.live) Live.beat();
   toast(n + ' is in the queue and up next.');
@@ -13730,10 +13858,7 @@ function commitImport(){
       if(m.dupr != null){ p.dupr = m.dupr; p.level = duprLevel(m.dupr); }
     }
   });
-  if(S.active){
-    added.forEach(id =>{ if(!S.queue.includes(id)) S.queue.push(id); });
-    invalidatePlan();
-  }
+  if(S.active) invalidatePlan();
   const linked = rows.filter(x => x.mid).length;
   importList = [];
   closeSheet(); renderAll(); renderLadder(); TV.paint(); save();
@@ -14145,7 +14270,7 @@ const Theme = {
     };
   },
 
-  /* The redesign's teal, and it was picksilog green. "Default" is not "no
+  /* The redesign's teal, and it was the old green. "Default" is not "no
      colour" — it is the product's own colour, put through the same
      derivation as anybody else's so that --court-ink comes out dark enough
      to read on a card. Setting the raw CSS variables to teal instead would
@@ -16053,7 +16178,7 @@ const AuthUI = {
   paint(){
     const up = this.mode === 'up';
     const set = (id, t) =>{ const e = document.getElementById(id); if(e) e.textContent = t; };
-    /* The navy panel says what picksilog is and does not change — it is the
+    /* The navy panel says what the app is and does not change — it is the
        product's pitch, not a caption for whichever form is showing. Only
        the form's own heading flips. */
     this.stats();
@@ -17942,7 +18067,7 @@ function tierCardHTML(points, nights, unlocked){
 function meSection(title, rows){
   if(!rows.length) return '';
   return `<div class="sec">
-    <div class="sec-h"><b>${title}</b></div>
+    ${title ? `<div class="sec-h"><b>${title}</b></div>` : ''}
     <div class="sec-c"><div class="me-list">${rows.join('')}</div></div>
   </div>`;
 }
@@ -17965,31 +18090,29 @@ function meMono(name){
     .map(w => w.slice(0, 1).toUpperCase()).join('') || '?';
 }
 function meTools(){
+  /* Activity is what you have done; Settings is what you can change. The
+     design groups the screen that way, and the old one did not — "Account &
+     app" held the club roster, the theme and signing out in a single list. */
   const mine = [
-    meRow('accountSheet()', 'Settings', 'gear', 'Your details and your password'),
-    meRow('prefsSheet()', 'Preferences', 'bell', 'This phone: notifications, look, which club')
+    meRow("go('board')", 'Your record', 'trophy', 'Games, nights and where you stand'),
+    meRow('shareMyId()', 'Your player ID', 'open', 'Show it at the door')
+  ];
+  const app2 = [
+    meRow('accountSheet()', 'Account', 'gear', 'Your details and your password'),
+    meRow('prefsSheet()', 'Notifications', 'bell', 'This phone: alerts, look, which club')
   ];
   /* "The club" was a section holding one row that went to the roster. Which
      clubs somebody is actually in is the more useful answer, and it is the
      only place the app ever said it — the roster is reachable from each club's
      own page, where it belongs. Each row goes to that club, which is also
      where an owner assigns its organizers. */
-  const club = ((Groups.list || []).filter(g => g.mine)).map(g =>
-    meRow(`Groups.open('${esc(g.id)}')`, esc(g.name), 'members',
-      (g.can_organize ? 'You organize here · ' : '')
-      + g.members + ' member' + (g.members === 1 ? '' : 's'), meMono(g.name)));
+  /* The clubs section has gone from this screen. The design has no list of
+     them here — a club is reached from a session, from the board, or from
+     Club settings — and a profile that opened with a membership list was
+     answering a question nobody asks of their own page. The load stays,
+     because Club settings counts them. */
   if(Groups.list === null && Live.ready()){
     Groups.load().then(()=>{ if(currentScreen() === 'me') paintMe(); });
-  }
-  if(!club.length){
-    club.push(meRow("go('groups')", 'Find a club', 'members',
-      Groups.list === null ? 'Reading\u2026' : 'You are not in one yet'));
-  } else {
-    /* Always a way to the whole list, not only when you are in none of them.
-       Groups lost its tab when the bar went to the design's five, and the
-       rows above only reach the clubs you are already in — so somebody in
-       one club could no longer get to the others. */
-    club.push(meRow("go('groups')", 'All clubs', 'members', 'Browse and join'));
   }
 
   const org = [];
@@ -18022,9 +18145,16 @@ function meTools(){
     app.push(`<button class="me-item warn" onclick="AuthUI.confirmOut()">
       <span><b>Sign out</b></span></button>`);
 
-  return meSection('Your clubs', club)
-       + meSection('Organizing', org)
-       + meSection('Account & app', mine.concat(app));
+  const nClub = (Groups.list || []).filter(g => g.mine).length;
+  const settings = [
+    meRow("go('groups')", 'Club settings', 'members',
+      Groups.list === null ? 'Reading\u2026'
+        : (nClub || 'No') + ' club' + (nClub === 1 ? '' : 's'))
+  ].concat(app2, org);
+
+  return meSection('Activity', mine)
+       + meSection('Settings', settings)
+       + meSection('', app);
 }
 
 /* Two things, one door. Editing your details and changing your password were
@@ -18971,7 +19101,7 @@ function roleWord(r){
    inside that club's night and the bar says whose. Over the form where you
    set one up they are a guess — the group is a row in that same form three
    lines down, it may well be a different one, and the app holds several. So
-   setting up wears picksilog's own mark and says what you are doing; which
+   setting up wears Sideout Society's own mark and says what you are doing; which
    group and which format are answered by the form itself, and by the banner
    at the top of it once the session actually exists. */
 function paintBrandBar(name){
@@ -18985,8 +19115,8 @@ function paintBrandBar(name){
     if(badge) badge.hidden = true;
     if(mark){
       mark.hidden = false;
-      if(!mark.dataset.drawn && typeof picksilog === 'function'){
-        mark.innerHTML = picksilog(30);
+      if(!mark.dataset.drawn && typeof sosMark === 'function'){
+        mark.innerHTML = sosMark(30);
         mark.dataset.drawn = '1';
       }
     }
@@ -19076,8 +19206,8 @@ function syncNav(name){
        rebuilt when that actually changes. */
     const mk = document.getElementById('ab-mark');
     const night = document.documentElement.dataset.theme === 'night';
-    if(mk && typeof picksilog === 'function' && mk.dataset.n !== String(night)){
-      mk.innerHTML = picksilog(26, { onDark: night });
+    if(mk && typeof sosMark === 'function' && mk.dataset.n !== String(night)){
+      mk.innerHTML = sosMark(26, { onDark: night });
       mk.dataset.n = String(night);
     }
   }
@@ -19248,12 +19378,19 @@ async function startOrganizing(){
     /* A session is still running on this device: setting up a second
        one here would tear down the first, so say so rather than
        quietly reopening what is already on. */
+    /* Running one night no longer stops you setting up another. It used to
+       refuse outright, which is wrong for the job: an organizer takes next
+       Thursday's entries while tonight is still on court, and the one that
+       is running keeps its own code and its own link either way. The sheet
+       says plainly what happens to the night in progress rather than
+       pretending nothing does. */
     if(S.active){
-      openSheet(`<h3>You are already running one</h3>
-        <p class="sub">${esc(S.title || 'Your session')} is live on this device. Finish it before
-          setting up another, or leave it running and open the new one on its own link.</p>
-        <button class="btn btn-go" onclick="closeSheet();go('play')">Back to the session</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('home')">Not now</button>`);
+      openSheet(`<h3>${esc(S.title || 'A session')} is running</h3>
+        <p class="sub">Setting another one up here puts tonight down on <b>this phone</b>.
+          It carries on for everybody else on its own link and its code
+          <b>${esc(S.liveCode || '')}</b>, and you can pick it up again from What's on.</p>
+        <button class="btn btn-go" onclick="closeSheet();freshSession()">Set up another</button>
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('run')">Back to tonight</button>`);
       return;
     }
     /* Last night's roster is still sitting in the setup screen. Offer
@@ -20560,14 +20697,14 @@ const Chat = {
             `<button class="${m.my_reaction === e2 ? 'on' : ''}"
               onclick="Chat.react('${esc(m.id)}','${esc(e2)}')">${esc(e2)}${
               m.reactions[e2] > 1 ? ' ' + m.reactions[e2] : ''}</button>`).join('')}</span>` : '';
-      /* picksilog saying the night is done. Not a bubble: nobody said it,
+      /* The club saying the night is done. Not a bubble: nobody said it,
          and drawing it as though somebody had would put an author's name on
          a thing the app did. A rule across the conversation, with the way to
          the results on it. */
       if(m.kind === 'recap'){
         last = null;
         return rule + `<div class="ch-note">
-          <span class="ch-note-h"><img src="${picksilogSrc()}" alt="">
+          <span class="ch-note-h"><img src="${sosMarkSrc()}" alt="">
             <b>Sideout Society</b></span>
           <p>${esc(m.body || '')}</p>
           ${this.code ? `<button class="btn btn-quiet" onclick="pastSession('${
@@ -23935,7 +24072,22 @@ const Offline = {
 
   boot(){
     addEventListener('offline', ()=> this.check());
-    addEventListener('online', ()=>{ this.misses = 0; this.dismissed = false; this.hide(); });
+    addEventListener('online', ()=>{
+      this.misses = 0; this.dismissed = false; this.hide();
+      /* Coming back from a dead spot, fetch the newest shell so the next
+         open is the current build rather than whatever was cached when the
+         signal went. The worker does the work; this only asks. */
+      try{ navigator.serviceWorker.controller &&
+        navigator.serviceWorker.controller.postMessage('refresh-shell'); }catch(e){}
+      /* And re-read what the screen is showing, rather than waiting for the
+         next poll or making somebody pull. */
+      const at = currentScreen();
+      if(at === 'home'){
+        Feed.load(true).then(()=>{ if(currentScreen() === 'home') paintHome(); }).catch(()=>{});
+        Posts.load(true).then(()=>{ if(currentScreen() === 'home') Posts.paint(); }).catch(()=>{});
+      }
+      if(at === 'games') Feed.load(true).then(()=> Games.paint()).catch(()=>{});
+    });
     /* A page that was opened with no connection at all should say so rather
        than sit on an empty screen looking broken. */
     if(navigator.onLine === false) setTimeout(()=> this.check(), 1200);
@@ -23973,7 +24125,7 @@ const Offline = {
     }
     const off = navigator.onLine === false;
     el.innerHTML = `<div class="ns-in">
-        <span class="ns-mark">${picksilog(96)}</span>
+        <span class="ns-mark">${sosMark(96)}</span>
         <b>Sideout Society</b>
         <p>${off
           ? 'This phone is offline.'
@@ -24061,7 +24213,7 @@ const Install = {
                 : (kind === 'ios' ? 'Show me how' : 'Add to Home Screen');
     const call = kind === 'ios' ? 'Install.how()' : 'Install.go()';
     return `<div class="get-top">
-        <span class="get-mark">${picksilog(30, { onDark:true })}</span>
+        <span class="get-mark">${sosMark(30, { onDark:true })}</span>
         <span class="get-tx"><b>Put Sideout Society on your phone</b>
           <span>It opens like any other app — no address bar — and it is the only
             way an iPhone can tell you a session has gone up.</span></span>
@@ -29126,8 +29278,8 @@ function cardPaint(accent){
 /* The mark for anywhere it is wanted as an image rather than as markup.
    Built once — it is the same string every time and it is not short. */
 let _pmark = null;
-function picksilogSrc(){
-  if(_pmark === null){ try{ _pmark = picksilogURI(); }catch(e){ _pmark = ''; } }
+function sosMarkSrc(){
+  if(_pmark === null){ try{ _pmark = sosMarkURI(); }catch(e){ _pmark = ''; } }
   return _pmark;
 }
 function loadImg(src){
@@ -29139,8 +29291,8 @@ function loadImg(src){
    — which matters, because the card is made at the end of a night in a hall
    with one bar. currentColor cannot survive the trip, so the brand hexes are
    written out; this is the one place they are not tokens. */
-function picksilogURI(){
-  const svg = picksilog(200)
+function sosMarkURI(){
+  const svg = sosMark(200)
     .replace(/var\(--brand-gold\)/g, '#FFC72C')
     .replace(/var\(--brand-green\)/g, '#7BC943')
     .replace(/var\(--brand-navy\)/g, '#0F2747')
@@ -29205,7 +29357,7 @@ function drawDisc(x, img, cx, cy, r, name, ring){
    The header belongs to the group, not to the app. A night filed under
    Sideout Society is posted as Sideout Society, with its own logo and its
    own home court, because that is the name the people in the photograph
-   would use for themselves. picksilog signs the foot instead — it made the
+   would use for themselves. The club signs the foot instead — it made the
    card, it did not run the night. A session under no group falls back to
    the club, which is the name it has always carried anyway.
 
@@ -29365,7 +29517,7 @@ function cardStats(x, W, y, stats, boxed){
   });
 }
 
-/* picksilog signs the foot. It made the card; it did not run the night —
+/* The club signs the foot. It made the card; it did not run the night —
    that name is at the top and it belongs to the group.
 
    The link under it is printed to be read and typed, and to give somebody
@@ -29378,7 +29530,7 @@ function cardSignature(x, W, link){
   x.beginPath(); x.moveTo(PAD, fy); x.lineTo(W - PAD, fy); x.stroke();
 
   /* The product's own name, which is Sideout Society. The card was still
-     signing itself picksilog — and of everything the rebrand had not reached,
+     signing itself with the old name — and of everything the rebrand had not reached,
      this was the one people actually post. The mark beside it is the club's,
      drawn from the same image the masthead uses. */
   const WORD = 'Sideout Society';
@@ -29826,7 +29978,7 @@ function cardHeading(group){
    to wait for. Kept as a function because every caller awaits it and it
    still resolves the mark the masthead draws. */
 async function cardFonts(){
-  return loadImg(picksilogURI());
+  return loadImg(sosMarkURI());
 }
 
 function cardTiles(o){

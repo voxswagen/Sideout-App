@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v133`. Forgetting this means testers see last week's app and
+Currently `sideout-v134`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -114,8 +114,13 @@ court resets and the round ticks — the same arithmetic `Score.legal()` uses.
 A page that animated a fake score could drift from what the product does;
 this one cannot.
 
-**`picksilog` survived in nine visible places, and each check missed a
-different set.** Grepping the markup missed the two JS string literals
+**The old name is gone, including from the identifiers.** `picksilog()`,
+`picksilogSrc()` and `picksilogURI()` are `sosMark()`, `sosMarkSrc()` and
+`sosMarkURI()`; `manifest.json` said "picksilog" as both `name` and
+`short_name`, which is what an installed phone puts under the icon on the
+Home Screen. `grep -rn picksilog` across the repo is 0.
+
+It survived that long because each check missed a different set.** Grepping the markup missed the two JS string literals
 (`ab-title`'s fallback, `paintBrandBar()`'s subtitle). Then
 `grep -c "'picksilog'"` returned 0 while the word was still in `<b>picksilog</b>`
 in the app bar's static markup and in the chat recap note, in two
@@ -630,6 +635,28 @@ group reads and `sideout_chat_may` key on it. They used to reach the group
 through an INNER join on `sessions`, so deleting a session quietly took a
 42-player night out of its club, off its club's table, and locked everyone
 who played it out of the conversation about it.
+
+**A latecomer has to be put on the queue, and `addPlayer()` is the only
+place that should do it.** Five callers used to do it for themselves and
+three of them forgot — including both add buttons on the Players screen — so
+somebody added mid-session went onto `S.order` and nowhere else. In every
+format but the two pool ones `waitingIds()` reads `S.queue`, so a name
+missing from it is a person who is on the list all night: never shown as
+waiting, never dealt onto a court, and gone from every count the session
+draws. Simulated across the seven formats, **every late joiner was lost in
+five of them** — gauntlet, mix, levels, kotc, mixed. River and Court Wars
+were fine only because `poolsSync()` places people into tiers, and
+`waitingIds()` reads the tiers there rather than the queue.
+
+The insert lives in `addPlayer()` now, beside the `poolsSync()` call, guarded
+so the pool formats still place their own. To the front, because a latecomer
+has catching up to do, which is what the courtside add always did. One of the
+three call sites that did it by hand had no `includes` guard, so leaving them
+in place would have queued the same person twice.
+
+Anything that adds a person to a running night goes through `addPlayer()`.
+If a sixth way in ever appears, it inherits this rather than having to
+remember it.
 
 **Equal games is not equal rest.** Every matchmaker ranks on games played,
 and on a night bigger than the courts almost everyone is tied on that @EM@ 43

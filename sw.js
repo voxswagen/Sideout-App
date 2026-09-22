@@ -2,15 +2,28 @@
    Two jobs: make the app installable (Chrome will not offer to install
    without one), and keep it usable when the court wifi drops.
 
-   Network first, cache as a fallback. A pickleball night is live data:
-   a stale roster is worse than a slow one, so the network always gets
-   first refusal and the cache only answers when it cannot.            */
+   It used to be network-first with the cache as a fallback, on the grounds
+   that a stale roster is worse than a slow one. That reasoning was sound and
+   aimed at the wrong thing: every piece of live data in this app — the
+   roster, the session, the ladder, the feed — comes from Supabase, which is
+   a different origin and never reaches this worker at all. All this handles
+   is the shell: one HTML file, the manifest and the icons. Serving that from
+   cache cannot serve a stale roster, because it has never served a roster.
+
+   So the shell is cache-first and revalidated in the background, which is
+   what makes the app open at all on a court with one bar. The version bump
+   below still forces the new build: `activate` bins every other cache, and
+   the background fetch replaces the copy for next time.
+
+   Everything else is network-first with a short timeout, because a request
+   that hangs for thirty seconds on bad wifi is worse than one that fails in
+   three and falls back to what we already have.                          */
 
 /* Bump this on every deploy that changes CSS or markup. The activate
    handler deletes any cache that is not the current name, so a new
    name is what actually forces phones onto the new build — without
    it, an installed app can serve last week's stylesheet indefinitely. */
-const CACHE = 'sideout-v133';
+const CACHE = 'sideout-v134';
 const SHELL = ['/', '/index.html', '/manifest.json',
                '/icon-192.png', '/icon-512.png', '/icon-maskable.png',
                '/apple-touch-icon.png',
@@ -34,21 +47,76 @@ self.addEventListener('activate', ev =>{
   );
 });
 
+/* A response worth keeping. An error page cached under the app's own URL is
+   how an app comes back from a blip permanently broken. */
+function keepable(res){
+  return res && res.ok && (res.type === 'basic' || res.type === 'default');
+}
+
+/* Network, but not for ever. Court wifi does not usually refuse a request —
+   it accepts it and never answers, and the browser will wait a very long
+   time for that. */
+function within(ms, req){
+  return new Promise((resolve, reject) =>{
+    const t = setTimeout(()=> reject(new Error('slow')), ms);
+    fetch(req).then(r =>{ clearTimeout(t); resolve(r); },
+                    e =>{ clearTimeout(t); reject(e); });
+  });
+}
+
 self.addEventListener('fetch', ev =>{
   const req = ev.request;
   if(req.method !== 'GET') return;
   const url = new URL(req.url);
   if(url.origin !== location.origin) return;      /* Supabase talks for itself */
 
+  /* Anything that loads the app itself — a navigation, or index.html asked
+     for directly — is answered from the cache straight away and refreshed
+     behind the back of it. This is the whole of the offline story: the app
+     opens, and then everything it shows is asked of Supabase, which either
+     answers or is reported as not having answered. */
+  const isShell = req.mode === 'navigate'
+    || url.pathname === '/' || url.pathname === '/index.html';
+
+  if(isShell){
+    ev.respondWith(
+      caches.match('/index.html').then(hit =>{
+        const fresh = within(8000, req).then(res =>{
+          if(keepable(res)){
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put('/index.html', copy)).catch(()=>{});
+          }
+          return res;
+        });
+        /* A cached copy answers now; the fetch above still runs and lands in
+           the cache for next time. With no cached copy there is nothing to
+           do but wait for the network. */
+        if(hit){ fresh.catch(()=>{}); return hit; }
+        return fresh;
+      })
+    );
+    return;
+  }
+
   ev.respondWith(
-    fetch(req)
+    within(8000, req)
       .then(res =>{
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
+        if(keepable(res)){
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
+        }
         return res;
       })
       .catch(()=> caches.match(req).then(hit => hit || caches.match('/index.html')))
   );
+});
+
+/* Let the page ask for the newest build rather than waiting for a reload.
+   The app calls this when it comes back from being offline. */
+self.addEventListener('message', ev =>{
+  if(ev.data === 'refresh-shell'){
+    caches.open(CACHE).then(c => c.add('/index.html')).catch(()=>{});
+  }
 });
 
 /* ── push ────────────────────────────────────────────────────────

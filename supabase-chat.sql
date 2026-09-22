@@ -130,7 +130,7 @@ begin
            (select rx2.emoji from public.chat_reactions rx2
              where rx2.message = m.id and rx2.member = v_me),
            m.kind
-      -- LEFT, because picksilog has no members row and an inner join would
+      -- LEFT, because the app itself has no members row and an inner join would
       -- silently drop every notice it has ever posted
       from public.chat_messages m
       left join public.members mem on mem.id = m.member
@@ -245,7 +245,7 @@ grant execute on function public.sideout_chats(text) to anon, authenticated;
 drop function if exists public.sideout_chat_send(p_club text, p_chat uuid, p_body text);
 
 
--- ── picksilog says the night is done ───────────────────────────────────
+-- ── the club says the night is done ───────────────────────────────────
 -- Called from sideout_archive, wrapped there so a notice failing to post can
 -- never fail an archive. It is the moment everyone in the conversation wants
 -- and nothing was marking it: the talking simply stopped, and whether the
@@ -253,7 +253,7 @@ drop function if exists public.sideout_chat_send(p_club text, p_chat uuid, p_bod
 --
 -- A message with no author needed two things the table did not have: a kind,
 -- so the client can draw it as a notice rather than as somebody's bubble,
--- and a nullable member, because picksilog is not one.
+-- and a nullable member, because the app is not one.
 alter table public.chat_messages add column if not exists kind text not null default 'said';
 alter table public.chat_messages alter column member drop not null;
 
