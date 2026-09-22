@@ -3,6 +3,12 @@
 -- ═══════════════════════════════════════════════════════════════
 -- Already live on the project. This file is the deployed definition.
 --
+-- `place` is on the end, for the reason sideout_upcoming's group_id is: a
+-- client reading fields by name cannot notice a column arriving there. It is
+-- per-caller — where *you* finished — so it is null for anon and for a night
+-- you were not on, and the card drops the badge rather than printing a place
+-- nobody came.
+--
 -- The `owing` column is the reason this is worth keeping written down.
 -- The past feed is readable by anon, so a count of who still owes cannot
 -- simply be selected: it comes back null unless the caller is an owner or
@@ -14,7 +20,8 @@ drop function if exists public.sideout_past(text);
 
 create function public.sideout_past(p_club text)
 returns table(code text, title text, played_at timestamptz,
-              players integer, games integer, cover text, owing integer)
+              players integer, games integer, cover text, owing integer,
+              place integer)
 language sql
 stable
 security definer
@@ -36,8 +43,35 @@ as $$
                    and me.user_id = auth.uid()
                    and me.role in ('owner', 'organizer'))
               then (count(*) filter (where not coalesce(r.paid, false)))::int
+         end,
+         -- Where the caller finished that night, or null for a night they
+         -- did not play. The same arithmetic sideout_player uses for `pos`,
+         -- deliberately: two answers to "where did I come" that were worked
+         -- out separately would eventually disagree, and the one on the card
+         -- is the one people would screenshot. Ties share a place, so two
+         -- people level on wins and difference are both second.
+         -- The null guard is load-bearing. Without it a night the caller did
+         -- not play has mine.wins null, every comparison below is null, the
+         -- count is nought and the place comes back as first — the app would
+         -- award anonymous visitors a win on every night in the club.
+         case when mine.wins is null then null else
+           (select count(*) + 1
+              from public.results o
+             where o.club = r.club and o.code = r.code and o.removed_at is null
+               and (o.wins > mine.wins
+                    or (o.wins = mine.wins
+                        and (o.pf - o.pa) > (mine.pf - mine.pa))))
          end
     from public.results r
+    -- the caller's own row on this night, if they were on it
+    left join lateral (
+      select r2.wins, r2.pf, r2.pa
+        from public.results r2
+        join public.members me
+          on me.club = r2.club and me.user_id = auth.uid()
+       where r2.club = r.club and r2.code = r.code
+         and r2.removed_at is null and r2.member = me.id
+       limit 1) mine on true
     left join public.session_covers cv
       on cv.code = r.code and cv.club = r.club
     left join public.sessions s
@@ -45,7 +79,7 @@ as $$
    where r.club = coalesce(p_club, 'sideout')
      -- a night that was reset is put aside, not deleted; it must not show
      and r.removed_at is null
-   group by r.code
+   group by r.code, r.club, mine.wins, mine.pf, mine.pa
    order by 3 desc
    limit 60;
 $$;

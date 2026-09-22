@@ -10,10 +10,14 @@
    handler deletes any cache that is not the current name, so a new
    name is what actually forces phones onto the new build — without
    it, an installed app can serve last week's stylesheet indefinitely. */
-const CACHE = 'sideout-v111';
+const CACHE = 'sideout-v126';
 const SHELL = ['/', '/index.html', '/manifest.json',
                '/icon-192.png', '/icon-512.png', '/icon-maskable.png',
-               '/apple-touch-icon.png'];
+               '/apple-touch-icon.png',
+               /* The club's mark. It is the first thing on the sign-in
+                  screen, so a phone opening the app off the cache should not
+                  have to wait on the network to see whose app this is. */
+               '/sos-mark.png'];
 
 self.addEventListener('install', ev =>{
   ev.waitUntil(
