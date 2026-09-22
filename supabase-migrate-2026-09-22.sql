@@ -140,7 +140,11 @@ create table if not exists public.posts (
   -- 'night'  the app wrote it when a night was banked
   kind        text not null default 'said',
   body        text,
-  photo       text,
+  -- An array of images, not one. A post about a night is three photographs
+  -- and a line underneath, which is how anybody who has used a phone in the
+  -- last decade expects to write one — and a single `photo text` would have
+  -- meant either one picture or four posts.
+  photos      jsonb,
   -- The attached card a system post carries: {kind,title,meta,gold,podium,
   -- action,code}. Structured rather than baked into the body, because the
   -- design draws a crown, a finished night with a podium and an open play
@@ -231,7 +235,7 @@ drop function if exists public.sideout_posts(text, uuid, integer, timestamptz);
 
 create function public.sideout_posts(p_club text, p_group uuid,
                                      p_limit integer, p_before timestamptz)
-returns table(id uuid, kind text, body text, photo text, card jsonb, code text,
+returns table(id uuid, kind text, body text, photos jsonb, card jsonb, code text,
               group_id uuid, created_at timestamptz, edited_at timestamptz,
               author uuid, author_name text, author_photo text,
               likes integer, kudos integer, comments integer,
@@ -245,7 +249,7 @@ as $$
   select p.id,
          p.kind,
          p.body,
-         p.photo,
+         p.photos,
          p.card,
          p.code,
          p.group_id,
@@ -287,10 +291,10 @@ grant execute on function public.sideout_posts(text, uuid, integer, timestamptz)
 
 -- ── saying something ────────────────────────────────────────────
 
-drop function if exists public.sideout_post_add(text, uuid, text, text, text);
+drop function if exists public.sideout_post_add(text, uuid, text, text, jsonb);
 
 create function public.sideout_post_add(p_club text, p_group uuid, p_code text,
-                                        p_body text, p_photo text)
+                                        p_body text, p_photos jsonb)
 returns uuid
 language plpgsql
 security definer
@@ -304,13 +308,18 @@ begin
   if v_me is null then
     raise exception 'not a member of this club';
   end if;
-  if coalesce(btrim(p_body), '') = '' and coalesce(p_photo, '') = '' then
+  -- A picture on its own is a post, and so is a line on its own. Both empty
+  -- is not.
+  if coalesce(btrim(p_body), '') = ''
+     and coalesce(jsonb_array_length(coalesce(p_photos, '[]'::jsonb)), 0) = 0 then
     raise exception 'nothing to post';
   end if;
 
-  insert into public.posts (club, group_id, code, author, kind, body, photo)
+  insert into public.posts (club, group_id, code, author, kind, body, photos)
   values (coalesce(p_club, 'sideout'), p_group, nullif(p_code, ''), v_me,
-          'said', nullif(btrim(p_body), ''), nullif(p_photo, ''))
+          'said', nullif(btrim(p_body), ''),
+          case when coalesce(jsonb_array_length(coalesce(p_photos, '[]'::jsonb)), 0) = 0
+               then null else p_photos end)
   -- unqualified on purpose: RETURNING names the target table, and a
   -- three-part name is not valid there. The v_ prefix on the variable
   -- is what keeps this unambiguous, which is the same discipline the
@@ -321,7 +330,7 @@ begin
 end;
 $$;
 
-grant execute on function public.sideout_post_add(text, uuid, text, text, text)
+grant execute on function public.sideout_post_add(text, uuid, text, text, jsonb)
   to authenticated;
 
 -- ── a heart or a star ───────────────────────────────────────────

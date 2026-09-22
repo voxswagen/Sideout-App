@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v138`. Forgetting this means testers see last week's app and
+Currently `sideout-v139`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -64,6 +64,34 @@ say what happens ("Take it offline", "Start fresh", "Keep playing"), not
 ---
 
 ## Traps found the hard way
+
+**Setup is gone, and `go('setup')` is a redirect.** The old panelled editor
+is no longer reachable: `go('setup')` sends you to the compose screen when
+nothing is loaded and to the session overview when something is, and the
+fall-through that used to rewrite *any* organizer screen to `'setup'` now
+picks between those two. That rule is the one that caught `new` and
+`comments`; it cannot catch a third thing now, because the screen it aimed
+at does not answer.
+
+Two things had to move first, and neither was optional:
+
+* **`startSession()` was only reachable from a button on that screen.**
+  Deleting it without moving that would have left a club able to set a night
+  up and unable to start it. The Session overview carries it now — "Start the
+  session" before, "Run the night" after, and the disabled form still says
+  "Add 2 more to start" rather than vanishing.
+* **`renderSession()` refused to draw anything unless `S.active || S.live`,**
+  which is exactly the state a night is in between being composed and being
+  started. It draws for any night with people on the list now.
+
+And the group gate at the top of `startSession()` had to go: it *refused to
+start* a night that was not filed under a group, which was defensible while
+the compose screen asked and became a wall the moment that row came off,
+because there was then no way to answer it.
+
+The markup is still in the file and nothing routes to it. `sp-teams` (MLP's
+team builder) is the one panel with no other home, so that is what to rebuild
+before the `setup-page` blocks can be deleted.
 
 **`go('setup')` is not "start a new session".** Setup is the editor for
 whatever session is loaded in the global `S`. If a session is loaded,
@@ -845,6 +873,15 @@ null rather than raising when the caller is not staff, so the client falls
 back to the PIN field and nothing depends on the migration having run. "Take
 over a session" is "Open a session" now — it was never exclusive, and the
 words said it was.
+
+**The composer is pictures first, then the caption.** Tapping the camera
+opens the picker; the caption is waiting underneath when it closes. Up to
+four images, `multiple` on the input, shrunk harder when there are several
+because they travel inside the row as data URLs and four at full size is a
+post nobody can load. There is no "Add a photo" button inside the sheet — the
+camera on the composer is the way in, and a second one was a button doing the
+job of the button you had already pressed. `posts.photos` is `jsonb`, not a
+single `photo text`: one picture or four posts was the only other option.
 
 **Birthdays are a feed post, derived, never stored.** `Birthday.soon(7)`
 walks forward from this morning rather than filtering on the calendar month,

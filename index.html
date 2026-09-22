@@ -4398,15 +4398,32 @@ body.casting{overflow:hidden}
 .pst-add button{flex:none;min-height:38px;padding:0 14px;border-radius:10px;border:0;
   cursor:pointer;background:var(--sos-accent);color:var(--sos-on-accent);
   font-family:inherit;font-size:14px;font-weight:600}
-/* The sheet's buttons were sitting flush against the box you type in. */
-.pst-ta{width:100%;margin-bottom:12px;padding:12px;border-radius:12px;font-family:inherit;
+/* The composer: pictures, then the caption, then the buttons — each with
+   room around it. They used to sit flush against one another. */
+.pst-ta{width:100%;margin:0 0 14px;padding:12px;border-radius:12px;font-family:inherit;
   font-size:15px;line-height:1.5;resize:vertical}
-.pst-pick{margin-bottom:8px}
-.pst-prev{position:relative;margin-bottom:12px}
-.pst-prev img{display:block;width:100%;border-radius:12px}
-.pst-prev button{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;
+.pst-post{margin-bottom:8px}
+
+/* What you have chosen, before it goes. Square thumbnails so four of them
+   are a block rather than a ragged column. */
+.pst-grid{display:grid;gap:6px;margin:0 0 14px;grid-template-columns:repeat(2,1fr)}
+.pst-grid.n1{grid-template-columns:1fr}
+.pst-cell{position:relative;display:block}
+.pst-cell img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px}
+.pst-grid.n1 .pst-cell img{aspect-ratio:4/3}
+.pst-cell button{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;
   border-radius:99px;cursor:pointer;background:rgba(23,36,43,.62);color:#fff;
-  font-size:19px;line-height:1}
+  font-size:18px;line-height:1}
+.pst-more{aspect-ratio:1/1;border-radius:10px;border:1px dashed var(--sos-chevron);
+  background:var(--sos-fill);cursor:pointer;font-size:26px;line-height:1;
+  color:var(--sos-dim);font-family:inherit}
+
+/* And how they read once posted. */
+.pst-shots{display:grid;gap:3px;margin-top:10px;grid-template-columns:repeat(2,1fr)}
+.pst-shots.n1{grid-template-columns:1fr}
+.pst-shots.n3 img:first-child{grid-column:span 2}
+.pst-shots img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;cursor:zoom-in}
+.pst-shots.n1 img{aspect-ratio:auto;max-height:70vh;object-fit:cover}
 
 /* ── comments ──
    The composer takes the place of the tab bar rather than sitting above it:
@@ -9582,16 +9599,12 @@ function go(name){
     if(Groups.list === null) Groups.load().then(()=>{ if(currentScreen() === 'board') paintBoard(); });
     return;
   }
+  /* Kept as a redirect rather than a screen. Anything still asking for it —
+     an old link, a stale home-screen shortcut, a handler nobody found — gets
+     the screen that replaced it instead of a blank page. */
   if(name === 'setup'){
-    /* Gated here because this returns early. Setup used to fall through to
-       the canOrganize() check further down, and adding this line to land on
-       the summary rather than whichever panel was last open quietly took it
-       out from behind that guard. */
-    if(!canOrganize()){ gateScreens(); return; }
-    /* Editing a night while it runs is a normal thing to want — the venue
-       changed, somebody asked for the fee, the cap needs lifting because two
-       more turned up. It used to be refused outright. */
-    showOnly('setup'); setupPage(''); return;
+    go((S.live || S.order.length) ? 'session' : 'new');
+    return;
   }
   /* Before the fall-through below, which rewrites any organizer screen to
      'setup' when no session is running. New open play is precisely the screen
@@ -9617,7 +9630,12 @@ function go(name){
   }
 
   if(!canOrganize()){ gateScreens(); return; }
-  if(!S.active && !S.bracket) name = 'setup';
+  /* This used to rewrite any organizer screen to 'setup' when no session
+     was running, which is the trap that caught 'new' and 'comments' on the
+     way past. Setup is gone; the compose screen is where you go when there
+     is no night, and the session overview is where you go when there is one
+     but it has not started. */
+  if(!S.active && !S.bracket) name = (S.live || S.order.length) ? 'session' : 'new';
   showOnly(name);
   /* Play was the one session screen go() did not draw, so it showed whatever
      was last written into #courts — on a cold start that is the "Nothing on
@@ -10806,23 +10824,12 @@ function startSession(anyway, confirmed){
        who runs no groups is not being careless by leaving it blank, and
        telling them off for it every week would be the fastest way to teach
        them to ignore this sheet. */
-    const canFile = (Groups.list || []).some(x => x.can_organize);
-    /* Asked for, and it holds rather than warns now: a night with no group
-       never reaches a group's page or its table, and there is no putting that
-       right afterwards without unbanking the results.
-
-       Still only when there is a group to file it under. Somebody who runs no
-       groups is not being careless by leaving it blank, and a wall they
-       cannot get past would end the night before it started. */
-    if(!S.groupId && canFile){
-      openSheet(`<h3>Which group is this under?</h3>
-        <p class="sub">A night has to belong to one before it starts. It is what puts
-          it on that group's page, on its table, and in the conversation about it
-          afterwards — and it cannot be set once the results are banked.</p>
-        <button class="btn btn-go" onclick="closeSheet();GroupPick.open()">Choose a group</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not now</button>`);
-      return;
-    }
+    /* The group gate has gone. It used to refuse to start a night that was
+       not filed under one, which was defensible when the compose screen
+       asked — and became a wall the moment that row came off, because there
+       was then no way to answer it. A night with no group still never
+       reaches a group's table; that is a consequence of the club deciding it
+       is one club, not a reason to stop them playing. */
     openSheet(`<h3>Start the session?</h3>
       <p class="sub">${ids.length} on the list. The first round is drawn straight away and
         everybody watching the link sees the courts.</p>
@@ -11242,7 +11249,11 @@ const BoardCast = {
 function renderSession(){
   const box = document.getElementById('ses-box');
   if(!box) return;
-  if(!S.active && !S.live){
+  /* A night with people on the list but no code yet is the normal state
+     between setting one up and starting it — it is where the compose screen
+     leaves you, and where the Start button lives now that Setup has gone.
+     Only a genuinely empty S has nothing to show. */
+  if(!S.active && !S.live && !S.order.length){
     box.innerHTML = `<div class="sos-list"><div class="sos-row run-empty">No night loaded.
       Set one up from Today.</div></div>`;
     return;
@@ -11322,7 +11333,17 @@ function renderSession(){
     </div>
 
     <div class="ses-acts">
-      <button class="sos-btn sos-btn-go ses-go" onclick="go('run')">Run the night</button>
+      ${/* Before it starts, the thing you do is start it. This used to be the
+            only button on the old Setup screen, which is what made that
+            screen impossible to retire — a night could be set up from the
+            compose flow and then had nowhere to be started from. The words
+            are the ones Setup used, including the reason it will not go. */''}
+      ${S.active
+        ? `<button class="sos-btn sos-btn-go ses-go" onclick="go('run')">Run the night</button>`
+        : `<button class="sos-btn sos-btn-go ses-go" onclick="startSession()"${
+            onNight.length >= 4 ? '' : ' disabled'}>${onNight.length >= 4
+              ? ((S.live && S.liveCode) ? 'Start play' : 'Start the session')
+              : 'Add ' + (4 - onNight.length) + ' more to start'}</button>`}
       <button class="ses-quiet" onclick="go('people')">Players</button>
     </div>
 
@@ -19614,7 +19635,7 @@ function freshSession(){
 }
 
 async function startOrganizing(){
-  if(!Auth.on()){ showOnly('setup'); return; }
+  if(!Auth.on()){ showOnly('new'); return; }
   if(!Auth.signedIn()){ AuthUI.open(()=> startOrganizing(), 'in'); return; }
   /* the role may not have been read yet on a cold open */
   if(!Auth.me) await Auth.whoami();
@@ -21353,68 +21374,82 @@ const Posts = {
     if(box) box.innerHTML = this.html();
   },
 
-  photo: null,
+  photos: [],
+  MAX: 4,
 
+  /* Pictures first, then what you want to say about them — the order anybody
+     who has posted anything in the last decade expects. Tapping the camera
+     opens the picker straight away and the caption is waiting underneath
+     when it closes; tapping the field just writes. There is no "Add a photo"
+     button in the sheet: the camera on the composer is the way in, and a
+     second one inside was a button doing the job of the button you had
+     already pressed. */
   say(withPhoto){
     if(!Auth.signedIn()){ AuthUI.open(()=> Posts.say(withPhoto), 'in'); return; }
-    this.photo = null;
+    this.photos = [];
     openSheet(`<h3>Say something</h3>
       <p class="sub">It goes to everybody in the club.</p>
-      <textarea id="pst-new" class="pst-ta" rows="4" maxlength="1000"
-        placeholder="How did it go?"></textarea>
       <div id="pst-shot"></div>
-      <button class="btn btn-quiet pst-pick" onclick="Posts.pick()">Add a photo</button>
-      <button class="btn btn-go" onclick="Posts.send()">Post it</button>
+      <textarea id="pst-new" class="pst-ta" rows="3" maxlength="1000"
+        placeholder="Say something about it…"></textarea>
+      <button class="btn btn-go pst-post" onclick="Posts.send()">Post it</button>
       <button class="btn btn-quiet" onclick="closeSheet()">Not now</button>`);
-    /* The camera button on the composer opens the picker straight away —
-       tapping a photo icon and being given a text box was the whole of the
-       complaint. The words are still there underneath it, because a picture
-       with a line about it is the usual post. */
     if(withPhoto) setTimeout(()=> Posts.pick(), 80);
     else setTimeout(()=>{ const t = document.getElementById('pst-new'); if(t) t.focus(); }, 60);
   },
 
-  /* Shrunk on the way in, the same size the chat uses. A phone camera
-     photograph is three or four megabytes and the post row holds it as a
-     data URL, so full size would be a post nobody can load. */
+  /* Several at once, shrunk on the way in. A phone photograph is three or
+     four megabytes and these travel inside the row as data URLs, so four of
+     them at full size would be a post nobody can load — and the more there
+     are the smaller each one needs to be. */
   pick(){
     const f = document.createElement('input');
-    f.type = 'file'; f.accept = 'image/*';
+    f.type = 'file'; f.accept = 'image/*'; f.multiple = true;
     f.onchange = async ()=>{
-      const file = f.files && f.files[0];
-      if(!file) return;
+      const files = [...(f.files || [])].slice(0, this.MAX - this.photos.length);
+      if(!files.length) return;
       const slot = document.getElementById('pst-shot');
-      if(slot) slot.innerHTML = '<p class="pst-none">Getting it ready…</p>';
-      try{ this.photo = await shrinkImage(file, 1100, .74); }
-      catch(e){ this.photo = null; toast('That picture would not load.'); }
+      if(slot) slot.innerHTML = '<p class="pst-none">Getting them ready…</p>';
+      const px = (this.photos.length + files.length) > 1 ? 900 : 1100;
+      for(const file of files){
+        try{ this.photos.push(await shrinkImage(file, px, .72)); }
+        catch(e){ toast('One of those would not load.'); }
+      }
       this.shot();
+      const t = document.getElementById('pst-new');
+      if(t) t.focus();
     };
     f.click();
   },
 
+  drop(i){ this.photos.splice(i, 1); this.shot(); },
+
   shot(){
     const slot = document.getElementById('pst-shot');
     if(!slot) return;
-    slot.innerHTML = this.photo
-      ? `<div class="pst-prev"><img src="${this.photo}" alt="">
-          <button onclick="Posts.photo=null;Posts.shot()" aria-label="Take the photo off">&times;</button>
+    const room = this.photos.length < this.MAX;
+    slot.innerHTML = this.photos.length
+      ? `<div class="pst-grid n${this.photos.length}">
+          ${this.photos.map((u, i) => `<span class="pst-cell">
+            <img src="${u}" alt="">
+            <button onclick="Posts.drop(${i})" aria-label="Take this one off">&times;</button>
+          </span>`).join('')}
+          ${room ? `<button class="pst-more" onclick="Posts.pick()" aria-label="Add another">+</button>` : ''}
         </div>` : '';
-    const add = document.querySelector('.pst-pick');
-    if(add) add.textContent = this.photo ? 'Choose another' : 'Add a photo';
   },
 
   async send(){
     const el = document.getElementById('pst-new');
     const body = el ? String(el.value || '').trim() : '';
-    const photo = this.photo;
+    const photos = this.photos.slice();
     /* A picture on its own is a post. The server takes either. */
-    if(!body && !photo){ toast('Nothing to post yet.'); return; }
+    if(!body && !photos.length){ toast('Nothing to post yet.'); return; }
     closeSheet();
-    this.photo = null;
+    this.photos = [];
     try{
       await Live.rpc('sideout_post_add', {
         p_club: CONFIG.club || 'sideout', p_group: null,
-        p_code: null, p_body: body, p_photo: photo
+        p_code: null, p_body: body, p_photos: photos
       });
       await this.load(true);
       this.paint();
@@ -21542,6 +21577,17 @@ const Posts = {
       : this.sessionRow(e.session)).join('');
   },
 
+  /* However many were posted. One fills the width; two split it; three and
+     four go two by two — the arrangement everybody already reads without
+     being told which is which. */
+  shots(p){
+    const list = Array.isArray(p.photos) ? p.photos.filter(Boolean) : [];
+    if(!list.length) return '';
+    return `<div class="pst-shots n${Math.min(list.length, 4)}">${list.slice(0, 4).map(u =>
+      `<img src="${esc(u)}" alt="" loading="lazy" decoding="async"
+        onclick="Lightbox.show(this.src)">`).join('')}</div>`;
+  },
+
   /* The attached card. Three kinds off one shape — a crown in gold, a
      finished night with its podium, an open play with a Join. The data comes
      from `posts.card` for a system post and is built here for a session,
@@ -21595,7 +21641,7 @@ const Posts = {
           aria-label="Take this down">···</button>` : ''}
       </div>
       ${p.body ? `<p class="pst-b">${esc(p.body)}</p>` : ''}
-      ${p.photo ? `<img class="pst-img" src="${esc(p.photo)}" alt="">` : ''}
+      ${this.shots(p)}
       ${this.card(p.card)}
       ${this.counts(p)}
       <div class="pst-acts">
