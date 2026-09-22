@@ -5625,8 +5625,10 @@ body.casting{overflow:hidden}
    with room for four stacks, a free row and the whole roster at once. */
 #screen-stacks.on{padding:0 0 8px}
 .stk-bar{padding:8px 16px 0}
+.stk-bar{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .stk-round{font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   color:var(--sos-ink-3)}
+.stk-mode{font-size:12.5px;color:var(--sos-accent)}
 /* Flex rather than a grid of equal columns, because the two halves are not
    equal: the stacks want everything going spare and the roster wants about
    320px. Both grow, the stacks twenty times faster, so on a laptop the panel
@@ -5658,6 +5660,9 @@ body.casting{overflow:hidden}
 .stk-ct{background:var(--sos-card);border:1px solid var(--sos-hair);border-radius:13px;
   padding:9px 11px 10px}
 .stk-ct.done{background:var(--sos-fill-2)}
+.stk-ct.free{background:var(--sos-fill-2);border-style:dashed}
+.stk-ct.free .stk-cth b{color:var(--sos-dim)}
+.stk-free-p{margin:1px 0;font-size:13px;color:var(--sos-dim)}
 .stk-cth{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
   margin-bottom:5px}
 .stk-cth span{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
@@ -5783,8 +5788,18 @@ body.casting{overflow:hidden}
 </div></header>
 
 <nav class="stabs" id="stabs" hidden>
-  <button class="stab" id="stab-play"    onclick="go('play')">Play</button>
+  <!-- Play and Score were two names for tapping who won. Play was the old
+       combined screen — interactive court cards, a score pad, the pools and
+       the queue — and Score replaced everything on it except those last two.
+       Two tabs showing the same game is a choice nobody can make correctly,
+       so Play has gone and The queue, which is the half Score never took
+       over, is a tab of its own.
+
+       This block is static markup, not a template literal: a ${} comment
+       here renders as text across the top of the app, which is exactly what
+       it did. -->
   <button class="stab" id="stab-run"     onclick="go('run')">Score</button>
+  <button class="stab" id="stab-stacks"  onclick="go('stacks')">Queue</button>
   <button class="stab" id="stab-players" onclick="go('players')">Manage</button>
   <button class="stab" id="stab-stats"   onclick="go('stats')">Stats</button>
   <button class="stab" id="stab-playoff" onclick="go('playoff')" hidden>Playoff</button>
@@ -6665,6 +6680,7 @@ body.casting{overflow:hidden}
       <!-- Grouped the way Setup groups them: the three anybody can run on a
            normal night, then the ones with rules of their own. -->
       <div class="seg fmt">
+        <button id="fmt-queue"    onclick="switchFormat('queue')"><span class="lic" data-ic="members"></span> Open play</button>
         <button id="fmt-gauntlet" onclick="switchFormat('gauntlet')"><span class="lic" data-ic="swords"></span> Gauntlet</button>
         <button id="fmt-mix"      onclick="switchFormat('mix')"><span class="lic" data-ic="shuffle"></span> Social Mix</button>
         <button id="fmt-levels"   onclick="switchFormat('levels')"><span class="lic" data-ic="sliders"></span> Skill-based</button>
@@ -9613,6 +9629,9 @@ function go(name){
     go((S.live || S.order.length) ? 'session' : 'new');
     return;
   }
+  /* The old combined run screen. Score is what it became; anything still
+     asking for Play gets that rather than a tab nobody can tell apart. */
+  if(name === 'play'){ go('run'); return; }
   /* Before the fall-through below, which rewrites any organizer screen to
      'setup' when no session is running. New open play is precisely the screen
      you want when there is no session, so that rule must not reach it — the
@@ -9702,10 +9721,10 @@ function toggleTheme(){
 /* Every mode in MODES needs a name here. river was added without one, so
    anything showing the format read "undefined" — the watch screen under the
    date, the big screen, and the story card. */
-const MODE_NAME = { gauntlet:'Gauntlet', mix:'Social mix', levels:'Skill-based',
+const MODE_NAME = { queue:'Open play', gauntlet:'Gauntlet', mix:'Social mix', levels:'Skill-based',
                     kotc:'King of the Court', mixed:'Mixed doubles', tour:'Tournament',
                     river:'Up & Down the River', wars:'Court Wars', mlp:'MLP teams' };
-const MODES = ['gauntlet','mix','levels','kotc','mixed','tour','river','wars','mlp'];
+const MODES = ['queue','gauntlet','mix','levels','kotc','mixed','tour','river','wars','mlp'];
 /* One mark per format, in the brand's own colours — gold for the ones about
    winning something, green for the ones about who plays whom. A format is the
    single thing people scan a session for, and eight words in a column all look
@@ -10902,6 +10921,16 @@ async function goLiveThenStart(){
 }
 
 function seed(ids, n){
+  /* Open play deals nothing. The courts start empty and the queue holds
+     everybody in the order they arrived, because in this format the
+     organizer is the matchmaker — they can see who drove here together and
+     who has been waiting, and no algorithm is going to know that. Every
+     other format seeds itself below. */
+  if(S.mode === 'queue'){
+    S.courts = new Array(n).fill(0).map(()=> ({ teams:[[],[]], win:null }));
+    S.queue = ids.slice();
+    return;
+  }
   /* Court Wars deals per court from its own pools, so it seeds itself
      and leaves every other format's planner untouched. */
   if(S.mode === 'river'){ seedClimb(ids, n); return; }
@@ -11815,6 +11844,7 @@ function setCourts(n){
    suit a drawing would be nine decisions taken by the wrong person; the row
    grows instead. */
 const MODE_HINT = {
+  queue:    'No matchmaker. You decide who walks on, from The queue — drag four together and call them onto a court. For a night where you can see the room.',
   gauntlet: 'Matched on your record each round. Any number of players, latecomers welcome.',
   mix:      'Fresh partners and courts every round. Everyone gets even court time.',
   levels:   'Each court is locked to one standard. Advanced play advanced, and nobody moves.',
@@ -12360,23 +12390,27 @@ function renderStacks(){
     const a = (c.teams[0] || []).map(nm).join(' / ');
     const b = (c.teams[1] || []).map(nm).join(' / ');
     const done = c.win !== null;
+    const empty = !(c.teams || []).flat().filter(Boolean).length;
     const sc = done && c.sc ? c.sc.w + '\u2013' + c.sc.l
       : c.pts ? (c.pts.a || 0) + '\u2013' + (c.pts.b || 0) : '';
-    return `<div class="stk-ct${done ? ' done' : ''}">
-      <div class="stk-cth"><span>Court ${i + 1}</span>
-        <b>${esc(done ? 'Recorded' : (sc || 'Playing'))}</b></div>
-      <p>${esc(a || 'Empty')}</p>
-      <p>${esc(b || 'Empty')}</p>
+    /* A court with nobody on it said "Playing", which in Open play is every
+       court at the start of every round — the one format where an empty
+       court is the normal state rather than a fault. */
+    const state = empty ? 'Free' : done ? 'Recorded' : (sc || 'Playing');
+    return `<div class="stk-ct${done ? ' done' : ''}${empty ? ' free' : ''}">
+      <div class="stk-cth"><span>Court ${i + 1}</span><b>${esc(state)}</b></div>
+      ${empty
+        ? `<p class="stk-free-p">Call a stack on</p>`
+        : `<p>${esc(a || '\u2014')}</p><p>${esc(b || '\u2014')}</p>`}
     </div>`;
   }).join('');
 
   box.innerHTML = `
+    ${/* No back link: this is a tab now, and the tabs are the way out. */''}
     <div class="sos-bar stk-bar">
-      <button class="sos-back" onclick="go('run')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
-          stroke-linecap="round" stroke-linejoin="round" class="ses-chev"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
-        Score</button>
       <span class="stk-round">Round ${S.round}</span>
+      ${S.mode === 'queue'
+        ? `<span class="stk-mode">Open play \u00b7 you call them on</span>` : ''}
     </div>
 
     <div class="stk-grid">
@@ -12466,6 +12500,33 @@ function nextRound(){
   /* Court Wars does not plan a round across all courts: each tier is
      rebuilt from the standings, then every court deals from its own
      pool. Taken before the shared planner so nothing else changes. */
+  /* Open play does not deal a round. The games just banked leave their
+     courts empty and the organizer calls the next four from The queue —
+     which is the whole point of the format, so filling the courts here
+     would be the app taking the decision back. */
+  if(S.mode === 'queue'){
+    S.round++;
+    /* Everybody who just came off goes to the back of the queue. Emptying
+       the courts without this leaves them on the roster and in no list at
+       all — not on court, not waiting — which is the same way latecomers
+       used to disappear, arrived at from the other direction. To the back
+       because they have just played and the people who have been waiting
+       have not. */
+    const came = [];
+    S.courts.forEach(c =>{
+      c.teams.flat().filter(Boolean).forEach(id =>{
+        if(P(id) && !P(id).out && came.indexOf(id) < 0) came.push(id);
+      });
+      c.teams = [[], []]; c.win = null; c.sc = null; c.ws = undefined;
+      c.pts = null; c.lastPt = null;
+    });
+    came.forEach(id =>{ if(!S.queue.includes(id)) S.queue.push(id); });
+    Score.clear();
+    invalidatePlan(); renderAll(); TV.paint(); pushLive(); save();
+    go('stacks');
+    toast('Round ' + S.round + ' \u2014 call the next four from the queue.');
+    return;
+  }
   if(S.mode === 'river'){ climbRound(); return; }
   if(S.mode === 'wars'){ warsRound(); return; }
   /* Each court moves its own tie on. No shared plan, and no waiting for the
@@ -12527,7 +12588,10 @@ function planRound(){
 function refreshPlan(){
   /* river deals per tier at the end of the round, so there is no shared plan
      to build — the same reason kotc is excluded. */
-  if(!S.active || ['kotc','river','wars','mlp'].indexOf(S.mode) >= 0){ S.next = null; return; }
+  /* 'queue' joins them: Open play has no plan because the organizer is the
+     plan. Anything that builds one here would show a "Next" row the app
+     intends to deal and then does not. */
+  if(!S.active || ['queue','kotc','river','wars','mlp'].indexOf(S.mode) >= 0){ S.next = null; return; }
   if(!S.next || S.planRound !== S.round){ S.next = planRound(); S.planRound = S.round; }
 }
 
@@ -19364,7 +19428,7 @@ function canOrganize(){
 const SCREENS = ['landing','auth','home','groups','group','player','games','board','me','members','roles','audit','setup','new','session','play','run','people','players','listing','share','stacks','comments','stats','playoff','past','results','market','chats'];
 /* The screens that belong to running a session, as opposed to the
    ones that belong to the club. */
-const SESSION_SCREENS = ['play','run','players','stats','playoff'];
+const SESSION_SCREENS = ['run','stacks','players','stats','playoff'];
 /* One screen at a time. The landing and sign-in pages carry their
    own branding, so the app header steps out of the way for them. */
 /* The same navigation for everyone. A role adds items to it; it
@@ -19528,7 +19592,7 @@ function syncNav(name){
     || name === 'market' || name === 'chats' || name === 'me' || name === 'group');
   const bare = (name === 'landing' || name === 'auth' || name === 'session'
     || name === 'people' || name === 'new' || name === 'listing'
-    || name === 'share' || name === 'stacks' || name === 'comments' || titled);
+    || name === 'share' || name === 'comments' || titled);
   /* Running a session is a different job from browsing the club, so it
      gets a different shell: the tabs, and a way back. No burger, no
      drawer \u2014 three places and you are always in one of them. */
@@ -19549,7 +19613,7 @@ function syncNav(name){
   const tabs = document.getElementById('stabs');
   if(tabs){
     tabs.hidden = !inSession;
-    ['play','run','players','stats','playoff'].forEach(k =>{
+    ['run','stacks','players','stats','playoff'].forEach(k =>{
       const t = document.getElementById('stab-' + k);
       if(t) t.classList.toggle('on', k === name);
     });
@@ -25592,6 +25656,14 @@ function applyFormat(m){
   invalidatePlan();
   const n = S.courts.length;
   S.mode = m;
+  /* Switching into Open play mid-night leaves whoever is mid-game where they
+     are and hands the rest back to the queue — it does not tear the courts
+     up, because somebody is playing on them. */
+  if(m === 'queue'){
+    const on = new Set(onCourtIds());
+    S.queue = activeIds().filter(id => !on.has(id));
+    return;
+  }
   if(m === 'levels'){ S.courtLevels = autoLevels(n); fillLevelCourts(); }
   else if(m === 'kotc'){ seedByRecord(n); }
   /* Court Wars deals from tiers, not from a shared plan. Switching into it
@@ -29264,6 +29336,9 @@ function nextInfoHTML(i, exactArr, cls){
 
 function nextLineups(){
   if(!S.active) return [];
+  /* Nothing to preview: who is up next is whatever the organizer has put in
+     the top stack, and that is shown on The queue where they put it. */
+  if(S.mode === 'queue') return [];
   /* Court Wars cannot be previewed, and used to pretend it could. It fell
      through to planMix — a planner with nothing to do with how this format
      deals — so the "Next" row showed four names picked by the wrong

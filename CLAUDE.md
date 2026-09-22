@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v143`. Forgetting this means testers see last week's app and
+Currently `sideout-v144`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -506,6 +506,33 @@ insert itself rather than checking first, the same shape as
 `sideout_reminder_claim`, so a retry or two phones both thinking they are
 hosting cannot post the night twice.
 
+**Play and Score were the same tab twice.** Play was the old combined
+screen — interactive court cards, a score pad, the pools and the queue — and
+Score replaced everything on it except those last two. Two tabs showing the
+same game is a choice nobody can make correctly. The session strip is
+**Score / Queue / Manage / Stats** now; `go('play')` redirects to `'run'`,
+and The queue — the half Score never took over — is a tab rather than a
+button hidden on the run bar.
+
+**`queue` ("Open play") is the mode where the organizer *is* the
+matchmaker.** It deals nothing: `seed()` leaves the courts empty and puts
+everybody in the queue in arrival order, `nextRound()` empties the courts
+again rather than filling them, and `refreshPlan()` and `nextLineups()` both
+decline — a "Next" row the app intends to deal and then does not is worse
+than none. Registered in all five places, plus `applyFormat()`, which on a
+switch mid-night leaves whoever is mid-game alone and hands the rest back to
+the queue.
+
+Its `nextRound()` has to push the players coming off court **back onto the
+queue**. Emptying the courts without that leaves them on the roster and in
+no list at all — not on court, not waiting — which is the latecomer bug
+arrived at from the other direction, and the reachability check is what
+catches it: every active id must be in `onCourtIds()` or `waitingIds()`.
+
+**`stabs` is static markup, not a template literal.** A `${/* … */''}`
+comment there renders as text across the top of the app, which is exactly
+what it did. Use an HTML comment in anything outside a template string.
+
 **The stacks screen overrides the planner; it does not replace it.**
 `screen-stacks` is the laptop view of the queue — four stacks of four, a Free
 row and the whole roster, all drag. `Stacks.call()` puts the top stack on the
@@ -543,8 +570,9 @@ the running-a-session shell) and the session tab bar is a third, so a new
 screen inside a session is three registrations, not one.
 
 **A format has to be registered in five places, and missing one half-works.**
-`MODES`, `MODE_NAME`, the card on Setup (`id="mode-X"`), the switcher button on
-Manage (`id="fmt-X"`), and a branch wherever the mode is dealt — `seed()`,
+`MODES`, `MODE_NAME`, `MODE_HINT` (the compose screen's format list reads it;
+the old Setup cards are gone), the switcher button on Manage
+(`id="fmt-X"`), and a branch wherever the mode is dealt — `seed()`,
 `nextRound()`, `nextLineups()`, `refreshPlan()` and `applyFormat()`. Court Wars
 was added without `MODE_NAME`, so every screen showing the format printed the
 word "undefined"; and without the Manage button, so it could be started but
