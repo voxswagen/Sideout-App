@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v132`. Forgetting this means testers see last week's app and
+Currently `sideout-v133`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -325,13 +325,25 @@ is load-bearing well beyond drawing — it also calls `refreshPlan()`,
 `#courts` without a null guard. Retiring it means unpicking those side
 effects first.
 
-**Sessions' two tabs used to disagree about whose nights they were.**
-Upcoming filters to `r.mine` — nights you have actually joined — so a club
-with a night on and nobody signed up yet shows an empty Upcoming while
-Today shows the night, which reads as a fault and is not one. Completed,
-meanwhile, filtered nothing at all and listed every night the club had ever
-played, under a sub-line that said "Every night you played". One of the two
-was lying and it was that one.
+**Sessions > Upcoming is the club's schedule, and that is where "what's on"
+lives now.** It used to filter to `r.mine`, and when Today stopped being a
+list of sections there was no plain list of the club's nights anywhere — the
+only place they appeared was as posts in the feed. The design settles it: the
+date badge is "filled teal when you are going, grey otherwise", and a badge
+needs two states only if the list holds nights you are *not* going to. So
+Upcoming lists every night that has not ended, the badge lights when you are
+in, and the tag says where you stand — Playing now, Going, Invite only, Full,
+"6 left", Open, in that order, because being in it beats everything else the
+night could say.
+
+Completed stays personal: finishing place and "4 of 6 won" are per-viewer
+figures, so that tab is the nights you played. Upcoming is what you could
+join, Completed is what you did.
+
+A night with no cap draws no fill bar. It used to draw a full one, and past
+75% the bar goes amber to mean "about to close" — so a night with no limit
+was wearing the colour for a night that is nearly full. The fill only means
+something against a number to fill up to.
 
 Both are personal now. `place` is the only per-viewer thing `sideout_past`
 returns and it is non-null exactly when the caller has a results row, so it

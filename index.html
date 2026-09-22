@@ -15036,7 +15036,12 @@ const Games = {
       return;
     }
 
-    const mine = (Feed.up || []).filter(r => r.mine && !r.ended)
+    /* Every night the club has on, not only the ones you are down for. The
+       design's date badge is "filled teal when you are going, grey
+       otherwise", and a badge needs two states only if the list holds nights
+       you are not going to — which is also the answer to "where do I see
+       what's on", now that Today is a feed rather than a list of sections. */
+    const upcoming = (Feed.up || []).filter(r => !r.ended)
       .sort((a, b) => (Feed.ms(a.starts_at) || 0) - (Feed.ms(b.starts_at) || 0));
     /* Upcoming filters to nights you joined, so Completed has to mean the
        same thing or the two tabs are a pair that quietly disagree — which is
@@ -15058,7 +15063,7 @@ const Games = {
     /* Nobody records who put whose name down, so there is nothing to list
        here and a count of nought is the honest label. When `joiners` starts
        carrying an inviter this is the tab it belongs on. */
-    const counts = { invites: 0, upcoming: mine.length, done: done.length };
+    const counts = { invites: 0, upcoming: upcoming.length, done: done.length };
     const seg = document.getElementById('games-seg');
     if(seg) seg.innerHTML = [['invites','Invites'],['upcoming','Upcoming'],['done','Completed']]
       .map(([v, label]) => `<button class="${this.tab === v ? 'on' : ''}" data-g="${v}"
@@ -15068,7 +15073,7 @@ const Games = {
     if(sub) sub.textContent = this.tab === 'invites' ? 'Somebody put your name down.'
       : this.tab === 'done'
         ? (this.knowsPlace ? 'Every night you played.' : 'Every night the club has played.')
-      : 'What you are down for, and how full it is.';
+      : 'Every night the club has on, and how full it is.';
 
     if(this.tab === 'invites'){
       box.innerHTML = `<div class="sos-list"><div class="sos-row run-empty">No invites.
@@ -15093,7 +15098,7 @@ const Games = {
         </button>
         <span class="sos-sep sos-sep-36"></span>`;
       }).join('')}</div>`
-      : Feed.failed ? feedFailed('your games')
+      : Feed.failed ? feedFailed('the club\u2019s nights')
       : `<div class="sos-list"><div class="sos-row run-empty">${this.knowsPlace
           ? 'No finished nights yet. Play one and it lands here.'
           : 'No finished nights yet.'}</div></div>`;
@@ -15103,19 +15108,26 @@ const Games = {
     /* Upcoming. The bar is how full it is, and it turns amber past three
        quarters so a night about to close reads that way at a glance rather
        than needing the numbers either side of it read. */
-    box.innerHTML = mine.length ? `<div class="gm-cards">${mine.map(r =>{
+    box.innerHTML = upcoming.length ? `<div class="gm-cards">${upcoming.map(r =>{
       const t = Feed.ms(r.starts_at);
       const d = t ? new Date(t) : null;
       const cap = r.cap > 0 ? r.cap : 0;
       const inN = r.joined || 0;
       const pc = cap ? Math.min(100, Math.round(inN / cap * 100)) : (inN ? 100 : 0);
       const left = cap ? Math.max(0, cap - inN) : null;
-      const tag = r.live ? ['Playing now','live'] : r.closed ? ['Invite only','dim']
-        : (cap && inN >= cap) ? ['Full','dim'] : ['Going','going'];
+      /* teal when you are going, grey when you are not */
+      /* Being in it beats everything else the night could say about itself,
+         which is the same order Today's rows use. */
+      const tag = r.live ? ['Playing now','live']
+        : r.mine ? ['Going','going']
+        : r.closed ? ['Invite only','dim']
+        : (cap && inN >= cap) ? ['Full','dim']
+        : left !== null ? [left + ' left','dim']
+        : ['Open','dim'];
       const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
       return `<button class="gm-card" onclick="${go}">
         <span class="gm-top">
-          <span class="gm-date on">${d
+          <span class="gm-date${r.mine ? ' on' : ''}">${d
             ? `<i>${esc(MONTH_SHORT[d.getMonth()])}</i><b>${d.getDate()}</b>`
             : `<i>TBC</i>`}</span>
           <span class="gm-mid">
@@ -15129,16 +15141,19 @@ const Games = {
               <b>${cap ? inN + ' of ' + cap + ' in' : inN + ' in'}</b>
               <i>${left === null ? '' : left === 0 ? 'Full' : left + ' place' + (left === 1 ? '' : 's') + ' left'}</i>
             </span>
-            <span class="gm-bar"><i class="${pc >= 75 ? 'hot' : ''}" style="width:${pc}%"></i></span>
+            ${/* No cap, no bar. A night with no limit was drawing a full amber
+                  one — the colour that means "about to close" — on a night
+                  that cannot close. The fill only means something against a
+                  number to fill up to. */''}
+            ${cap ? `<span class="gm-bar"><i class="${pc >= 75 ? 'hot' : ''}"
+              style="width:${pc}%"></i></span>` : ''}
           </span>
         </span>
       </button>`;
     }).join('')}</div>`
-    : Feed.failed ? feedFailed('your games')
-    : `<div class="sos-list"><div class="sos-row run-empty">Nothing coming up that you are
-        in. This tab is what you have put your name down for — the club's nights are on
-        Today, and one you join turns up here.
-        <button class="sos-again" onclick="go('home')">See what's on</button></div></div>`;
+    : Feed.failed ? feedFailed('what\u2019s on')
+    : `<div class="sos-list"><div class="sos-row run-empty">Nothing on yet. When somebody
+        puts a night up it shows here, and on Today.</div></div>`;
   },
 
   byDay(rows, done){
