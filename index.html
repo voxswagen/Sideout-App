@@ -7481,8 +7481,27 @@ const Live = {
       const k = 'sideout_join_' + code;
       return JSON.parse(localStorage.getItem(k) || '[]');
     }
+    /* In the order they happened. PostgREST returns rows in whatever order
+       the planner produces unless it is told, and these are not independent
+       facts — a join and a leave for the same person are a sequence, and
+       applying them backwards is the difference between somebody being on
+       the list and not.
+
+       Join then leave, read backwards: the leave finds nobody, the join puts
+       them on, and somebody who withdrew is still down to play. Leave then
+       rejoin, read backwards: the join is skipped as already there and the
+       leave takes them off — and because dropFromSession() *deletes*
+       anybody with no games rather than marking them out, they are simply
+       gone. That is a player lost, and it needs nothing more unusual than
+       tapping the wrong button and correcting it inside four seconds.
+
+       By id, not by a timestamp: ackJoiners() passes these ids to
+       `in.(1,2,3)` unquoted, which only works for integers, so the id is a
+       serial and ordering by it is ordering by when it happened. Asking for
+       a column that does not exist would 400 and stop joiners being
+       collected at all, which is a worse bug than the one being fixed. */
     return (await this.api('joiners?code=eq.' + code +
-      '&taken=is.false&select=id,name,level,dupr,member,kind')) || [];
+      '&taken=is.false&order=id.asc&select=id,name,level,dupr,member,kind')) || [];
   },
   /* Tick them off, once they are actually on the board and published. If
      this never runs the rows simply come round again on the next pass four
@@ -7736,6 +7755,12 @@ const Live = {
 
     const added = [], gone = [], waited = [];
     let claimed = false;
+    /* Sorted here as well as asked for in the query. The order matters too
+       much to depend on a query parameter being honoured — and the local
+       mode does not go through PostgREST at all. Rows without an id sort
+       last and keep their order, which is what the pre-id rows want. */
+    rows = rows.slice().sort((a, b) =>
+      (a.id == null ? Infinity : a.id) - (b.id == null ? Infinity : b.id));
     rows.forEach(r=>{
       const nmv = (r.name || '').trim().slice(0,40);
       if(!nmv) return;
@@ -7770,10 +7795,42 @@ const Live = {
         gone.push(nmv);
         return;
       }
-      /* Two people really can share a name, so only skip when it
-         is the same member, not merely the same letters. */
+      /* Two people really can share a name, so a clash is not proof of a
+         duplicate — but three cases hide behind one comparison and only one
+         of them is a second person:
+
+           · same name, same member id      — already on the list, skip
+           · same name, no member id yet    — the organizer wrote them on by
+             hand and now they have joined through the link. Same human.
+             Attach the account to the row that is already there.
+           · same name, a different account — genuinely two people. Add, and
+             number the second one.
+
+         The middle case used to fall through to the last one, which is
+         where "Vox" and "Vox 2" came from: written on the list at the door,
+         then joining on their phone, and the night now has them twice —
+         two rows, two sets of games, and whichever one the matchmaker deals
+         is a coin toss. */
       const clash = S.order.find(id => P(id).name.toLowerCase() === nmv.toLowerCase());
-      if(clash && (!r.member || P(clash).mid === r.member)) return;
+      if(clash){
+        const mine = P(clash).mid;
+        if(!r.member || mine === r.member) return;        /* already here */
+        if(!mine){
+          /* the same person, now with an account behind them */
+          P(clash).mid = r.member;
+          const m = Club.find(r.member);
+          if(m){
+            if(m.photo) P(clash).photo = m.photo;
+            if(m.dupr != null && P(clash).dupr == null){
+              P(clash).dupr = m.dupr; P(clash).level = duprLevel(m.dupr);
+            }
+            if(m.sex && !P(clash).sex) P(clash).sex = m.sex;
+          }
+          claimed = true;
+          return;
+        }
+        /* falls through: a different account with the same name */
+      }
       /* Two roads to the same list: the session is full, or the organizer
          has said they want to see everybody first. The list, the panel and
          Bring in are the ones that were already there. */
@@ -7784,8 +7841,10 @@ const Live = {
         }
         return;
       }
-      addPlayer(nmv, r.level || 'int', !!clash);
-      const id = S.order[S.order.length-1];
+      /* The id addPlayer returns, rather than whatever happens to be last on
+         the roster — the two are the same today and would stop being so the
+         moment anything inserted rather than appended. */
+      const id = addPlayer(nmv, r.level || 'int', !!clash);
       if(id && r.dupr != null){
         const d = cleanDupr(r.dupr);
         if(d != null){ P(id).dupr = d; P(id).level = duprLevel(d); }
@@ -15932,18 +15991,13 @@ function paintBoard(){
   if(seg) seg.querySelectorAll('button').forEach(b =>
     b.classList.toggle('on', (b.dataset.s === '1') === !!Ladder.season));
 
-  /* Which table. The club's is everybody; a group's is only the nights that
-     group ran, which is the one people actually argue about. Only groups you
-     are in are offered — a table for a group you have never played with is a
-     list of strangers. */
+  /* The group picker has gone with the rest of them. One club, one table —
+     and a dropdown whose only other entry was the club it was already
+     showing was asking a question with one answer. Board.scope is still
+     read below, so a group's table is still reachable from that group's own
+     page; nothing here offers to switch to it. */
   const pick = document.getElementById('board-scope');
-  if(pick){
-    const mine = (Groups.list || []).filter(g => g.mine);
-    pick.hidden = !mine.length;
-    const want = `<option value="">All clubs</option>` +
-      mine.map(g => `<option value="${g.id}"${Board.scope === g.id ? ' selected' : ''}>${esc(g.name)}</option>`).join('');
-    if(pick.innerHTML !== want) pick.innerHTML = want;
-  }
+  if(pick) pick.hidden = true;
   const note = document.getElementById('board-note');
   if(note) note.textContent = Ladder.season
     ? 'Since the season last started. Games won, then points difference.'

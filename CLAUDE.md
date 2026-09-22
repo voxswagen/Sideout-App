@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v137`. Forgetting this means testers see last week's app and
+Currently `sideout-v138`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -635,6 +635,41 @@ group reads and `sideout_chat_may` key on it. They used to reach the group
 through an INNER join on `sessions`, so deleting a session quietly took a
 42-player night out of its club, off its club's table, and locked everyone
 who played it out of the conversation about it.
+
+**"Vox" and "Vox 2" came from one comparison hiding three cases.** A joiner
+whose name is already on the list is not proof of a duplicate, and
+`collect()` tested `clash && (!r.member || P(clash).mid === r.member)` — so
+the one case it did not cover fell through to *add them again with a number
+on the end*. That case is the common one: the organizer writes somebody on
+at the door, and then that person joins through the link on their phone.
+The row on the list has no `mid` yet, the joiner has one, the ids differ,
+and the night now has them twice — two rows, two sets of games, and which
+one the matchmaker deals is a coin toss.
+
+Three cases, and only the last is a second person: same member id (already
+here, skip); **no member id yet (the same human, now with an account behind
+them — attach it to the row that is already there)**; a *different* member
+id (genuinely two people, number the second). Proved against the previous
+commit: written on then joining gave `["Vox Dequina","Vox Dequina 2"]`
+before and `["Vox Dequina"]` with the account attached after, while two
+genuinely different accounts still get numbered.
+
+**The joiners batch had no order, and applying it backwards loses people.**
+`takeJoiners()` selected with no `order`, so PostgREST returned rows however
+the planner produced them — but a join and a leave for the same person are a
+sequence, not two independent facts. Read backwards, leave-then-rejoin
+becomes rejoin-then-leave: the join is skipped as already there and the
+leave takes them off. And because `dropFromSession()` *deletes* anybody with
+no games rather than marking them out, they are simply gone. Tapping the
+wrong button and correcting it inside four seconds was enough.
+
+Ordered by `id` in the query **and** sorted again in `collect()`, because the
+order matters too much to depend on a query parameter being honoured and the
+local mode never goes through PostgREST. By id rather than a timestamp:
+`ackJoiners()` passes these ids to `in.(1,2,3)` unquoted, which only works
+for integers, so the id is a serial and ordering by it is ordering by when it
+happened — and asking for a column that does not exist would 400 and stop
+joiners being collected at all, which is worse than the bug being fixed.
 
 **A latecomer has to be put on the queue, and `addPlayer()` is the only
 place that should do it.** Five callers used to do it for themselves and
