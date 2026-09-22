@@ -21,7 +21,7 @@ drop function if exists public.sideout_past(text);
 create function public.sideout_past(p_club text)
 returns table(code text, title text, played_at timestamptz,
               players integer, games integer, cover text, owing integer,
-              place integer, won integer, mine_games integer)
+              place integer, won integer, mine_games integer, mine_paid boolean)
 language sql
 stable
 security definer
@@ -66,11 +66,16 @@ as $$
          -- lateral, so it costs nothing extra and cannot disagree with the
          -- place beside it.
          mine.wins,
-         mine.games
+         mine.games,
+         -- and whether the caller has settled up for that night. Same lateral
+         -- again, so it cannot disagree with the two above it. Null for a
+         -- night they were not on, which is what lets the profile tell "no
+         -- unpaid nights" apart from "no nights".
+         mine.paid
     from public.results r
     -- the caller's own row on this night, if they were on it
     left join lateral (
-      select r2.wins, r2.pf, r2.pa, r2.games
+      select r2.wins, r2.pf, r2.pa, r2.games, coalesce(r2.paid, false) as paid
         from public.results r2
         join public.members me
           on me.club = r2.club and me.user_id = auth.uid()
@@ -84,7 +89,7 @@ as $$
    where r.club = coalesce(p_club, 'sideout')
      -- a night that was reset is put aside, not deleted; it must not show
      and r.removed_at is null
-   group by r.code, r.club, mine.wins, mine.pf, mine.pa, mine.games
+   group by r.code, r.club, mine.wins, mine.pf, mine.pa, mine.games, mine.paid
    order by 3 desc
    limit 60;
 $$;

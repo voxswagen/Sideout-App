@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v135`. Forgetting this means testers see last week's app and
+Currently `sideout-v136`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -781,6 +781,36 @@ slid under the notch and the clock. Each of those now carries
 padding further down the stylesheet and silently won it back, so the inset
 had to go on those rules rather than only on the shared one. A new
 self-titled screen needs adding in `syncNav`'s `titled` list **and** here.
+
+**Birthdays are a feed post, derived, never stored.** `Birthday.soon(7)`
+walks forward from this morning rather than filtering on the calendar month,
+because a birthday on the 2nd of October is invisible from the 28th of
+September to a month filter and the week before somebody's birthday crosses
+a month boundary about a third of the time. `feedTimeline()` turns the result
+into at most two entries — whoever it is today, and whoever it is inside the
+week — so there is nothing to post, nothing to post twice and nothing to go
+stale. Neither carries an actions bar: a heart on something the app worked
+out this morning would have nowhere to be kept.
+
+**Groups have been taken off every path into them except Club settings.**
+The clubs list on the profile, "A group" in the Start something sheet, and
+the Group row on New open play are all gone at the club's request — this is
+one club, not a platform, and each of those asked "which of several" on a
+screen where that is not a question. Nothing about groups was deleted:
+`GroupPick.open()` still sets `S.groupId`, `Groups.edit(null)` still makes
+one, the group page and its ladder still work, and `results.group_id` is
+still stamped by `sideout_archive` when a night has one. **But a night set
+up through the four stages now has no group**, so group tables will stop
+gaining nights unless a group is set some other way. Worth knowing before
+anybody wonders why a group's table stopped moving.
+
+**A draft is `S` on this phone.** There is no drafts table and every setter
+on the compose screen writes through immediately, so "Save draft" is really
+"stop here". It says where to pick it up from, because the way back is the
+`+` button and that is not obvious from a screen you have just left;
+`startOrganizing()` finds the half-filled `S` and offers to carry on with it
+or start fresh, and `NewFlow.start()` puts you on stage one with everything
+still in the fields.
 
 **The profile is five cards and nothing else.** Head, a four-up stat strip,
 RATING, ACTIVITY, SETTINGS — plus ORGANIZING for the people who have those

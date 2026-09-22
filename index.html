@@ -4182,6 +4182,8 @@ body.casting{overflow:hidden}
   text-align:left}
 .pf-row > span:first-child{flex:1;min-width:0;font-size:16px;color:var(--sos-ink)}
 .pf-row em{flex:none;font-style:normal;font-size:16px;font-weight:600;color:var(--sos-ink-2)}
+.pf-row em.settled{color:var(--sos-green)}
+.pf-row em.owing{color:var(--sos-red)}
 .pf-row svg{flex:none}
 .pf-row .sos-tog{flex:none}
 .pf-sep{display:block;height:1px;background:var(--sos-sep);margin-left:14px}
@@ -11833,17 +11835,12 @@ function renderNew(){
         <input type="text" id="nw-venue" value="${esc(S.venueName || '')}"
           placeholder="Where it is" oninput="setVenueName(this.value)">
       </div>
-      <span class="sos-sep"></span>
-      <button class="sos-row sos-row-2 nw-grp-row" onclick="GroupPick.open()">
-        <span class="sos-row-v">
-          <span class="sos-t-row">Group</span>
-          <span class="sos-t-cap">Its table and its chat are built from the nights filed
-            under it</span>
-        </span>
-        <span class="nw-grp-v">${S.groupId
-          ? esc(S.groupName || 'A group') : 'No group'}</span>
-        ${HMX_IC.chev}
-      </button>
+      ${/* The group picker has come off this stage. Setting a night up is four
+            questions and "which of several clubs is this" was not one of
+            them for a club that is one club. GroupPick.open() still exists
+            and still sets S.groupId — nothing about filing a night under a
+            group has been taken out, only the row that asked about it on the
+            way past. */''}
     </div>
 
     <h2 class="sos-t-grp nw-grp">COURTS</h2>
@@ -11957,9 +11954,20 @@ function newFootnote(){
 /* Saving a draft is what the old screen did on every keystroke anyway — the
    setters all call save(). This says so out loud and gets out of the way,
    rather than pretending there is a separate draft somewhere. */
+/* A draft is `S` on this phone, which is the same place a session lives
+   before it goes live — there is no separate drafts table and every setter
+   on this screen has already written through, so "Save draft" is really
+   "stop here, I will come back". It says so rather than implying a list of
+   drafts somewhere, and it says how to get back, because the way back is
+   the `+` button and that is not obvious from a screen you have just left.
+
+   Coming back: startOrganizing() finds a half-filled S and offers to carry
+   on with it or start fresh, and NewFlow.start() puts you on stage one with
+   everything you typed still in the fields. */
 function newSaveDraft(){
   save();
-  toast('Saved. It is not on the board until you publish it.');
+  const what = S.title || (S.dateOn ? longDate(sessionWhen()) : 'It');
+  toast(esc(what) + ' is saved on this phone \u2014 pick it up from +');
   go('home');
 }
 
@@ -15677,8 +15685,11 @@ const PlaySheet = {
                   'You have the code and the host PIN', 'open') : ''}
       ${row('findSession()', 'Join with a code',
             'Somebody sent you five letters', 'search')}
-      ${can ? row('Groups.edit(null)', 'A group',
-                  'A set of people who play together', 'members') : ''}
+      ${/* Starting a group has come off this sheet. It is not a thing you do
+            on the way to a night — it is set up once and then lived in, so
+            it belongs on the Club settings row of the profile where the
+            rest of a club's own settings are. Groups.edit(null) is still
+            what makes one; this is only the door it used to be behind. */''}
       <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Not now</button>`);
   }
 };
@@ -16732,6 +16743,28 @@ const Birthday = {
   },
 
   text(m, d){ return m && d ? d + ' ' + MONTHS[m - 1] : ''; },
+
+  /* Whose birthday falls in the next `within` days, today counted as nought.
+     Not "this month": a birthday on the 2nd of October is invisible from the
+     28th of September to a month filter, and the week before somebody's
+     birthday crosses a month boundary about a third of the time. This walks
+     forward from today instead, so it crosses months and the year end
+     without having to know it did. */
+  soon(within){
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const out = [];
+    (Club.list || []).forEach(x =>{
+      const m = Number(x.birth_month), d = Number(x.birth_day);
+      if(!m || !d) return;
+      /* this year's, or next year's if it has already gone past */
+      let when = new Date(now.getFullYear(), m - 1, d).getTime();
+      if(when < midnight) when = new Date(now.getFullYear() + 1, m - 1, d).getTime();
+      const days = Math.round((when - midnight) / 864e5);
+      if(days <= within) out.push(Object.assign({}, x, { when, days }));
+    });
+    return out.sort((a, b) => a.days - b.days);
+  },
 
   /* This month's, in date order, with today first. */
   thisMonth(){
@@ -18332,6 +18365,9 @@ async function paintMe(){
   /* The sessions panel reads the feed cache, and nothing here filled it —
      open the profile before Home has fetched and it would claim you had
      nothing booked when you had. */
+  /* Feed.past is what the Payments row counts, as well as what the sessions
+     list used to read, so the profile waits for it rather than drawing a row
+     that would be right a second later. */
   if(Feed.up === null || Feed.past === null){
     try{ await Promise.race([Feed.load(), new Promise(r => setTimeout(r, 6000))]); }catch(e){}
   }
@@ -18453,6 +18489,7 @@ async function paintMe(){
       <button class="pf-row" onclick="myIdSheet()">
         <span>Your player ID</span>${HMX_IC.chev}
       </button>
+      ${payRow()}
     </div>
 
     <h2 class="sos-t-grp pf-grp">SETTINGS</h2>
@@ -18484,6 +18521,27 @@ async function paintMe(){
   /* The QR used to be drawn into a card on this page. It is behind the
      player ID row now, which is where a thing you show somebody once a month
      belongs — and it is drawn when that sheet opens, not before. */
+}
+
+/* Whether you owe the club anything, from the nights you actually played.
+   `mine_paid` is per-caller and null for a night you were not on, so the row
+   only appears once at least one night can answer — which also means it
+   stays off until the column is deployed, rather than telling somebody they
+   are settled up on the strength of a field that is not there.
+
+   Green when there is nothing outstanding and red when there is, because
+   this is the one line on the profile somebody else is waiting on. */
+function payRow(){
+  const nights = (Feed.past || []).filter(r => r.mine_paid != null);
+  if(!nights.length) return '';
+  const owe = nights.filter(r => r.mine_paid === false).length;
+  return `<span class="pf-sep"></span>
+    <button class="pf-row" onclick="${owe ? "Games.tab='done';go('games')" : "go('games')"}">
+      <span>Payments</span>
+      <em class="${owe ? 'owing' : 'settled'}">${owe
+        ? owe + ' unpaid' : 'Settled'}</em>
+      ${HMX_IC.chev}
+    </button>`;
 }
 
 /* The organizer's tools, kept off the page for everybody who is not one. The
@@ -19517,13 +19575,13 @@ async function startOrganizing(){
       return;
     }
     if(left || (S.title || '').trim()){
-      openSheet(`<h3>Start a new open play?</h3>
-        <p class="sub">The setup screen still has ${left ? '<b>' + left + '</b> player' + (left === 1 ? '' : 's') : 'details'}
-          from ${esc(S.title || 'the last one')}. Nothing here has been saved anywhere yet, so
-          clearing it loses it.</p>
-        <button class="btn btn-go" onclick="closeSheet();freshSession()">Start fresh</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('new')">
-          Carry on with what is there</button>`);
+      openSheet(`<h3>You have a draft</h3>
+        <p class="sub"><b>${esc(S.title || 'A night')}</b> is half set up on this phone${
+          left ? `, with <b>${left}</b> player${left === 1 ? '' : 's'} on the list` : ''}.
+          It has not been published anywhere, so starting fresh loses it.</p>
+        <button class="btn btn-go" onclick="closeSheet();go('new')">Carry on with it</button>
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();freshSession()">Start fresh</button>
+        `);
       return;
     }
     /* The compose screen, not the old panels. This was the last line keeping
@@ -21354,7 +21412,9 @@ const Posts = {
       return `<div class="sos-list"><div class="sos-row hmx-empty">Nothing yet. Say something,
         or put a night on and it will turn up here.</div></div>`;
     }
-    return rows.map(e => e.post ? this.row(e.post) : this.sessionRow(e.session)).join('');
+    return rows.map(e => e.post ? this.row(e.post)
+      : e.birthday ? this.birthdayRow(e.birthday, e.today)
+      : this.sessionRow(e.session)).join('');
   },
 
   /* The attached card. Three kinds off one shape — a crown in gold, a
@@ -21422,6 +21482,48 @@ const Posts = {
           ${PST_IC.star}<b>${p.kudos || 0}</b></button>
         <button class="pst-a" onclick="Comments.open('${esc(p.id)}')">
           ${PST_IC.chat}<b>${p.comments || 0}</b></button>
+      </div>
+    </article>`;
+  },
+
+  /* Whose birthday it is. Derived rather than posted, so like the session
+     rows there is nothing to react to and no actions bar — a heart on a
+     thing the app worked out this morning would have nowhere to be kept.
+     Saying it in the club's own voice is the point: the strip this replaces
+     was a row of faces with numbers under them that nobody read. */
+  birthdayRow(list, today){
+    const names = list.map(m => firstName(m.alias || m.name));
+    const said = names.length === 1 ? names[0]
+      : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+    const body = today
+      ? (names.length === 1
+          ? 'It is ' + said + '\u2019s birthday today.'
+          : 'It is ' + said + '\u2019s birthday today.')
+      : said + (names.length === 1 ? ' has' : ' have') + ' a birthday coming up.';
+    const meta = today
+      ? (names.length === 1 ? 'Say something when you see them'
+          : names.length + ' of them, today')
+      : list.map(m => firstName(m.alias || m.name) + ' '
+          + (m.days === 1 ? 'tomorrow' : DAYS[new Date(m.when).getDay()])).join(' \u00b7 ');
+    return `<article class="pst">
+      <div class="pst-h">
+        <span class="av sm pst-sys">SS</span>
+        <span class="pst-who">
+          <b>${esc(CONFIG.clubName || 'Sideout Society')}<i class="pst-tag">Club</i></b>
+          <span>${today ? 'today' : 'this week'}</span>
+        </span>
+      </div>
+      <p class="pst-b">${esc(body)}</p>
+      <div class="pcd${today ? ' gold' : ''}">
+        <span class="pcd-k">${today ? 'Birthday' : 'Coming up'}</span>
+        <div class="bdf">${list.slice(0, 8).map(m => `
+          <span class="bdf-one">
+            ${avatar(m.alias || m.name, m.photo, 'sm')}
+            <b>${esc(firstName(m.alias || m.name))}</b>
+            <i>${today ? 'Today' : (m.days === 1 ? 'Tomorrow'
+              : m.birth_day + ' ' + MONTHS[m.birth_month - 1].slice(0, 3))}</i>
+          </span>`).join('')}</div>
+        ${meta && !today ? '' : `<span class="pcd-m">${esc(meta)}</span>`}
       </div>
     </article>`;
   },
@@ -21532,6 +21634,23 @@ function feedTimeline(){
     const t = Feed.ms(r.starts_at);
     out.push({ at: t || 0, session: r });
   });
+
+  /* Birthdays, from the club roster the app already holds — no table, no
+     RPC, and nothing to post or miss. Two entries at most: whoever it is
+     today, and whoever it is inside the next week. Both are derived, so they
+     cannot go stale and they cannot be posted twice.
+
+     Today's sorts at this morning so it sits at the top where it belongs;
+     the week-ahead one sorts an hour behind it, because a heads-up should
+     not outrank the day itself. */
+  const now = new Date();
+  const morning = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const soon = Birthday.soon(7);
+  const today = soon.filter(x => x.days === 0);
+  const coming = soon.filter(x => x.days > 0);
+  if(today.length) out.push({ at: morning, birthday: today, today: true });
+  if(coming.length) out.push({ at: morning - 36e5, birthday: coming, today: false });
+
   return out.sort((a, b) => b.at - a.at);
 }
 
