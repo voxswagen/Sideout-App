@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v136`. Forgetting this means testers see last week's app and
+Currently `sideout-v137`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -781,6 +781,35 @@ slid under the notch and the clock. Each of those now carries
 padding further down the stylesheet and silently won it back, so the inset
 had to go on those rules rather than only on the shared one. A new
 self-titled screen needs adding in `syncNav`'s `titled` list **and** here.
+
+**There were two top-level functions called `shrinkImage`.** The second
+replaced the first at parse time, so `shrinkImage(file, 160)` — written for
+the avatar cropper, which wanted a square — was calling the one that fits an
+image inside a box, and faces came out letterboxed. The square one is
+`cropSquare()` now. Both are live and they do different jobs; a file this
+size will hide a duplicate declaration indefinitely, and nothing warns.
+
+**Two organizers can both hold a session, and that is by design — but they
+cannot both score it.** `sideout_save` takes the code and the PIN and writes
+the *whole state* as one blob, last write wins; the SQL even says a co-host
+with the PIN must not be locked out. What is missing is the other half:
+`Live.collect()` polls only for **joiners**, never for state, so a hosting
+phone never learns what another host recorded. Two people scoring at once
+today lose points — each beat silently overwrites everything the other did
+since they last adopted.
+
+Making that safe is not a small change. It needs hosts to pull state as well
+as joiners, and `sideout_save` to refuse a write against a row that has
+moved on so the client can re-read, re-apply and retry. Until then the honest
+position is one scorer at a time, and the app should not imply otherwise.
+
+`sideout_open` is the part that could be done: an owner or organizer is
+handed the PIN for any session of their club rather than being asked for it,
+so helping run a night no longer means finding whoever started it. It returns
+null rather than raising when the caller is not staff, so the client falls
+back to the PIN field and nothing depends on the migration having run. "Take
+over a session" is "Open a session" now — it was never exclusive, and the
+words said it was.
 
 **Birthdays are a feed post, derived, never stored.** `Birthday.soon(7)`
 walks forward from this morning rather than filtering on the calendar month,

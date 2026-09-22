@@ -1594,7 +1594,17 @@ select.mini{padding:6px 8px;border-radius:var(--r-s);border:1px solid var(--edge
 .fx-top b{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:.01em;color:var(--ink);
   line-height:1.1}
 .fx-at,.fx-n{font-size:12.5px;color:var(--ink-3)}
-.lad{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+/* One white card with the rows inside it, hairlines between. It was a column
+   of detached rows with 6px of page showing through and no ground of its
+   own, which is why the table read as floating on grey. Nothing renders
+   `.lad-row` any more, so this only ever wraps `.rec-lad`. */
+.lad{margin:0 16px 14px;background:var(--sos-card);border-radius:14px;overflow:hidden}
+.rec-lad + .rec-lad{border-top:1px solid var(--sos-sep)}
+/* Inset to clear the rank, so the line starts under the faces. */
+.rec-lad + .rec-lad{background-clip:padding-box}
+.lad .rec-lad + .rec-lad{border-top-color:transparent;position:relative}
+.lad .rec-lad + .rec-lad::before{content:'';position:absolute;left:50px;right:0;top:0;
+  height:1px;background:var(--sos-sep)}
 .lad-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r-s);
   background:var(--card-2);border:1px solid var(--edge)}
 .lad-pos{flex:0 0 auto;min-width:22px;font-family:'Bebas Neue',sans-serif;font-size:19px;
@@ -4121,8 +4131,12 @@ body.casting{overflow:hidden}
 #screen-chats.on,#screen-me.on,#screen-group.on{
   padding-top:calc(6px + env(safe-area-inset-top,0px))}
 #screen-home.on{padding:calc(6px + env(safe-area-inset-top,0px)) 0 8px}
+/* The header owns the gap under itself rather than whatever follows owning
+   the gap above — the banner, the composer and the first post can each be
+   the next thing, and three rules for one space is three chances for two of
+   them to disagree. */
 #screen-home .hmx-top{display:flex;align-items:flex-start;justify-content:space-between;
-  gap:12px;padding:10px 16px 0}
+  gap:12px;padding:10px 16px 16px}
 .hmx-tx{min-width:0}
 .hmx-eyebrow{margin:0;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--sos-dim)}
 .hmx-top h1{margin-top:1px}
@@ -4384,8 +4398,15 @@ body.casting{overflow:hidden}
 .pst-add button{flex:none;min-height:38px;padding:0 14px;border-radius:10px;border:0;
   cursor:pointer;background:var(--sos-accent);color:var(--sos-on-accent);
   font-family:inherit;font-size:14px;font-weight:600}
-.pst-ta{width:100%;padding:12px;border-radius:12px;font-family:inherit;font-size:15px;
-  line-height:1.5;resize:vertical}
+/* The sheet's buttons were sitting flush against the box you type in. */
+.pst-ta{width:100%;margin-bottom:12px;padding:12px;border-radius:12px;font-family:inherit;
+  font-size:15px;line-height:1.5;resize:vertical}
+.pst-pick{margin-bottom:8px}
+.pst-prev{position:relative;margin-bottom:12px}
+.pst-prev img{display:block;width:100%;border-radius:12px}
+.pst-prev button{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;
+  border-radius:99px;cursor:pointer;background:rgba(23,36,43,.62);color:#fff;
+  font-size:19px;line-height:1}
 
 /* ── comments ──
    The composer takes the place of the tab bar rather than sitting above it:
@@ -9199,7 +9220,12 @@ function cropImage(img, w, h, frame){
   return out;
 }
 
-function shrinkImage(file, px){
+/* Square, for a face. Named apart from shrinkImage() on purpose: there were
+   two top-level functions called shrinkImage in this file and the second one
+   silently replaced this one at parse time, so every avatar was being fitted
+   inside a box rather than cropped to fill it — which is why some of them
+   came out letterboxed. Both are live; they do different jobs. */
+function cropSquare(file, px){
   px = px || 160;
   return loadImage(file).then(img => cropImage(img, px, px));
 }
@@ -14178,8 +14204,11 @@ function ladderRows(rows){
         <span class="sos-t-2nd">${r.wins || 0}–${losses}${
           r.crowns ? ' · ' + r.crowns + ' crown' + (r.crowns === 1 ? '' : 's') : ''}</span>
       </span>
+      ${/* One figure on the right, as the design draws it. The points
+            difference used to sit beside it in its own column, which made
+            the row two numbers wide and neither of them the answer — it is
+            the tie-break, and the table is already in that order. */''}
       <span class="rec-pts"><b>${r.wins || 0}</b><i>won</i></span>
-      <span class="rec-diff2 ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff}</span>
     </button>`;
   }).join('');
 }
@@ -15681,8 +15710,8 @@ const PlaySheet = {
     openSheet(`<h3>Start something</h3>
       ${can ? row('startOrganizing()', 'An open play',
                   'Set a night up and share the link', 'plus') : ''}
-      ${can ? row('openResume()', 'Take over a session',
-                  'You have the code and the host PIN', 'open') : ''}
+      ${can ? row('openResume()', 'Open a session',
+                  'Any night the club has running', 'open') : ''}
       ${row('findSession()', 'Join with a code',
             'Somebody sent you five letters', 'search')}
       ${/* Starting a group has come off this sheet. It is not a thing you do
@@ -18195,7 +18224,7 @@ function meTools(){
      organizer. Same argument for the season: a season is the group's, not
      yours, and it now lives on the group's own page. */
   if(canOrganize()){
-    org.push(meRow('openResume()', 'Take over a session', 'open', '', 'sq'));
+    org.push(meRow('openResume()', 'Open a session', 'open', '', 'sq'));
     if(Auth.isOrganizer && Auth.isOrganizer())
       org.push(meRow('accessSheet()', 'Role management', 'key',
                      'Owners, organizers, players', 'sq'));
@@ -18552,7 +18581,7 @@ function meOrganizing(){
   const rows = [];
   const row = (act, label) => `<button class="pf-row" onclick="${act}">
     <span>${esc(label)}</span>${HMX_IC.chev}</button>`;
-  if(canOrganize()) rows.push(row('openResume()', 'Take over a session'));
+  if(canOrganize()) rows.push(row('openResume()', 'Open a session'));
   if(Auth.isOrganizer && Auth.isOrganizer()) rows.push(row('accessSheet()', 'Roles'));
   if(Auth.isOwner()){
     rows.push(row("go('roles')", 'Player management'));
@@ -21270,26 +21299,68 @@ const Posts = {
     if(box) box.innerHTML = this.html();
   },
 
-  say(photo){
-    if(!Auth.signedIn()){ AuthUI.open(()=> Posts.say(photo), 'in'); return; }
+  photo: null,
+
+  say(withPhoto){
+    if(!Auth.signedIn()){ AuthUI.open(()=> Posts.say(withPhoto), 'in'); return; }
+    this.photo = null;
     openSheet(`<h3>Say something</h3>
       <p class="sub">It goes to everybody in the club.</p>
       <textarea id="pst-new" class="pst-ta" rows="4" maxlength="1000"
         placeholder="How did it go?"></textarea>
+      <div id="pst-shot"></div>
+      <button class="btn btn-quiet pst-pick" onclick="Posts.pick()">Add a photo</button>
       <button class="btn btn-go" onclick="Posts.send()">Post it</button>
       <button class="btn btn-quiet" onclick="closeSheet()">Not now</button>`);
-    setTimeout(()=>{ const t = document.getElementById('pst-new'); if(t) t.focus(); }, 60);
+    /* The camera button on the composer opens the picker straight away —
+       tapping a photo icon and being given a text box was the whole of the
+       complaint. The words are still there underneath it, because a picture
+       with a line about it is the usual post. */
+    if(withPhoto) setTimeout(()=> Posts.pick(), 80);
+    else setTimeout(()=>{ const t = document.getElementById('pst-new'); if(t) t.focus(); }, 60);
+  },
+
+  /* Shrunk on the way in, the same size the chat uses. A phone camera
+     photograph is three or four megabytes and the post row holds it as a
+     data URL, so full size would be a post nobody can load. */
+  pick(){
+    const f = document.createElement('input');
+    f.type = 'file'; f.accept = 'image/*';
+    f.onchange = async ()=>{
+      const file = f.files && f.files[0];
+      if(!file) return;
+      const slot = document.getElementById('pst-shot');
+      if(slot) slot.innerHTML = '<p class="pst-none">Getting it ready…</p>';
+      try{ this.photo = await shrinkImage(file, 1100, .74); }
+      catch(e){ this.photo = null; toast('That picture would not load.'); }
+      this.shot();
+    };
+    f.click();
+  },
+
+  shot(){
+    const slot = document.getElementById('pst-shot');
+    if(!slot) return;
+    slot.innerHTML = this.photo
+      ? `<div class="pst-prev"><img src="${this.photo}" alt="">
+          <button onclick="Posts.photo=null;Posts.shot()" aria-label="Take the photo off">&times;</button>
+        </div>` : '';
+    const add = document.querySelector('.pst-pick');
+    if(add) add.textContent = this.photo ? 'Choose another' : 'Add a photo';
   },
 
   async send(){
     const el = document.getElementById('pst-new');
     const body = el ? String(el.value || '').trim() : '';
-    if(!body){ toast('Nothing to post yet.'); return; }
+    const photo = this.photo;
+    /* A picture on its own is a post. The server takes either. */
+    if(!body && !photo){ toast('Nothing to post yet.'); return; }
     closeSheet();
+    this.photo = null;
     try{
       await Live.rpc('sideout_post_add', {
         p_club: CONFIG.club || 'sideout', p_group: null,
-        p_code: null, p_body: body, p_photo: null
+        p_code: null, p_body: body, p_photo: photo
       });
       await this.load(true);
       this.paint();
@@ -27818,7 +27889,7 @@ const View = {
     const msg = document.getElementById('edit-msg');
     if(msg){ msg.hidden = false; msg.className = 'conn'; msg.textContent = 'Shrinking that down\u2026'; }
     try{
-      this.editPhoto = await shrinkImage(file, 160);
+      this.editPhoto = await cropSquare(file, 160);
       this.editName = (document.getElementById('edit-name') || {}).value || this.editName;
       this.editDupr = (document.getElementById('edit-dupr') || {}).value || this.editDupr;
       this.paintEdit();
@@ -28129,7 +28200,7 @@ const View = {
     const msg = document.getElementById('mem-msg');
     if(msg){ msg.hidden = false; msg.className = 'conn'; msg.textContent = 'Shrinking that down\u2026'; }
     try{
-      this.newPhoto = await shrinkImage(file, 160);
+      this.newPhoto = await cropSquare(file, 160);
       this.newName = (document.getElementById('mem-name') || {}).value || this.newName;
       this.newDupr = (document.getElementById('mem-dupr') || {}).value || this.newDupr;
       this.newMember();
@@ -28287,12 +28358,20 @@ async function doManageSession(code){
 }
 
 function openResume(){
+  /* An organizer does not need the PIN. Their role already says they may run
+     the club's nights, and making them go and ask whoever started it for four
+     digits before they could help was a gate on the wrong thing. The PIN is
+     still there and still works — it is how a device with no account proves
+     itself — this is a second door that the JWT opens. */
+  const staff = canOrganize();
   openSheet(`<h3>Open a session</h3>
-    <p class="sub">Type the code and PIN from the device that started it, and the whole session lands here — players, scores, courts and all.</p>
+    <p class="sub">${staff
+      ? 'Type the code and it lands here — players, scores, courts and all. As an organizer you do not need the PIN.'
+      : 'Type the code and PIN from the device that started it, and the whole session lands here — players, scores, courts and all.'}</p>
     <div class="field"><span class="label">Session code</span>
       <input type="text" id="rs-code" placeholder="ABC12" autocomplete="off" maxlength="6"
         style="text-transform:uppercase;letter-spacing:.2em;font-size:22px;text-align:center"></div>
-    <div class="field"><span class="label">Host PIN</span>
+    <div class="field"${staff ? ' id="rs-pin-f" hidden' : ''}><span class="label">Host PIN</span>
       <input type="tel" id="rs-pin" placeholder="0000" autocomplete="off" maxlength="4"
         inputmode="numeric" style="letter-spacing:.35em;font-size:22px;text-align:center"></div>
     <p class="conn" id="rs-msg" hidden></p>
@@ -28305,10 +28384,29 @@ async function doResume(){
   const pin  = (document.getElementById('rs-pin').value || '').replace(/\D/g,'');
   const msg  = document.getElementById('rs-msg');
   const say = (cls, t) => { msg.hidden = false; msg.className = 'conn ' + cls; msg.textContent = t; };
-  if(code.length < 4 || pin.length < 4){ say('bad', 'Both the code and a four-digit PIN, please.'); return; }
+  const staff = canOrganize();
+  if(code.length < 4){ say('bad', 'The session code, please.'); return; }
+  if(!staff && pin.length < 4){ say('bad', 'Both the code and a four-digit PIN, please.'); return; }
   say('', 'Fetching\u2026');
+
+  /* An organizer is handed the PIN rather than asked for it. If the RPC is
+     not deployed, or this club has not made them staff, it comes back empty
+     and the PIN field is put in front of them instead — so the old way keeps
+     working everywhere and nothing depends on the migration having run. */
+  let use = pin;
+  if(staff && !use){
+    try{
+      use = await Live.rpc('sideout_open', { p_club: CONFIG.club || 'sideout', p_code: code }) || '';
+    }catch(e){ use = ''; }
+    if(!use){
+      const f = document.getElementById('rs-pin-f');
+      if(f) f.hidden = false;
+      say('bad', 'Could not open that one on your role alone \u2014 the PIN, please.');
+      return;
+    }
+  }
   let state = null;
-  try{ state = await Live.claim(code, pin); }
+  try{ state = await Live.claim(code, use); }
   catch(e){
     const m = String(e.message || e);
     say('bad', m.includes('PIN') ? 'That PIN does not match the session.'

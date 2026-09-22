@@ -260,3 +260,47 @@ grant execute on function public.sideout_upcoming(text) to anon, authenticated;
 -- See the live definitions for the full text; both are long and neither has
 -- anything in it that is not explained above.
 -- ===========================================================================
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- sideout_open — an organizer opens a session without the PIN
+-- ═══════════════════════════════════════════════════════════════
+-- NOT DEPLOYED. Part of the pending migration.
+--
+-- The PIN is how a *device* proves it is allowed to write a session. That
+-- was the right gate when a session could be started by anybody with a
+-- phone, and it is the wrong one for an organizer of the club, whose role
+-- already says it — they had to go and ask whoever started the night for
+-- four digits before they could help run it.
+--
+-- So: an owner or organizer of the club gets the PIN handed to them for any
+-- session of that club. Everybody else still has to type it. The PIN is not
+-- removed or weakened; this is a second door into the same room, and it is
+-- one the JWT opens.
+--
+-- Returns null rather than raising when the caller is not staff, so the
+-- client can fall back to asking for the PIN without having to match on the
+-- wording of an error.
+
+drop function if exists public.sideout_open(text, text);
+
+create function public.sideout_open(p_club text, p_code text)
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select k.pin
+    from public.session_keys k
+    join public.sessions s on s.code = k.code
+   where k.code = upper(btrim(p_code))
+     and s.club = coalesce(p_club, 'sideout')
+     and exists (
+       select 1 from public.members me
+        where me.club = coalesce(p_club, 'sideout')
+          and me.user_id = auth.uid()
+          and me.role in ('owner', 'organizer'));
+$$;
+
+grant execute on function public.sideout_open(text, text) to authenticated;
