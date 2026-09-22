@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v142`. Forgetting this means testers see last week's app and
+Currently `sideout-v143`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -82,6 +82,23 @@ as though everything typed is about to make a second one. Title, button and
 footnote all key on there being a night at all (`S.live || S.active ||
 S.order.length`), and only the footnote still distinguishes online from
 running-here, because that is the one place the difference matters.
+
+**`openSession()` is the one door into a night, and who you are decides
+which side of it you get.** Every session card used to do
+`location.href = '?s=CODE'`, which reloads the page into the watch view — a
+read-only board built for somebody who followed a shared link. An organizer
+then had to find "Manage this session" on it, which adopts the night and
+lands them somewhere that looks nothing like where they just were. Four
+steps and two different screens for the same session, and the person most
+likely to tap it is the one running it.
+
+Now: holding that night already means one tap to `screen-session`, nothing
+fetched and nothing reloaded. An organizer who is not holding it goes
+straight to `manageSession()`. Everybody else gets the watcher, which is
+what it is for. Eight call sites went through it — Today's banner and
+session posts, the Sessions cards, the feed rows, the attached card's
+action and the landing page's list. A new session card wires to
+`openSession(code)`, never to `?s=` directly.
 
 **Setup is gone, and `go('setup')` is a redirect.** The old panelled editor
 is no longer reachable: `go('setup')` sends you to the compose screen when

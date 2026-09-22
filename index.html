@@ -15509,7 +15509,7 @@ const Games = {
         : (cap && inN >= cap) ? ['Full','dim']
         : left !== null ? [left + ' left','dim']
         : ['Open','dim'];
-      const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
+      const go = `openSession('${esc(r.code)}')`;
       return `<button class="gm-card" onclick="${go}">
         <span class="gm-top">
           <span class="gm-date${r.mine ? ' on' : ''}">${d
@@ -15553,7 +15553,7 @@ const Games = {
       }
       out.push(`<button class="hm-sess" onclick="${done
           ? `pastSession('${esc(r.code)}')`
-          : `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`}">
+          : `openSession('${esc(r.code)}')`}">
         <span class="hm-when">${t && !done ? esc(clockText(t)) : (done ? '·' : '')}</span>
         <span class="hm-stx"><b>${esc(r.title || 'Open play')}</b>
           <span>${done ? (r.players || 0) + ' played · ' + (r.games || 0) + ' games'
@@ -20205,7 +20205,7 @@ const Feed = {
     else bits.push((r.joined || 0) + ' in');
     const where = venueLabel(r);
     if(where) bits.push(where);
-    return `<button class="fd-dense" onclick="location.href='?s=' + encodeURIComponent('${esc(r.code)}')">
+    return `<button class="fd-dense" onclick="openSession('${esc(r.code)}')">
       <span class="fd-when">
         <b>${d ? esc(clockText(t).replace(/\s?(am|pm)$/i, '')) : '\u2014'}</b>
         <span>${d ? esc(DAYS[d.getDay()].slice(0, 3)) : ''}</span>
@@ -20376,7 +20376,7 @@ function hmxNext(){
   const faces = (Club.list || []).slice(0, 3).map(x =>
     avatar(x.alias || x.name, x.photo)).join('');
   const rest = Math.max(0, (r.joined || 0) - 3);
-  const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
+  const go = `openSession('${esc(r.code)}')`;
 
   return `<section class="hmx-next" id="hm-next" data-at="${r.when}">
     <div class="hmx-shot${r.cover ? ' shot' : ''}"${
@@ -20516,7 +20516,7 @@ function hmxComing(){
     const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
     const full = r.cap > 0 && (r.joined || 0) >= r.cap;
     const d = t ? new Date(t) : null;
-    const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
+    const go = `openSession('${esc(r.code)}')`;
     /* One word for where this night stands with you, and being in it beats
        everything else it could say. */
     const state = r.live ? ['Playing now', 'live']
@@ -21710,7 +21710,7 @@ const Posts = {
           <span class="pcd-rec">${esc(w.record || '')}</span>
         </div>`).join('')}</div>` : ''}
       ${c.action ? `<button class="pcd-go" onclick="event.stopPropagation();${
-        c.code ? `location.href='?s=' + encodeURIComponent('${esc(c.code)}')` : ''
+        c.code ? `openSession('${esc(c.code)}')` : ''
       }">${esc(c.action)}</button>` : ''}
     </div>`;
   },
@@ -21863,7 +21863,7 @@ function hmxPinned(){
   const r = Feed.rows()[0] || (Feed.up || []).find(x => !x.ended);
   if(!r) return '';
   const t = r.when || Feed.ms(r.starts_at);
-  const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
+  const go = `openSession('${esc(r.code)}')`;
   const bits = [t ? clockText(t) : null, venueLabel(r) || null,
     r.joined ? r.joined + ' going' : null].filter(Boolean).join(' · ');
   return `<button class="pin" onclick="${go}">
@@ -24288,7 +24288,7 @@ async function paintLandingFacts(){
     const tag = left === null ? `${r.joined || 0} in`
               : (left === 0 ? 'Full' : left + ' spot' + (left === 1 ? '' : 's'));
     const cls = left === 0 ? 'full' : (left !== null && left <= 4 ? 'few' : '');
-    return `<button class="lp-row" onclick="location.href='?s=' + encodeURIComponent('${esc(r.code)}')">
+    return `<button class="lp-row" onclick="openSession('${esc(r.code)}')">
       <span class="t"><b>${hh}</b><span>${ap}</span></span><s></s>
       <span class="n"><b>${esc(r.title || 'Open play')}</b>
         <span>${esc(r.venue ? (parseVenue(r.venue) || {}).name || r.venue : (d ? longDate(t) : ''))}</span></span>
@@ -28514,6 +28514,28 @@ function paintTVJoin(){
 /* Every open play is its own session with its own code, so opening
    one means leaving whatever is on this device behind. Say so before
    swapping, rather than after. */
+/* One door into a night, and which side of it you get depends on who you
+   are rather than on which card you tapped.
+
+   It used to be that tapping a session anywhere in the app reloaded the page
+   into the watch view — a read-only board built for somebody who followed a
+   shared link — and an organizer then had to find "Manage this session" on
+   it, which adopts the night and lands them somewhere that looks nothing
+   like where they just were. Four steps and two different screens for the
+   same session, and the person most likely to tap it is the one running it.
+
+   So: if this device is already holding that night, nothing is fetched and
+   nothing reloads — it is one tap to the session screen. An organizer who is
+   not holding it goes straight to managing it. Everybody else gets the
+   watcher, which is what it is for. */
+function openSession(code, title){
+  code = String(code || '').trim();
+  if(!code) return;
+  if(S.liveCode === code){ go('session'); return; }
+  if(Auth.signedIn() && canOrganize()){ manageSession(code, title); return; }
+  location.href = '?s=' + encodeURIComponent(code);
+}
+
 async function manageSession(code, title){
   if(!Auth.signedIn() || !canOrganize()){
     location.href = '?s=' + encodeURIComponent(code);
