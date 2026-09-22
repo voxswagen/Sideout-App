@@ -1187,7 +1187,10 @@ input.bad{border-color:var(--fault)!important}
 .ch-b > span{display:block;font-size:14.5px;line-height:1.45;word-break:break-word}
 .ch-b em{display:block;margin-top:4px;font-style:normal;font-size:10.5px;opacity:.6;text-align:right}
 /* a run-on message lines up under the one before it rather than repeating the face */
-.ch-m.run:not(.me){padding-left:41px}
+/* The gutter is reserved whenever the face is not drawn, rather than only on
+   a run-on message — otherwise the last bubble of a run, which now carries
+   the face, would be the one that did not line up. */
+.ch-m.noav:not(.me){padding-left:41px}
 
 /* The picker scrolls inside the sheet: a club of 85 is 85 rows, and a sheet
    that tall cannot be reached past to dismiss. */
@@ -4141,6 +4144,85 @@ body.casting{overflow:hidden}
   border:1.5px solid var(--sos-card)}
 .hmx-me{width:40px;height:40px;border-radius:99px;border:0;background:none;padding:0;
   cursor:pointer;display:block}
+/* ── pull to refresh ──
+   A spacer whose height is the pull distance, so the page moves with the
+   finger instead of a spinner appearing over the top of it. */
+#ptr{height:0;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;
+  transition:height .18s ease}
+#ptr.spin{transition:height .18s ease}
+.ptr-in{display:flex;align-items:center;gap:8px;padding-bottom:10px;
+  font-size:12.5px;font-weight:600;color:var(--sos-dim)}
+.ptr-a{display:grid;place-items:center;width:17px;height:17px;transition:transform .08s linear}
+.ptr-a svg{width:17px;height:17px}
+#ptr.ready .ptr-in{color:var(--sos-accent)}
+#ptr.spin .ptr-a{animation:ptrSpin .9s linear infinite}
+#ptr.spin .ptr-l{visibility:hidden}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
+
+/* ── the pinned session banner ──
+   Compact, and the handoff says why: the tall card pushed the composer and
+   the first post under the fold, so the feed read as empty on the one screen
+   that is meant to be a feed. */
+.pin{position:relative;display:flex;align-items:center;gap:13px;width:calc(100% - 32px);
+  margin:0 16px 14px;padding:13px 15px 14px;border:0;cursor:pointer;text-align:left;
+  border-radius:16px;overflow:hidden;background:#1F4F65;font-family:inherit;
+  box-shadow:0 6px 18px rgba(23,36,43,.14)}
+.pin::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,#2D6A85 0%,#1F4F65 62%,#233A45 100%)}
+.pin-glow{position:absolute;right:-40px;top:-50px;width:170px;height:170px;
+  border-radius:99px;border:1px solid rgba(255,255,255,.12)}
+.pin-tx{position:relative;flex:1;min-width:0}
+.pin-when{display:flex;align-items:center;gap:6px}
+.pin-dot{position:relative;width:6px;height:6px;flex:none;border-radius:99px;background:#fff}
+.pin-dot b{position:absolute;inset:0;border-radius:99px;background:#fff;
+  animation:pinPulse 2s ease-out infinite}
+@keyframes pinPulse{from{opacity:.7;transform:scale(1)}to{opacity:0;transform:scale(3.4)}}
+.pin-when em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#fff}
+.pin-t{display:block;margin-top:6px;font-size:20px;font-weight:700;letter-spacing:-.02em;
+  color:#fff;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin-m{display:block;margin-top:3px;font-size:13.5px;color:#BCD0DC;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin-go{position:relative;flex:none;min-height:44px;display:flex;align-items:center;
+  padding:0 16px;background:#fff;border-radius:12px;font-size:15px;font-weight:600;
+  letter-spacing:-.01em;color:#1F4F65}
+
+/* ── the composer ── */
+.cmp{display:flex;align-items:center;gap:11px;margin:0 16px 16px;padding:10px 12px;
+  border-radius:14px;background:var(--sos-card)}
+.cmp .av{width:36px;height:36px;font-size:14px;flex:none}
+.cmp-f{flex:1;min-width:0;text-align:left;border:0;background:none;cursor:pointer;
+  font-family:inherit;font-size:15.5px;color:var(--sos-dim);padding:0}
+.cmp-ph{flex:none;width:36px;height:36px;border-radius:10px;background:var(--sos-fill);
+  border:0;cursor:pointer;display:grid;place-items:center}
+.cmp-ph svg{width:18px;height:18px}
+
+/* ── the attached card ──
+   One shape, three kinds: a crown in gold, a finished night with its podium,
+   an open play with a Join. */
+.pcd{margin:12px 14px 0;padding:13px 14px;border-radius:13px;background:var(--sos-fill-2);
+  border:1px solid var(--sos-hair)}
+.pcd.gold{background:#FBF7EC;border-color:#EADFC2}
+.pcd-k{display:block;font-size:11.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--sos-accent)}
+.pcd.gold .pcd-k{color:#8A6712}
+.pcd-t{display:block;margin-top:5px;font-size:19px;font-weight:700;letter-spacing:-.02em;
+  color:var(--sos-ink)}
+.pcd-m{display:block;margin-top:3px;font-size:13.5px;color:var(--sos-ink-2)}
+.pcd-p{margin-top:11px;display:flex;flex-direction:column;gap:7px}
+.pcd-r{display:flex;align-items:center;gap:10px}
+.pcd-n{flex:none;width:19px;font-style:normal;font-size:13px;font-weight:700;
+  color:var(--sos-ink-3)}
+.pcd-n.one{color:#8A6712}
+.pcd-r .av{width:26px;height:26px;font-size:11px;flex:none}
+.pcd-nm{flex:1;min-width:0;font-size:14.5px;font-weight:500;letter-spacing:-.01em;
+  color:var(--sos-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcd-nm.one{font-weight:700}
+.pcd-rec{flex:none;font-size:13.5px;font-weight:600;color:var(--sos-ink-2)}
+.pcd-go{display:block;width:100%;margin-top:11px;min-height:42px;border-radius:11px;
+  border:0;cursor:pointer;background:var(--sos-accent);color:var(--sos-on-accent);
+  font-family:inherit;font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+
 /* ── the feed ──
    Cards rather than rows, because a post is a thing somebody made and a row
    is an entry in a list. Same 16px gutters as everything else on Today. */
@@ -4153,37 +4235,47 @@ body.casting{overflow:hidden}
 .pst-say span{flex:1;min-width:0;font-size:14.5px;color:var(--sos-dim)}
 .pst-say .av{width:30px;height:30px;font-size:11px;flex:none}
 
-.pst{margin:0 16px 10px;padding:13px 14px 8px;border-radius:16px;
-  background:var(--sos-card);border:1px solid var(--sos-hair)}
+.pst{margin:0 16px 12px;padding:13px 0 0;border-radius:16px;overflow:hidden;
+  background:var(--sos-card);box-shadow:0 1px 3px rgba(23,36,43,.06)}
+.pst-h,.pst-b,.pst-n{padding-left:14px;padding-right:14px}
 .pst-h{display:flex;align-items:center;gap:10px}
-.pst-h .av{width:34px;height:34px;font-size:12px;flex:none}
+.pst-h .av{width:38px;height:38px;font-size:14px;flex:none}
 /* The club's own posts are signed by the club, so the disc is the accent
    rather than somebody's colour — it is not a person and should not read
    as one. */
-.pst-sys{background-color:var(--sos-accent);color:var(--sos-on-accent)}
+.pst-sys{background-color:var(--sos-ink);color:#fff}
 .pst-who{flex:1;min-width:0}
-.pst-who b{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;
+.pst-who b{display:flex;align-items:center;gap:6px;font-size:15.5px;font-weight:600;
   letter-spacing:-.01em;color:var(--sos-ink)}
-.pst-who > span{display:block;margin-top:1px;font-size:12.5px;color:var(--sos-dim)}
-.pst-tag{flex:none;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.06em;
-  text-transform:uppercase;padding:2px 6px;border-radius:99px;
+.pst-who > span{display:block;margin-top:1px;font-size:13px;color:var(--sos-ink-2)}
+.pst-tag{flex:none;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 6px 1px;border-radius:5px;
   background:var(--sos-tint);color:var(--sos-accent)}
-.pst-x{flex:none;width:28px;height:28px;border-radius:99px;cursor:pointer;border:0;
-  background:none;font-size:19px;line-height:1;color:var(--sos-ink-3)}
-.pst-b{margin:9px 0 0;font-size:14.5px;line-height:1.5;color:var(--sos-ink);
+.pst-x{flex:none;width:32px;height:32px;cursor:pointer;border:0;background:none;
+  font-size:19px;line-height:1;letter-spacing:.08em;color:var(--sos-ink-2)}
+.pst-b{margin:10px 0 0;font-size:15.5px;line-height:1.48;color:var(--sos-ink);
   text-wrap:pretty;white-space:pre-wrap}
+/* What happened, in words, above the hairline. The bar underneath is what
+   you can do about it — which is why a post nobody has touched has no line
+   here rather than a row of noughts. */
+.pst-n{margin-top:11px;font-size:13px;color:var(--sos-ink-2)}
 .pst-img{display:block;width:100%;margin-top:10px;border-radius:11px}
 
-.pst-acts{display:flex;align-items:center;gap:4px;margin-top:6px}
-.pst-a{display:flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;
-  border-radius:9px;border:0;background:none;cursor:pointer;font-family:inherit;
-  color:var(--sos-ink-3)}
-.pst-a svg{width:18px;height:18px}
-.pst-a b{font-size:13px;font-weight:600}
-.pst-a.on{color:var(--sos-accent)}
-/* Kudos is the gold one, and gold is not a theme colour — the same rule the
-   story cards follow for first place. */
-.pst-a.gold.on{color:var(--crown)}
+.pst-acts{display:flex;align-items:center;margin-top:10px;
+  border-top:1px solid var(--sos-sep)}
+.pst-a{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  min-height:44px;border:0;background:none;cursor:pointer;font-family:inherit;
+  color:var(--sos-ink-2)}
+.pst-a svg{width:19px;height:19px}
+.pst-a b{font-size:13.5px;font-weight:600}
+/* Two reactions and two colours, both stated rather than themed. A like is
+   "I saw this" and kudos is "that was a real result", so they must not read
+   as the same gesture twice — and neither is the club's accent, which would
+   make them change colour from one club to the next. */
+.pst-a.like.on{color:#B23D33}
+.pst-a.like.on svg{fill:#B23D33}
+.pst-a.gold.on{color:#8A6712}
+.pst-a.gold.on svg{fill:#8A6712}
 
 .pst-th{margin-top:6px;padding-top:9px;border-top:1px solid var(--sos-sep)}
 .pst-c{display:flex;align-items:flex-start;gap:9px;padding:5px 0}
@@ -4201,6 +4293,39 @@ body.casting{overflow:hidden}
   font-family:inherit;font-size:14px;font-weight:600}
 .pst-ta{width:100%;padding:12px;border-radius:12px;font-family:inherit;font-size:15px;
   line-height:1.5;resize:vertical}
+
+/* ── comments ──
+   The composer takes the place of the tab bar rather than sitting above it:
+   in a thread you are writing, not navigating, and two fixed bars stacked is
+   a phone with no room left. */
+#screen-comments.on{padding:0 0 8px}
+.cmt-bar{padding:8px 16px 0}
+.cmt-h{margin:2px 16px 12px}
+.cmt-src{margin-bottom:6px;box-shadow:none;border:1px solid var(--sos-hair)}
+.cmt-src .pst-b{padding-bottom:13px}
+.cmt-list{padding:0 16px}
+.cmt{display:flex;align-items:flex-start;gap:10px;padding:7px 0}
+.cmt .av{width:34px;height:34px;font-size:12px;flex:none}
+.cmt-r{flex:1;min-width:0}
+.cmt-bub{padding:9px 12px;border-radius:13px;background:var(--sos-card)}
+.cmt-bub b{display:block;font-size:14px;font-weight:600;letter-spacing:-.01em;
+  color:var(--sos-ink)}
+.cmt-bub span{display:block;margin-top:2px;font-size:15px;line-height:1.45;
+  color:var(--sos-ink);text-wrap:pretty}
+.cmt-f{display:flex;align-items:center;gap:12px;margin:4px 0 0 12px;
+  font-size:12.5px;color:var(--sos-ink-2)}
+/* The tail clears the composer rather than the tab bar, because the composer
+   is what is down there on this screen. */
+.cmt-tail{height:86px}
+.cmt-say{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;
+  gap:9px;padding:9px 16px calc(9px + env(safe-area-inset-bottom,0px));
+  background:var(--sos-card);border-top:1px solid var(--sos-sep)}
+.cmt-say input{flex:1;min-width:0;min-height:40px;padding:0 15px;border-radius:19px;
+  background:var(--sos-bg);border:1px solid var(--sos-hair);font-family:inherit;
+  font-size:15.5px;color:var(--sos-ink)}
+.cmt-say button{flex:none;width:40px;height:40px;border-radius:99px;border:0;cursor:pointer;
+  background:var(--sos-accent);color:var(--sos-on-accent);display:grid;place-items:center}
+.cmt-say button svg{width:19px;height:19px}
 
 /* Where you finished, in the badge a night with no photograph would
    otherwise fill with a generic court. */
@@ -5375,6 +5500,22 @@ body.casting{overflow:hidden}
    phone. A chip is a first name and a figure, so it does not need more; and
    the count is not fixed — Add a stack makes a fifth — so this is auto-fit
    rather than four stated columns. */
+/* The courts already out there, across the top. Two lines of names and the
+   score, no more — it is context for the queue, not a second Score screen. */
+.stk-cts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,158px),1fr))}
+.stk-ct{background:var(--sos-card);border:1px solid var(--sos-hair);border-radius:13px;
+  padding:9px 11px 10px}
+.stk-ct.done{background:var(--sos-fill-2)}
+.stk-cth{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  margin-bottom:5px}
+.stk-cth span{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--sos-ink-3)}
+.stk-cth b{font-size:12.5px;font-weight:700;color:var(--sos-accent)}
+.stk-ct.done .stk-cth b{color:var(--sos-dim)}
+.stk-ct p{margin:1px 0;font-size:13px;line-height:1.35;color:var(--sos-ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stk-q{margin:9px 16px 0}
+
 .stk-cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,158px),1fr))}
 .stk-col{background:var(--sos-card);border:1.5px solid var(--sos-hair);border-radius:15px;
   padding:11px 11px 12px;min-height:0}
@@ -6300,6 +6441,8 @@ body.casting{overflow:hidden}
 <!-- ══════════════ MANAGE ══════════════ -->
 <!-- ══════════════ THE QUEUE, AS STACKS ══════════════
      Wide on purpose: the screen for whoever runs the night off a laptop. -->
+<section class="screen sos" id="screen-comments"><div id="cmt-box"></div></section>
+
 <section class="screen sos" id="screen-stacks">
   <div id="stk-box"></div>
 </section>
@@ -9213,6 +9356,7 @@ function go(name){
        mean the feed could not arrive until what's on had, and a slow read of
        one would hold up the other. */
     Posts.load(true).then(()=>{ if(currentScreen() === 'home') Posts.paint(); });
+    PTR.bind();
     Feed.watch();
     return;
   }
@@ -9227,6 +9371,11 @@ function go(name){
   /* A finished night and its results. Anyone can reach them — a night that
      has been played is the club's record, not the organizer's. */
   if(name === 'chats'){ showOnly('chats'); Chat.paint(); return; }
+  /* Early, with the other screens anybody can reach. Left to the tail it
+     would meet the rule that rewrites any name to 'setup' when no session is
+     running, and a thread would open the old editor — which is the third
+     time that fall-through has caught a new screen. */
+  if(name === 'comments'){ showOnly('comments'); Comments.paint(); return; }
   if(name === 'share'){ showOnly('share'); ShareCard.paint(); return; }
   if(name === 'listing'){ showOnly('listing'); Market.paintOne(); return; }
   if(name === 'market'){
@@ -11633,6 +11782,7 @@ function newPublish(){
    ═══════════════════════════════════════════════════ */
 const Stacks = {
   held: null,          /* the name being dragged */
+  q: '',               /* what is typed into the roster search */
   filter: 'All',
   byGames: false,
 
@@ -11706,8 +11856,45 @@ const Stacks = {
     toast(four.map(nm).join(', ') + ' are on ' + ordinal(at) + '.');
   },
 
-  set(k, v){ this[k] = v; renderStacks(); }
+  set(k, v){ this[k] = v; renderStacks(); },
+
+  find(v){
+    this.q = v || '';
+    const box = document.querySelector('#screen-stacks .stk-list');
+    if(box) box.innerHTML = stkRows()
+      || '<div class="stk-none pad">Nobody matches that.</div>';
+  }
 };
+
+/* The roster panel's rows. Its own function because the search field redraws
+   only this — a full repaint would take the field out from under the cursor,
+   which is the trap the compose screen's date input fell into. */
+function stkRows(){
+  const on = new Set(onCourtIds());
+  const inStack = new Set(Stacks.all().flat());
+  const held = Stacks.held;
+  const q = String(Stacks.q || '').toLowerCase().trim();
+  return S.order.filter(id => P(id) && !P(id).out)
+    .filter(id => Stacks.filter === 'All' ? true
+      : Stacks.filter === 'On court' ? on.has(id) : !on.has(id))
+    .filter(id => !q || String(P(id).name).toLowerCase().indexOf(q) >= 0)
+    .sort((a, b) => Stacks.byGames ? (P(a).g || 0) - (P(b).g || 0) : 0)
+    .map(id =>{
+      const p = P(id);
+      const court = on.has(id);
+      const state = court ? ['On court','on'] : inStack.has(id) ? ['Queued','q'] : ['Waiting','w'];
+      /* Somebody mid-game cannot be dragged into a stack — they are already
+         somewhere. Dimmed and not draggable, rather than draggable and then
+         silently refused. */
+      return `<div class="stk-row${court ? ' locked' : ''}${held === id ? ' held' : ''}"
+        ${court ? '' : `draggable="true" ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()"`}>
+        ${avatar(p.name, pPhoto(p), 'sm')}
+        <span class="stk-rn">${esc(p.name)}</span>
+        <span class="stk-st ${state[1]}">${state[0]}</span>
+        <span class="stk-g">${p.g || 0}</span>
+      </div>`;
+    }).join('');
+}
 
 function renderStacks(){
   const box = document.getElementById('stk-box');
@@ -11747,25 +11934,7 @@ function renderStacks(){
       </div>
     </div>`;
 
-  const rosterRows = S.order.filter(id => P(id) && !P(id).out)
-    .filter(id => Stacks.filter === 'All' ? true
-      : Stacks.filter === 'On court' ? on.has(id) : !on.has(id))
-    .sort((a, b) => Stacks.byGames ? (P(a).g || 0) - (P(b).g || 0) : 0)
-    .map(id =>{
-      const p = P(id);
-      const court = on.has(id);
-      const state = court ? ['On court','on'] : inStack.has(id) ? ['Queued','q'] : ['Waiting','w'];
-      /* Somebody mid-game cannot be dragged into a stack — they are already
-         somewhere. Dimmed and not draggable, rather than draggable and then
-         silently refused. */
-      return `<div class="stk-row${court ? ' locked' : ''}${held === id ? ' held' : ''}"
-        ${court ? '' : `draggable="true" ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()"`}>
-        ${avatar(p.name, pPhoto(p), 'sm')}
-        <span class="stk-rn">${esc(p.name)}</span>
-        <span class="stk-st ${state[1]}">${state[0]}</span>
-        <span class="stk-g">${p.g || 0}</span>
-      </div>`;
-    }).join('');
+  const rosterRows = stkRows();
 
   /* The spread is the number the organizer is actually trying to flatten, so
      it is stated rather than left to be worked out from a column of figures. */
@@ -11774,6 +11943,24 @@ function renderStacks(){
 
   const fil = v => `<button class="stk-f${Stacks.filter === v ? ' on' : ''}"
     onclick="Stacks.set('filter','${v}')">${esc(v)}</button>`;
+
+  /* What is happening, above what happens next. Without it the screen asks
+     you to build the next four with no sight of the four already out there,
+     which is the thing you look up at. Compact because it is context: the
+     Score screen is where a game is actually run. */
+  const courts = (S.courts || []).map((c, i) =>{
+    const a = (c.teams[0] || []).map(nm).join(' / ');
+    const b = (c.teams[1] || []).map(nm).join(' / ');
+    const done = c.win !== null;
+    const sc = done && c.sc ? c.sc.w + '\u2013' + c.sc.l
+      : c.pts ? (c.pts.a || 0) + '\u2013' + (c.pts.b || 0) : '';
+    return `<div class="stk-ct${done ? ' done' : ''}">
+      <div class="stk-cth"><span>Court ${i + 1}</span>
+        <b>${esc(done ? 'Recorded' : (sc || 'Playing'))}</b></div>
+      <p>${esc(a || 'Empty')}</p>
+      <p>${esc(b || 'Empty')}</p>
+    </div>`;
+  }).join('');
 
   box.innerHTML = `
     <div class="sos-bar stk-bar">
@@ -11786,6 +11973,7 @@ function renderStacks(){
 
     <div class="stk-grid">
       <div class="stk-main">
+        ${courts ? `<div class="stk-cts">${courts}</div>` : ''}
         <div class="stk-h">
           <span class="sos-t-grp">NEXT OFF THE QUEUE</span>
           <span class="stk-hint">Drag a name onto another stack. The top stack walks on
@@ -11812,6 +12000,11 @@ function renderStacks(){
           <span class="stk-sc">${S.order.filter(id => P(id) && !P(id).out).length} in</span>
         </div>
         <button class="stk-addp" onclick="go('people')">Add a player</button>
+        <div class="sos-search stk-q">
+          <input type="text" id="stk-find" placeholder="Search" value="${esc(Stacks.q || '')}"
+            autocomplete="off" aria-label="Search the roster"
+            oninput="Stacks.find(this.value)">
+        </div>
         <div class="stk-fs">${fil('All')}${fil('On court')}${fil('Waiting')}</div>
         <div class="stk-list">${rosterRows
           || `<div class="stk-none pad">Nobody matches that.</div>`}</div>
@@ -14834,7 +15027,7 @@ const Games = {
           <span class="sos-row-v">
             <span class="sos-t-row-b gm-t">${esc(r.title || 'Open play')}</span>
             <span class="sos-t-2nd">${t ? esc(shortDay(t)) : ''} · ${r.players} played${
-              placeLine(r)}${r.owing ? ' · ' + r.owing + ' still to pay' : ''}</span>
+              placeLine(r)}${wonLine(r)}${r.owing ? ' · ' + r.owing + ' still to pay' : ''}</span>
           </span>
           ${HMX_IC.chev}
         </button>
@@ -18587,7 +18780,7 @@ function canOrganize(){
 /* Every screen has to be listed here or showOnly() never puts `.on` on it —
    the section exists, go() routes to it, renderRun() fills it, and nothing
    appears. Same shape of trap as registering a format in five places. */
-const SCREENS = ['landing','auth','home','groups','group','player','games','board','me','members','roles','audit','setup','new','session','play','run','people','players','listing','share','stacks','stats','playoff','past','results','market','chats'];
+const SCREENS = ['landing','auth','home','groups','group','player','games','board','me','members','roles','audit','setup','new','session','play','run','people','players','listing','share','stacks','comments','stats','playoff','past','results','market','chats'];
 /* The screens that belong to running a session, as opposed to the
    ones that belong to the club. */
 const SESSION_SCREENS = ['play','run','players','stats','playoff'];
@@ -18609,13 +18802,13 @@ const SESSION_SCREENS = ['play','run','players','stats','playoff'];
    browser's own button. */
 const TAB_SCREENS = ['home','groups','group','player','games','board','me',
                      'members','roles','audit','market','past','results','chats',
-                     'session','people','run','new','listing','share','stacks'];
+                     'session','people','run','new','listing','share','stacks','comments'];
 /* Which of the five a screen belongs under. Each tab covers a family, so the
    bar answers "where am I" rather than "what did I last tap" — arriving by a
    link, the back button or a redirect after signing in still lights the
    right one. Anything not listed falls through to Today. */
 const TAB_OF = {
-  home:'home', chats:'home', share:'home',
+  home:'home', chats:'home', share:'home', comments:'home',
   games:'games', session:'games', people:'games', run:'games', play:'games',
   new:'games', stacks:'games',
   players:'games', stats:'games', playoff:'games', setup:'games',
@@ -18749,7 +18942,7 @@ function syncNav(name){
     || name === 'market' || name === 'chats');
   const bare = (name === 'landing' || name === 'auth' || name === 'session'
     || name === 'people' || name === 'new' || name === 'listing'
-    || name === 'share' || name === 'stacks' || titled);
+    || name === 'share' || name === 'stacks' || name === 'comments' || titled);
   /* Running a session is a different job from browsing the club, so it
      gets a different shell: the tabs, and a way back. No burger, no
      drawer \u2014 three places and you are always in one of them. */
@@ -19476,6 +19669,8 @@ const Feed = {
    rather than through icon(), which still holds the old set — absorbing them
    into it is worth doing once more than one screen wants them. */
 const HMX_IC = {
+  down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>`,
   clock: `<svg class="hmx-i" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/></svg>`,
   pin: `<svg class="hmx-i" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -19547,11 +19742,16 @@ function paintHome(){
           title="Your profile">${avatar(shown, m.photo)}</button>
       </div>
     </header>
-    ${hmxNext()}
-    <div id="hm-fig">${hmxFigures()}</div>
+    ${/* The handoff's revised Today, and the order is the whole point: a
+          compact banner for what is on, the composer, then the feed. What's
+          on and Already played are not sections here any more — an open play
+          is a post, and the full lists live on the Sessions tab, which is
+          what that tab is for. */''}
+    <div id="ptr"><span class="ptr-in"><span class="ptr-a">${HMX_IC.down || ''}</span>
+      <span class="ptr-l">Pull to refresh</span></span></div>
+    ${hmxPinned()}
+    ${hmxSay()}
     ${groupNudge()}
-    ${hmxComing()}
-    ${hmxPlayed()}
     ${hmxFeed()}
     ${hmxCode()}
     ${birthdayStrip()}
@@ -19785,6 +19985,14 @@ function placeLine(r){
   const n = Number(r && r.place) || 0;
   return n > 0 ? ' · you came ' + ordinalNum(n) : '';
 }
+/* "4 of 6 won", the line the handoff puts under a finished night. Same
+   conditional shape as the place: absent until the column is deployed, and
+   absent for a night the caller did not play. */
+function wonLine(r){
+  const g = Number(r && r.mine_games) || 0;
+  if(!g) return '';
+  return ' · ' + (Number(r.won) || 0) + ' of ' + g + ' won';
+}
 
 function hmxPlayed(){
   const past = (Feed.past || []);
@@ -19802,7 +20010,7 @@ function hmxPlayed(){
         <span class="sos-row-v">
           <span class="sos-t-row-b hmx-name">${esc(r.title || 'Open play')}</span>
           <span class="sos-t-2nd">${t ? esc(shortDay(t)) : ''} · ${r.players} played${
-            placeLine(r)}${r.owing ? ' · ' + r.owing + ' still to pay' : ''}</span>
+            placeLine(r)}${wonLine(r)}${r.owing ? ' · ' + r.owing + ' still to pay' : ''}</span>
         </span>
         ${HMX_IC.chev}
       </button>
@@ -20239,13 +20447,20 @@ const Chat = {
     /* One name per run of messages from the same person, and a date rule once
        a day. A name above every line turns six words into a wall. */
     let last = null, lastDay = null;
-    const body = this.msgs.map(m =>{
+    const body = this.msgs.map((m, mi) =>{
       const t = m.created_at ? new Date(m.created_at) : null;
       const day = t ? t.toDateString() : '';
       const rule = day !== lastDay ? `<div class="ch-day">${t ? esc(longDate(t.getTime())) : ''}</div>` : '';
       lastDay = day;
       const runOn = last === m.member && !m.reply_to;
       last = m.member;
+      /* The name goes at the top of a run and the face at the bottom, which
+         is where the eye ends up — the handoff is explicit about the second
+         one. The gutter is reserved either way by the padding below, so a
+         run of two lines up with itself whichever message is wearing the
+         face. */
+      const nx = this.msgs[mi + 1];
+      const endsRun = !nx || nx.member !== m.member || nx.kind === 'recap' || nx.reply_to;
       const re = m.reply_to && m.reply_name
         ? `<span class="ch-re"><i>${esc(m.reply_name)}</i>${esc(m.reply_body || '')}</span>` : '';
       const pic = m.image
@@ -20272,9 +20487,10 @@ const Chat = {
           <em>${t ? esc(clockText(t.getTime())) : ''}</em>
         </div>`;
       }
-      return rule + `<div class="ch-m${m.mine ? ' me' : ''}${runOn ? ' run' : ''}"
+      return rule + `<div class="ch-m${m.mine ? ' me' : ''}${runOn ? ' run' : ''}${
+        m.mine || endsRun ? '' : ' noav'}"
           data-id="${esc(m.id)}">
-        ${m.mine || runOn ? '' : avatar(m.name, m.photo, 'sm')}
+        ${m.mine || !endsRun ? '' : avatar(m.name, m.photo, 'sm')}
         <span class="ch-b">
           ${m.mine || runOn ? '' : `<i>${esc(m.name)}</i>`}
           ${re}${pic}
@@ -20665,8 +20881,8 @@ const Posts = {
     if(box) box.innerHTML = this.html();
   },
 
-  say(){
-    if(!Auth.signedIn()){ AuthUI.open(()=> Posts.say(), 'in'); return; }
+  say(photo){
+    if(!Auth.signedIn()){ AuthUI.open(()=> Posts.say(photo), 'in'); return; }
     openSheet(`<h3>Say something</h3>
       <p class="sub">It goes to everybody in the club.</p>
       <textarea id="pst-new" class="pst-ta" rows="4" maxlength="1000"
@@ -20802,64 +21018,106 @@ const Posts = {
         The server did not answer.
         <button class="sos-again" onclick="Posts.load(true).then(()=>Posts.paint())">Try again</button></div></div>`;
     }
-    const me = Auth.me || {};
-    const mine = Club.find(me.id) || {};
-    const composer = `<button class="pst-say" onclick="Posts.say()">
-      ${avatar(mine.alias || mine.name || me.name || 'You', mine.photo, 'sm')}
-      <span>Say something to the club</span>
-    </button>`;
-    if(!this.list.length){
-      return composer + `<div class="sos-list"><div class="sos-row hmx-empty">Nobody has said
-        anything yet. Be the one who starts it.</div></div>`;
+    const rows = feedTimeline();
+    if(!rows.length){
+      return `<div class="sos-list"><div class="sos-row hmx-empty">Nothing yet. Say something,
+        or put a night on and it will turn up here.</div></div>`;
     }
-    return composer + this.list.map(p => this.row(p)).join('');
+    return rows.map(e => e.post ? this.row(e.post) : this.sessionRow(e.session)).join('');
+  },
+
+  /* The attached card. Three kinds off one shape — a crown in gold, a
+     finished night with its podium, an open play with a Join. The data comes
+     from `posts.card` for a system post and is built here for a session,
+     which is why this takes a plain object rather than a post. */
+  card(c){
+    if(!c) return '';
+    const gold = !!c.gold;
+    return `<div class="pcd${gold ? ' gold' : ''}">
+      <span class="pcd-k">${esc(c.kind || '')}</span>
+      <b class="pcd-t">${esc(c.title || '')}</b>
+      ${c.meta ? `<span class="pcd-m">${esc(c.meta)}</span>` : ''}
+      ${(c.podium || []).length ? `<div class="pcd-p">${c.podium.map((w, i) => `
+        <div class="pcd-r">
+          <i class="pcd-n${i === 0 ? ' one' : ''}">${i + 1}</i>
+          ${avatar(w.name || '', null, 'sm')}
+          <span class="pcd-nm${i === 0 ? ' one' : ''}">${esc(w.name || '')}</span>
+          <span class="pcd-rec">${esc(w.record || '')}</span>
+        </div>`).join('')}</div>` : ''}
+      ${c.action ? `<button class="pcd-go" onclick="event.stopPropagation();${
+        c.code ? `location.href='?s=' + encodeURIComponent('${esc(c.code)}')` : ''
+      }">${esc(c.action)}</button>` : ''}
+    </div>`;
+  },
+
+  /* "31 liked · 28 gave kudos", above the hairline. The counts live here and
+     not on the buttons: the design puts what happened in words and leaves
+     the bar for what you can do, which is also why the bar does not shout a
+     zero at somebody for a post nobody has touched yet. */
+  counts(p){
+    const l = p.likes || 0, k = p.kudos || 0;
+    if(!l && !k) return '';
+    const bits = [];
+    if(l) bits.push(l + ' liked');
+    if(k) bits.push(k + ' gave kudos');
+    return `<div class="pst-n">${esc(bits.join(' · '))}</div>`;
   },
 
   row(p){
-    const club = p.kind === 'night';
+    const club = p.kind === 'night' || p.kind === 'crown' || !p.author;
     const who = club ? (CONFIG.clubName || 'Sideout Society') : (p.author_name || 'Somebody');
-    const shown = this.open[p.id];
-    const t = this.threads[p.id];
     return `<article class="pst">
       <div class="pst-h">
         ${club
-          ? `<span class="av sm pst-sys">${esc(initials(who))}</span>`
+          ? `<span class="av sm pst-sys">SS</span>`
           : avatar(who, p.author_photo, 'sm')}
         <span class="pst-who">
           <b>${esc(who)}${club ? '<i class="pst-tag">Club</i>' : ''}</b>
           <span>${esc(sinceWords(p.created_at))}</span>
         </span>
         ${p.mine ? `<button class="pst-x" onclick="Posts.remove('${esc(p.id)}')"
-          aria-label="Take this down">&times;</button>` : ''}
+          aria-label="Take this down">···</button>` : ''}
       </div>
       ${p.body ? `<p class="pst-b">${esc(p.body)}</p>` : ''}
       ${p.photo ? `<img class="pst-img" src="${esc(p.photo)}" alt="">` : ''}
+      ${this.card(p.card)}
+      ${this.counts(p)}
       <div class="pst-acts">
-        <button class="pst-a${p.i_liked ? ' on' : ''}" onclick="Posts.react('${esc(p.id)}','like')">
+        <button class="pst-a like${p.i_liked ? ' on' : ''}"
+          onclick="Posts.react('${esc(p.id)}','like')">
           ${PST_IC.heart}<b>${p.likes || 0}</b></button>
-        <button class="pst-a gold${p.i_kudosed ? ' on' : ''}" onclick="Posts.react('${esc(p.id)}','kudos')">
+        <button class="pst-a gold${p.i_kudosed ? ' on' : ''}"
+          onclick="Posts.react('${esc(p.id)}','kudos')">
           ${PST_IC.star}<b>${p.kudos || 0}</b></button>
-        <button class="pst-a${shown ? ' on' : ''}" onclick="Posts.thread('${esc(p.id)}')">
+        <button class="pst-a" onclick="Comments.open('${esc(p.id)}')">
           ${PST_IC.chat}<b>${p.comments || 0}</b></button>
       </div>
-      ${shown ? `<div class="pst-th">
-        ${t === 'failed'
-          ? `<p class="pst-none">Could not read the thread.</p>`
-          : !t
-            ? `<p class="pst-none">Reading…</p>`
-            : t.length
-              ? t.map(c => `<div class="pst-c">
-                  ${avatar(c.member_name || 'Somebody', c.member_photo, 'sm')}
-                  <span class="pst-ct"><b>${esc(c.member_name || 'Somebody')}</b>
-                    <span>${esc(c.body)}</span></span>
-                </div>`).join('')
-              : `<p class="pst-none">Nothing said yet.</p>`}
-        <div class="pst-add">
-          <input type="text" id="pst-c-${esc(p.id)}" placeholder="Say something"
-            maxlength="500" onkeydown="if(event.key==='Enter')Posts.comment('${esc(p.id)}')">
-          <button onclick="Posts.comment('${esc(p.id)}')">Send</button>
-        </div>
-      </div>` : ''}
+    </article>`;
+  },
+
+  /* A session drawn as the post it is. No id, so nothing here reacts — the
+     actions bar is left off rather than drawn dead. */
+  sessionRow(r){
+    const t = Feed.ms(r.starts_at);
+    const when = [t ? shortDay(t) : null, t ? clockText(t) : null,
+      venueLabel(r) || null].filter(Boolean).join(' · ');
+    const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
+    const body = r.live ? 'On now.'
+      : left === 0 ? 'Full, and the waiting list is doing the rest.'
+      : left !== null ? left + ' place' + (left === 1 ? '' : 's') + ' left.'
+      : (r.joined || 0) + ' going so far.';
+    return `<article class="pst">
+      <div class="pst-h">
+        <span class="av sm pst-sys">SS</span>
+        <span class="pst-who">
+          <b>${esc(CONFIG.clubName || 'Sideout Society')}<i class="pst-tag">Club</i></b>
+          <span>${esc((t && untilText(t)) || 'Date to be set')}</span>
+        </span>
+      </div>
+      <p class="pst-b">${esc(body)}</p>
+      ${this.card({ kind: r.live ? 'Playing now' : 'Open play',
+        title: r.title || 'Open play', meta: when,
+        action: r.mine ? 'See the session' : 'Join this session', code: r.code })}
     </article>`;
   }
 };
@@ -20889,12 +21147,257 @@ const PST_IC = {
   chat:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8c0 4-3.8 7.2-8.5 7.2a9.8 9.8 0 0 1-2.6-.35L4.5 20l1.2-3.3A6.9 6.9 0 0 1 3.5 11.8c0-4 3.8-7.2 8.5-7.2s8.5 3.2 8.5 7.2z"/></svg>`
 };
 
+/* ── the pinned session banner ──
+   Compact on purpose, and the handoff is explicit about why: the tall
+   version pushed the composer and the first post below the fold, which made
+   the feed look absent. It is a banner saying one thing is on, not a card
+   about the night — the night has its own screen. */
+function hmxPinned(){
+  const r = Feed.rows()[0] || (Feed.up || []).find(x => !x.ended);
+  if(!r) return '';
+  const t = r.when || Feed.ms(r.starts_at);
+  const go = `location.href='?s=' + encodeURIComponent('${esc(r.code)}')`;
+  const bits = [t ? clockText(t) : null, venueLabel(r) || null,
+    r.joined ? r.joined + ' going' : null].filter(Boolean).join(' · ');
+  return `<button class="pin" onclick="${go}">
+    <span class="pin-glow"></span>
+    <span class="pin-tx">
+      <span class="pin-when">
+        <i class="pin-dot"><b></b></i>
+        <em id="hm-cd">${hmxCd(t)}</em>
+      </span>
+      <b class="pin-t">${esc(r.title || 'Open play')}</b>
+      <span class="pin-m">${esc(bits)}</span>
+    </span>
+    <span class="pin-go">Open</span>
+  </button>`;
+}
+
+/* ── the composer ── */
+function hmxSay(){
+  const me = Auth.me || {};
+  const m = Club.find(me.id) || {};
+  return `<div class="cmp">
+    ${avatar(m.alias || m.name || me.name || 'You', m.photo, 'sm')}
+    <button class="cmp-f" onclick="Posts.say()">Say something to the club</button>
+    <button class="cmp-ph" onclick="Posts.say(true)" aria-label="Add a photo">
+      ${mkCamera('#43525B')}
+    </button>
+  </div>`;
+}
+
+/* ── one timeline ──
+   Real posts and the sessions the club has on, merged and sorted by time.
+   An open play is a post in the design's own words — "a session filling up
+   is a post too, written by the club rather than a person" — and deriving
+   it here rather than waiting for a row means Today is a feed on a project
+   that has never run the migration. A night that has been played the same
+   way, minus the podium: sideout_past does not return who won, so that card
+   only appears once sideout_post_night has written one with its own. */
+function feedTimeline(){
+  const out = (Posts.list || []).map(p => ({ at: Date.parse(p.created_at) || 0, post: p }));
+  (Feed.up || []).forEach(r =>{
+    if(r.ended) return;
+    const t = Feed.ms(r.starts_at);
+    out.push({ at: t || 0, session: r });
+  });
+  return out.sort((a, b) => b.at - a.at);
+}
+
+/* ═══════════════════════════════════════════════════
+   PULL TO REFRESH
+   Overscroll, not a button. At the top of Today, further
+   upward movement accumulates a distance and the
+   indicator's own height *is* that distance, so the page
+   moves with the finger rather than a spinner appearing
+   over it. Past the threshold it commits on release;
+   under it, it springs back.
+
+   Wheel as well as touch, because the same gesture on a
+   laptop trackpad is a wheel event and a feed that only
+   refreshes on a phone is a feed that looks stuck on a
+   desk.
+   ═══════════════════════════════════════════════════ */
+const PTR = {
+  MAX: 86, TRIP: 56,
+  pull: 0, y0: null, busy: false, on: false,
+
+  /* Bound once to the scroller Today lives in. */
+  bind(){
+    if(this.on) return;
+    const el = document.querySelector('.wrap') || document.scrollingElement;
+    if(!el) return;
+    this.el = el;
+    el.addEventListener('touchstart', e =>{
+      if(!this.live()) return;
+      this.y0 = this.atTop() ? e.touches[0].clientY : null;
+    }, { passive: true });
+    el.addEventListener('touchmove', e =>{
+      if(this.y0 === null || !this.live()) return;
+      const d = e.touches[0].clientY - this.y0;
+      if(d <= 0){ this.set(0); return; }
+      this.set(Math.min(this.MAX, d * 0.55));
+    }, { passive: true });
+    el.addEventListener('touchend', ()=>{ this.y0 = null; this.release(); }, { passive: true });
+    el.addEventListener('wheel', e =>{
+      if(!this.live()) return;
+      if(e.deltaY < 0 && this.atTop()) this.set(Math.min(this.MAX, this.pull - e.deltaY * 0.55));
+      else if(this.pull) this.set(0);
+      clearTimeout(this.t);
+      this.t = setTimeout(()=> this.release(), 140);
+    }, { passive: true });
+    this.on = true;
+  },
+
+  live(){ return currentScreen() === 'home' && !this.busy; },
+  atTop(){ return (this.el.scrollTop || 0) <= 0; },
+
+  set(v){
+    this.pull = Math.max(0, v);
+    const sp = document.getElementById('ptr');
+    if(!sp) return;
+    sp.style.height = Math.round(this.pull) + 'px';
+    const arrow = sp.querySelector('.ptr-a');
+    if(arrow) arrow.style.transform = 'rotate(' + Math.round(this.pull * 4) + 'deg)';
+    const lbl = sp.querySelector('.ptr-l');
+    if(lbl) lbl.textContent = this.pull >= this.TRIP ? 'Let go to refresh' : 'Pull to refresh';
+    sp.classList.toggle('ready', this.pull >= this.TRIP);
+  },
+
+  release(){
+    if(this.busy) return;
+    if(this.pull < this.TRIP){ this.set(0); return; }
+    this.busy = true;
+    const sp = document.getElementById('ptr');
+    if(sp){ sp.style.height = '48px'; sp.classList.add('spin'); }
+    Promise.all([
+      Feed.load(true).catch(()=>{}),
+      Posts.load(true).catch(()=>{})
+    ]).then(()=>{
+      setTimeout(()=>{
+        this.busy = false;
+        if(sp){ sp.classList.remove('spin', 'ready'); }
+        this.set(0);
+        if(currentScreen() === 'home') paintHome();
+      }, 1300);
+    });
+  }
+};
+
+/* ═══════════════════════════════════════════════════
+   COMMENTS
+   Its own screen rather than a drawer under the post,
+   because a thread is a conversation and a conversation
+   wants the whole width and a composer pinned to the
+   bottom. The composer bar replaces the tab bar while
+   you are in it — you are writing, not navigating.
+   ═══════════════════════════════════════════════════ */
+const Comments = {
+  at: null, post: null, rows: null, failed: false, from: 'home',
+
+  open(id){
+    if(!Auth.signedIn()){ AuthUI.open(()=> Comments.open(id), 'in'); return; }
+    this.at = id;
+    this.post = (Posts.list || []).find(p => p.id === id) || null;
+    this.rows = Posts.threads[id] || null;
+    this.failed = false;
+    this.from = currentScreen() || 'home';
+    go('comments');
+    this.load();
+  },
+
+  async load(){
+    if(!this.at) return;
+    try{
+      this.rows = await Live.rpc('sideout_post_comments', {
+        p_club: CONFIG.club || 'sideout', p_post: this.at
+      }) || [];
+      Posts.threads[this.at] = this.rows;
+      this.failed = false;
+    }catch(e){ this.rows = this.rows || []; this.failed = true; }
+    this.paint();
+  },
+
+  async send(){
+    const el = document.getElementById('cmt-in');
+    const body = el ? String(el.value || '').trim() : '';
+    if(!body) return;
+    el.value = ''; el.disabled = true;
+    try{
+      await Live.rpc('sideout_comment_add', {
+        p_club: CONFIG.club || 'sideout', p_post: this.at, p_body: body
+      });
+      await this.load();
+      const p = (Posts.list || []).find(x => x.id === this.at);
+      if(p) p.comments = (this.rows || []).length;
+      Posts.paint();
+    }catch(e){ toast('That did not send.'); el.value = body; }
+    el.disabled = false;
+    el.focus();
+  },
+
+  paint(){
+    const box = document.getElementById('cmt-box');
+    if(!box) return;
+    const p = this.post;
+    const rows = this.rows;
+    box.innerHTML = `
+      <div class="sos-bar cmt-bar">
+        <button class="sos-back" onclick="go(Comments.from || 'home')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+          Back</button>
+      </div>
+      <h1 class="sos-t-sc cmt-h">Comments</h1>
+      ${p ? `<article class="pst cmt-src">
+        <div class="pst-h">
+          ${(p.kind !== 'said' || !p.author)
+            ? `<span class="av sm pst-sys">SS</span>`
+            : avatar(p.author_name || 'Somebody', p.author_photo, 'sm')}
+          <span class="pst-who">
+            <b>${esc((p.kind !== 'said' || !p.author)
+              ? (CONFIG.clubName || 'Sideout Society') : (p.author_name || 'Somebody'))}</b>
+            <span>${esc(sinceWords(p.created_at))}</span>
+          </span>
+        </div>
+        ${p.body ? `<p class="pst-b">${esc(p.body)}</p>` : ''}
+      </article>` : ''}
+      <div class="cmt-list">${
+        this.failed && !(rows || []).length
+          ? `<p class="pst-none pad">Could not read the thread.
+              <button class="sos-again" onclick="Comments.load()">Try again</button></p>`
+          : rows === null
+            ? `<p class="pst-none pad">Reading…</p>`
+            : rows.length
+              ? rows.map(c => `<div class="cmt">
+                  ${avatar(c.member_name || 'Somebody', c.member_photo)}
+                  <div class="cmt-r">
+                    <div class="cmt-bub">
+                      <b>${esc(c.member_name || 'Somebody')}</b>
+                      <span>${esc(c.body)}</span>
+                    </div>
+                    <div class="cmt-f"><span>${esc(sinceWords(c.created_at))}</span></div>
+                  </div>
+                </div>`).join('')
+              : `<p class="pst-none pad">Nothing said yet. Be the first.</p>`
+      }</div>
+      <div class="sos-tail cmt-tail"></div>
+      <div class="cmt-say">
+        <input type="text" id="cmt-in" placeholder="Say something" maxlength="500"
+          onkeydown="if(event.key==='Enter')Comments.send()">
+        <button onclick="Comments.send()" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>`;
+  }
+};
+
 /* The section on Today. Nothing at all when the schema is not there, so the
    page is unchanged rather than carrying an empty heading. */
 function hmxFeed(){
-  if(Posts.absent || !Auth.signedIn()) return '';
-  return `<h2 class="sos-t-sec hmx-sec">From the club</h2>
-    <div id="hm-feed">${Posts.html()}</div>`;
+  if(!Auth.signedIn()) return '';
+  return `<div id="hm-feed">${Posts.html()}</div>`;
 }
 
 /* ── the shop ────────────────────────────────────────────────────────────

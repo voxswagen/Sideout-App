@@ -66,6 +66,12 @@ create table if not exists public.posts (
   kind        text not null default 'said',
   body        text,
   photo       text,
+  -- The attached card a system post carries: {kind,title,meta,gold,podium,
+  -- action,code}. Structured rather than baked into the body, because the
+  -- design draws a crown, a finished night with a podium and an open play
+  -- with a Join button from the same shape, and a sentence cannot be drawn.
+  -- Only ever written by the app; a person's post has none.
+  card        jsonb,
   created_at  timestamptz not null default now(),
   edited_at   timestamptz,
   -- put aside, not deleted, the same way results rows are. Everything that
@@ -150,7 +156,7 @@ drop function if exists public.sideout_posts(text, uuid, integer, timestamptz);
 
 create function public.sideout_posts(p_club text, p_group uuid,
                                      p_limit integer, p_before timestamptz)
-returns table(id uuid, kind text, body text, photo text, code text,
+returns table(id uuid, kind text, body text, photo text, card jsonb, code text,
               group_id uuid, created_at timestamptz, edited_at timestamptz,
               author uuid, author_name text, author_photo text,
               likes integer, kudos integer, comments integer,
@@ -165,6 +171,7 @@ as $$
          p.kind,
          p.body,
          p.photo,
+         p.card,
          p.code,
          p.group_id,
          p.created_at,
@@ -413,10 +420,10 @@ grant execute on function public.sideout_post_remove(text, uuid) to authenticate
 -- write-up twice. Same shape as sideout_reminder_claim: the insert is the
 -- lock, not a check before it.
 
-drop function if exists public.sideout_post_night(text, text, uuid, text);
+drop function if exists public.sideout_post_night(text, text, uuid, text, jsonb);
 
 create function public.sideout_post_night(p_club text, p_code text,
-                                          p_group uuid, p_body text)
+                                          p_group uuid, p_body text, p_card jsonb)
 returns uuid
 language plpgsql
 security definer
@@ -429,8 +436,8 @@ begin
     raise exception 'not a member of this club';
   end if;
 
-  insert into public.posts (club, group_id, code, author, kind, body)
-  select coalesce(p_club, 'sideout'), p_group, p_code, null, 'night', p_body
+  insert into public.posts (club, group_id, code, author, kind, body, card)
+  select coalesce(p_club, 'sideout'), p_group, p_code, null, 'night', p_body, p_card
    where not exists (
      select 1 from public.posts p
       where p.club = coalesce(p_club, 'sideout')
@@ -443,5 +450,5 @@ begin
 end;
 $$;
 
-grant execute on function public.sideout_post_night(text, text, uuid, text)
+grant execute on function public.sideout_post_night(text, text, uuid, text, jsonb)
   to authenticated;

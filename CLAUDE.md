@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v130`. Forgetting this means testers see last week's app and
+Currently `sideout-v131`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -341,6 +341,60 @@ none does there is no way to tell, and the tab shows the club's nights under
 a sub-line that says so rather than filtering everybody out or claiming
 they are yours. Upcoming's empty state now explains what the tab is for and
 offers a way to Today, instead of dead-ending.
+
+**Today is the feed, and the order of it is load-bearing.** Banner,
+composer, then posts. The handoff is explicit about why, and it is worth
+keeping written down because the obvious arrangement is the wrong one: a
+tall session card pushes the composer and the first post under the fold,
+and the screen that is meant to be a feed reads as a screen with no feed on
+it. `hmxPinned()` is therefore compact on purpose — it says one thing is on,
+it does not describe the night, because the night has its own screen.
+
+What's on and Already played are no longer sections here. An open play *is*
+a post — `Posts.sessionRow()` draws one from `Feed.up` — and the full lists
+live on the Sessions tab, which is what that tab is for. Deriving the
+session posts client-side rather than waiting for rows means Today is a feed
+on a project that has never run the feed migration.
+
+`feedTimeline()` is the merge: real posts and the club's sessions, sorted by
+time. A night that has been played only appears once `sideout_post_night`
+has written one, because `sideout_past` does not return who won and a podium
+cannot be invented.
+
+`hmxNext()`, `hmxComing()`, `hmxPlayed()` and `hmxFigures()` have no caller
+now. Left in place: deleting two hundred lines is its own change, and the
+`#hm-fig` repaint they feed is null-guarded so it is a no-op rather than an
+error. `hmTick()` is still live — the banner kept `id="hm-cd"`.
+
+**Two reactions, two stated colours.** A like is "I saw this" and kudos is
+"that was a real result", so they must not read as the same gesture twice.
+`#B23D33` and `#8A6712`, written out rather than themed: the club's accent
+would make them change colour from one club to the next, and a heart that is
+teal in one club and orange in another is not a heart. The counts go in
+words above the hairline ("31 liked · 28 gave kudos") and the bar underneath
+is what you can do — which is why a post nobody has touched shows no counts
+line rather than a row of noughts.
+
+**`go('comments')` was the third screen caught by the `'setup'`
+fall-through.** It has an early return with `chats` and `share` now. Any
+screen anybody can reach — as opposed to one that only exists inside a
+session — needs one, or `go()` rewrites its name to `'setup'` when no
+session is running and a comment thread opens the old editor. That rule has
+now caught `setup`, `new` and `comments`; assume it will catch the next one.
+
+**Pull to refresh is a spacer, not a spinner.** `PTR` accumulates a distance
+and the indicator's *height is that distance*, so the page moves with the
+finger rather than something appearing over the top of it. 86px cap, 56px
+threshold, arrow rotated `pull * 4`. It listens for wheel as well as touch,
+because the same gesture on a trackpad is a wheel event and a feed that only
+refreshes on a phone looks stuck on a desk.
+
+**The chat avatar goes at the *end* of a run, the name at the start.** The
+gutter is reserved by `.ch-m.noav:not(.me){padding-left:41px}` whenever the
+face is not drawn — keyed on the face being absent, not on the message being
+a run-on, or the last bubble of a run (the one that now carries the face)
+would be the one that did not line up. The handoff flags the version that
+removes the element with no reservation as a bug not to reintroduce.
 
 **The feed renders as nothing at all when its schema is missing.** `Posts`
 is the one part of the app whose backend may genuinely not exist — the
