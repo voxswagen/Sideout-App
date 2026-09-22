@@ -27,8 +27,8 @@ a project nobody could reach:
 
 * `supabase-feed.sql` is a **proposal**, not a copy — the posts, reactions
   and comments the handoff's Today needs and the front page already
-  advertises. Nothing in the client reads it, deliberately: client code
-  written against a schema nobody has run is where the bugs hide.
+  advertises. The client now reads it, but only if it is there: see the
+  feed's own note below.
 * `supabase-past.sql` has gained a per-caller `place` on `sideout_past`
   that **has not been applied**. The client wires it defensively — every
   use is conditional and the card is exactly what it was when the column is
@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v126`. Forgetting this means testers see last week's app and
+Currently `sideout-v127`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -289,6 +289,36 @@ is load-bearing well beyond drawing — it also calls `refreshPlan()`,
 `renderPools()`, `paintDock()` and `Auto.maybeStart()`, and writes to
 `#courts` without a null guard. Retiring it means unpicking those side
 effects first.
+
+**The feed renders as nothing at all when its schema is missing.** `Posts`
+is the one part of the app whose backend may genuinely not exist — the
+migration is written and a given project may not have run it — so
+`Posts.load()` treats a **404 from PostgREST as "not installed", not as a
+fault**: it sets `absent`, `hmxFeed()` returns an empty string, and Today is
+byte for byte the screen it was before. Any other failure is a real failure
+and says so with a retry, because the rule everywhere else applies here too
+— a feed that cannot say it failed looks like a club with nothing to say.
+
+That 404 is load-bearing and easy to break. PostgREST answers 404 for an RPC
+it cannot find in its schema cache, which is exactly what a project without
+the migration looks like, so `e.status === 404` is the whole test. Anything
+that starts swallowing the status, or retries a 404 as though it were
+transient, turns a missing feature into a broken screen.
+
+`Posts.react()` is optimistic and then reconciles: the count moves on tap,
+and the number `sideout_post_react` returns is the one that sticks, so two
+phones tapping at once settle on the truth rather than on whichever repainted
+last. It reverts on failure. Reactions repaint `#hm-feed` alone rather than
+calling `paintHome()`, or every heart would throw away the page's scroll
+position.
+
+**The night posts its own write-up, and the insert is the lock.** `Posts.night()`
+runs inside `Club.archive().then()` — after the results are actually banked,
+never before — and is wrapped so it cannot cost anybody their ladder if it
+throws. `sideout_post_night` refuses a second post for the same code in the
+insert itself rather than checking first, the same shape as
+`sideout_reminder_claim`, so a retry or two phones both thinking they are
+hosting cannot post the night twice.
 
 **The stacks screen overrides the planner; it does not replace it.**
 `screen-stacks` is the laptop view of the queue — four stacks of four, a Free

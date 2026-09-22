@@ -4141,6 +4141,67 @@ body.casting{overflow:hidden}
   border:1.5px solid var(--sos-card)}
 .hmx-me{width:40px;height:40px;border-radius:99px;border:0;background:none;padding:0;
   cursor:pointer;display:block}
+/* ── the feed ──
+   Cards rather than rows, because a post is a thing somebody made and a row
+   is an entry in a list. Same 16px gutters as everything else on Today. */
+/* Stated, not auto. width:auto on a <button> is shrink-to-fit however the
+   display is set — the same thing that collapsed .sos-btn to 80px — so this
+   is the gutters subtracted by hand. */
+.pst-say{display:flex;align-items:center;gap:10px;width:calc(100% - 32px);margin:0 16px 10px;
+  min-height:48px;padding:0 14px;border-radius:14px;cursor:pointer;text-align:left;
+  background:var(--sos-card);border:1px solid var(--sos-hair);font-family:inherit}
+.pst-say span{flex:1;min-width:0;font-size:14.5px;color:var(--sos-dim)}
+.pst-say .av{width:30px;height:30px;font-size:11px;flex:none}
+
+.pst{margin:0 16px 10px;padding:13px 14px 8px;border-radius:16px;
+  background:var(--sos-card);border:1px solid var(--sos-hair)}
+.pst-h{display:flex;align-items:center;gap:10px}
+.pst-h .av{width:34px;height:34px;font-size:12px;flex:none}
+/* The club's own posts are signed by the club, so the disc is the accent
+   rather than somebody's colour — it is not a person and should not read
+   as one. */
+.pst-sys{background-color:var(--sos-accent);color:var(--sos-on-accent)}
+.pst-who{flex:1;min-width:0}
+.pst-who b{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;
+  letter-spacing:-.01em;color:var(--sos-ink)}
+.pst-who > span{display:block;margin-top:1px;font-size:12.5px;color:var(--sos-dim)}
+.pst-tag{flex:none;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 6px;border-radius:99px;
+  background:var(--sos-tint);color:var(--sos-accent)}
+.pst-x{flex:none;width:28px;height:28px;border-radius:99px;cursor:pointer;border:0;
+  background:none;font-size:19px;line-height:1;color:var(--sos-ink-3)}
+.pst-b{margin:9px 0 0;font-size:14.5px;line-height:1.5;color:var(--sos-ink);
+  text-wrap:pretty;white-space:pre-wrap}
+.pst-img{display:block;width:100%;margin-top:10px;border-radius:11px}
+
+.pst-acts{display:flex;align-items:center;gap:4px;margin-top:6px}
+.pst-a{display:flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;
+  border-radius:9px;border:0;background:none;cursor:pointer;font-family:inherit;
+  color:var(--sos-ink-3)}
+.pst-a svg{width:18px;height:18px}
+.pst-a b{font-size:13px;font-weight:600}
+.pst-a.on{color:var(--sos-accent)}
+/* Kudos is the gold one, and gold is not a theme colour — the same rule the
+   story cards follow for first place. */
+.pst-a.gold.on{color:var(--crown)}
+
+.pst-th{margin-top:6px;padding-top:9px;border-top:1px solid var(--sos-sep)}
+.pst-c{display:flex;align-items:flex-start;gap:9px;padding:5px 0}
+.pst-c .av{width:26px;height:26px;font-size:10px;flex:none;margin-top:1px}
+.pst-ct{flex:1;min-width:0;font-size:14px;line-height:1.45}
+.pst-ct b{font-weight:700;color:var(--sos-ink)}
+.pst-ct span{color:var(--sos-ink-2)}
+.pst-none{margin:2px 0 6px;font-size:13.5px;color:var(--sos-dim)}
+.pst-add{display:flex;gap:7px;margin:6px 0 4px}
+.pst-add input{flex:1;min-width:0;min-height:38px;padding:0 12px;border-radius:10px;
+  background:var(--sos-bg);border:1px solid var(--sos-hair);font-family:inherit;
+  font-size:14.5px;color:var(--sos-ink)}
+.pst-add button{flex:none;min-height:38px;padding:0 14px;border-radius:10px;border:0;
+  cursor:pointer;background:var(--sos-accent);color:var(--sos-on-accent);
+  font-family:inherit;font-size:14px;font-weight:600}
+.pst-ta{width:100%;padding:12px;border-radius:12px;font-family:inherit;font-size:15px;
+  line-height:1.5;resize:vertical}
+
 /* Where you finished, in the badge a night with no photograph would
    otherwise fill with a generic court. */
 .hmx-pl{font:800 15px/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;
@@ -9142,6 +9203,10 @@ function go(name){
        against the server — arriving on Home is exactly when you want to
        know who has joined since you last looked. */
     Feed.load(true).then(()=>{ if(currentScreen() === 'home') paintHome(); });
+    /* Its own read and its own repaint. Folding it into the line above would
+       mean the feed could not arrive until what's on had, and a slow read of
+       one would hold up the other. */
+    Posts.load(true).then(()=>{ if(currentScreen() === 'home') Posts.paint(); });
     Feed.watch();
     return;
   }
@@ -19437,6 +19502,7 @@ function paintHome(){
     ${groupNudge()}
     ${hmxComing()}
     ${hmxPlayed()}
+    ${hmxFeed()}
     ${hmxCode()}
     ${birthdayStrip()}
     <div class="sos-tail"></div>`;
@@ -20495,6 +20561,290 @@ function chatWhen(t){
   const days = Math.round((now - d) / 864e5);
   if(days < 7) return DAYS[d.getDay()].slice(0, 3);
   return d.getDate() + ' ' + MONTHS[d.getMonth()].slice(0, 3);
+}
+
+/* ═══════════════════════════════════════════════════
+   THE FEED
+   The club talking about its own nights. Sessions are
+   what the app does; this is what the club is for, and
+   it is the difference between a tool and a place.
+
+   It is additive and it fails quiet. `sideout_posts`
+   may not exist on the project yet — the migration is
+   written and not everybody will have run it — so a
+   404 sets `absent` and the whole section renders as
+   nothing at all. Today is exactly what it was until
+   the schema lands, and nobody sees a broken panel or
+   an error about a function they have never heard of.
+   Any other failure is a failure and says so, because
+   a feed that cannot say it failed looks like a club
+   with nothing to say.
+   ═══════════════════════════════════════════════════ */
+const Posts = {
+  list: null, failed: false, absent: false, loading: false,
+  open: {},           /* post id -> true when its thread is showing */
+  threads: {},        /* post id -> comments, once read */
+  busy: {},           /* post id -> true while a reaction is in flight */
+
+  async load(force){
+    if(this.absent || this.loading) return;
+    if(this.list && !force) return;
+    if(!Live.ready() || !Auth.signedIn()) return;
+    this.loading = true;
+    try{
+      const rows = await Live.rpc('sideout_posts', {
+        p_club: CONFIG.club || 'sideout',
+        p_group: null, p_limit: 20, p_before: null
+      });
+      this.list = rows || [];
+      this.failed = false;
+    }catch(e){
+      /* PostgREST answers 404 for an RPC it cannot find, which is exactly
+         what a project without the migration looks like. That is not a
+         fault to report — it is a feature that is not installed. */
+      if(e && e.status === 404) this.absent = true;
+      else { this.list = this.list || []; this.failed = true; }
+    }
+    this.loading = false;
+  },
+
+  /* Painted into its own box so a reaction does not redraw the whole of
+     Today and lose the page's scroll position. */
+  paint(){
+    const box = document.getElementById('hm-feed');
+    if(box) box.innerHTML = this.html();
+  },
+
+  say(){
+    if(!Auth.signedIn()){ AuthUI.open(()=> Posts.say(), 'in'); return; }
+    openSheet(`<h3>Say something</h3>
+      <p class="sub">It goes to everybody in the club.</p>
+      <textarea id="pst-new" class="pst-ta" rows="4" maxlength="1000"
+        placeholder="How did it go?"></textarea>
+      <button class="btn btn-go" onclick="Posts.send()">Post it</button>
+      <button class="btn btn-quiet" onclick="closeSheet()">Not now</button>`);
+    setTimeout(()=>{ const t = document.getElementById('pst-new'); if(t) t.focus(); }, 60);
+  },
+
+  async send(){
+    const el = document.getElementById('pst-new');
+    const body = el ? String(el.value || '').trim() : '';
+    if(!body){ toast('Nothing to post yet.'); return; }
+    closeSheet();
+    try{
+      await Live.rpc('sideout_post_add', {
+        p_club: CONFIG.club || 'sideout', p_group: null,
+        p_code: null, p_body: body, p_photo: null
+      });
+      await this.load(true);
+      this.paint();
+    }catch(e){ toast('That did not post. Try again in a moment.'); }
+  },
+
+  /* Optimistic, because a heart that waits for a server does not feel like
+     a heart. The count the server returns is the one that sticks, so two
+     phones tapping at once still settle on the truth. */
+  async react(id, kind){
+    if(!Auth.signedIn()){ AuthUI.open(()=> Posts.react(id, kind), 'in'); return; }
+    const p = (this.list || []).find(x => x.id === id);
+    if(!p || this.busy[id]) return;
+    const mineKey = kind === 'kudos' ? 'i_kudosed' : 'i_liked';
+    const countKey = kind === 'kudos' ? 'kudos' : 'likes';
+    const on = !p[mineKey];
+    p[mineKey] = on;
+    p[countKey] = Math.max(0, (p[countKey] || 0) + (on ? 1 : -1));
+    this.busy[id] = true;
+    this.paint();
+    try{
+      const n = await Live.rpc('sideout_post_react', {
+        p_club: CONFIG.club || 'sideout', p_post: id, p_kind: kind, p_on: on
+      });
+      if(typeof n === 'number') p[countKey] = n;
+    }catch(e){
+      p[mineKey] = !on;
+      p[countKey] = Math.max(0, (p[countKey] || 0) + (on ? -1 : 1));
+      toast('That did not go through.');
+    }
+    this.busy[id] = false;
+    this.paint();
+  },
+
+  async thread(id){
+    this.open[id] = !this.open[id];
+    this.paint();
+    if(!this.open[id] || this.threads[id]) return;
+    try{
+      this.threads[id] = await Live.rpc('sideout_post_comments', {
+        p_club: CONFIG.club || 'sideout', p_post: id
+      }) || [];
+    }catch(e){ this.threads[id] = 'failed'; }
+    this.paint();
+  },
+
+  async comment(id){
+    const el = document.getElementById('pst-c-' + id);
+    const body = el ? String(el.value || '').trim() : '';
+    if(!body) return;
+    if(el){ el.value = ''; el.disabled = true; }
+    try{
+      await Live.rpc('sideout_comment_add', {
+        p_club: CONFIG.club || 'sideout', p_post: id, p_body: body
+      });
+      this.threads[id] = await Live.rpc('sideout_post_comments', {
+        p_club: CONFIG.club || 'sideout', p_post: id
+      }) || [];
+      const p = (this.list || []).find(x => x.id === id);
+      if(p) p.comments = this.threads[id].length;
+    }catch(e){ toast('That did not send.'); if(el) el.value = body; }
+    if(el) el.disabled = false;
+    this.paint();
+  },
+
+  remove(id){
+    openSheet(`<h3>Take this down?</h3>
+      <p class="sub">It comes off the feed for everybody. Nothing else changes.</p>
+      <button class="btn btn-risk" onclick="Posts.doRemove('${esc(id)}')">Take it down</button>
+      <button class="btn btn-quiet" onclick="closeSheet()">Leave it</button>`);
+  },
+
+  async doRemove(id){
+    closeSheet();
+    try{
+      await Live.rpc('sideout_post_remove', { p_club: CONFIG.club || 'sideout', p_post: id });
+      this.list = (this.list || []).filter(x => x.id !== id);
+      this.paint();
+    }catch(e){ toast('That could not be taken down.'); }
+  },
+
+  /* The night's own write-up, posted once by whoever banked it. Everything
+     here is wrapped so that a feed that is not installed, or a call that
+     fails, can never cost somebody their results — banking the night is the
+     important half and this is the nice half. */
+  async night(keep){
+    if(this.absent || !keep || !keep.rows || !keep.rows.length) return;
+    try{
+      const rows = keep.rows.slice().sort((a, b) =>
+        (b.wins || 0) - (a.wins || 0)
+        || ((b.pf || 0) - (b.pa || 0)) - ((a.pf || 0) - (a.pa || 0)));
+      const top = rows[0];
+      if(!top) return;
+      const clear = rows.length < 2 || (rows[0].wins || 0) > (rows[1].wins || 0);
+      const body = clear
+        ? top.name + ' took ' + (keep.title || 'the night') + ' outright, '
+          + (top.wins || 0) + ' from ' + ((top.wins || 0) + (top.losses || 0)) + '.'
+        : top.name + ' edged ' + (keep.title || 'the night') + ' on points, '
+          + (top.wins || 0) + ' from ' + ((top.wins || 0) + (top.losses || 0)) + '.';
+      await Live.rpc('sideout_post_night', {
+        p_club: CONFIG.club || 'sideout', p_code: keep.code,
+        p_group: S.groupId || null, p_body: body
+      });
+    }catch(e){ /* the night is banked either way */ }
+  },
+
+  html(){
+    if(this.absent) return '';
+    if(!Auth.signedIn()) return '';
+    if(this.list === null){
+      return `<div class="sos-list"><div class="sos-row hmx-empty">Reading the feed…</div></div>`;
+    }
+    if(this.failed && !this.list.length){
+      return `<div class="sos-list"><div class="sos-row run-empty">Could not read the feed.
+        The server did not answer.
+        <button class="sos-again" onclick="Posts.load(true).then(()=>Posts.paint())">Try again</button></div></div>`;
+    }
+    const me = Auth.me || {};
+    const mine = Club.find(me.id) || {};
+    const composer = `<button class="pst-say" onclick="Posts.say()">
+      ${avatar(mine.alias || mine.name || me.name || 'You', mine.photo, 'sm')}
+      <span>Say something to the club</span>
+    </button>`;
+    if(!this.list.length){
+      return composer + `<div class="sos-list"><div class="sos-row hmx-empty">Nobody has said
+        anything yet. Be the one who starts it.</div></div>`;
+    }
+    return composer + this.list.map(p => this.row(p)).join('');
+  },
+
+  row(p){
+    const club = p.kind === 'night';
+    const who = club ? (CONFIG.clubName || 'Sideout Society') : (p.author_name || 'Somebody');
+    const shown = this.open[p.id];
+    const t = this.threads[p.id];
+    return `<article class="pst">
+      <div class="pst-h">
+        ${club
+          ? `<span class="av sm pst-sys">${esc(initials(who))}</span>`
+          : avatar(who, p.author_photo, 'sm')}
+        <span class="pst-who">
+          <b>${esc(who)}${club ? '<i class="pst-tag">Club</i>' : ''}</b>
+          <span>${esc(sinceWords(p.created_at))}</span>
+        </span>
+        ${p.mine ? `<button class="pst-x" onclick="Posts.remove('${esc(p.id)}')"
+          aria-label="Take this down">&times;</button>` : ''}
+      </div>
+      ${p.body ? `<p class="pst-b">${esc(p.body)}</p>` : ''}
+      ${p.photo ? `<img class="pst-img" src="${esc(p.photo)}" alt="">` : ''}
+      <div class="pst-acts">
+        <button class="pst-a${p.i_liked ? ' on' : ''}" onclick="Posts.react('${esc(p.id)}','like')">
+          ${PST_IC.heart}<b>${p.likes || 0}</b></button>
+        <button class="pst-a gold${p.i_kudosed ? ' on' : ''}" onclick="Posts.react('${esc(p.id)}','kudos')">
+          ${PST_IC.star}<b>${p.kudos || 0}</b></button>
+        <button class="pst-a${shown ? ' on' : ''}" onclick="Posts.thread('${esc(p.id)}')">
+          ${PST_IC.chat}<b>${p.comments || 0}</b></button>
+      </div>
+      ${shown ? `<div class="pst-th">
+        ${t === 'failed'
+          ? `<p class="pst-none">Could not read the thread.</p>`
+          : !t
+            ? `<p class="pst-none">Reading…</p>`
+            : t.length
+              ? t.map(c => `<div class="pst-c">
+                  ${avatar(c.member_name || 'Somebody', c.member_photo, 'sm')}
+                  <span class="pst-ct"><b>${esc(c.member_name || 'Somebody')}</b>
+                    <span>${esc(c.body)}</span></span>
+                </div>`).join('')
+              : `<p class="pst-none">Nothing said yet.</p>`}
+        <div class="pst-add">
+          <input type="text" id="pst-c-${esc(p.id)}" placeholder="Say something"
+            maxlength="500" onkeydown="if(event.key==='Enter')Posts.comment('${esc(p.id)}')">
+          <button onclick="Posts.comment('${esc(p.id)}')">Send</button>
+        </div>
+      </div>` : ''}
+    </article>`;
+  }
+};
+
+/* "an hour ago", the way the design writes it. chatWhen() answers a
+   different question — which day a message landed on — and a feed wants how
+   long ago, so this is its own thing rather than a flag on that one. */
+function sinceWords(at){
+  const t = at ? Date.parse(at) : 0;
+  if(!t) return '';
+  const s = Math.max(0, (Date.now() - t) / 1000);
+  if(s < 90) return 'just now';
+  const m = Math.round(s / 60);
+  if(m < 60) return m + ' minute' + (m === 1 ? '' : 's') + ' ago';
+  const h = Math.round(m / 60);
+  if(h < 24) return h === 1 ? 'an hour ago' : h + ' hours ago';
+  const d = Math.round(h / 24);
+  if(d === 1) return 'yesterday';
+  if(d < 7) return d + ' days ago';
+  const dt = new Date(t);
+  return dt.getDate() + ' ' + MONTHS[dt.getMonth()].slice(0, 3);
+}
+
+const PST_IC = {
+  heart: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 19.5S4.5 14.8 4.5 9.9A3.9 3.9 0 0 1 12 8.2a3.9 3.9 0 0 1 7.5 1.7c0 4.9-7.5 9.6-7.5 9.6z"/></svg>`,
+  star:  `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.8 14.5 9l5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4L9.5 9z"/></svg>`,
+  chat:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.8c0 4-3.8 7.2-8.5 7.2a9.8 9.8 0 0 1-2.6-.35L4.5 20l1.2-3.3A6.9 6.9 0 0 1 3.5 11.8c0-4 3.8-7.2 8.5-7.2s8.5 3.2 8.5 7.2z"/></svg>`
+};
+
+/* The section on Today. Nothing at all when the schema is not there, so the
+   page is unchanged rather than carrying an empty heading. */
+function hmxFeed(){
+  if(Posts.absent || !Auth.signedIn()) return '';
+  return `<h2 class="sos-t-sec hmx-sec">From the club</h2>
+    <div id="hm-feed">${Posts.html()}</div>`;
 }
 
 /* ── the shop ────────────────────────────────────────────────────────────
@@ -27374,6 +27724,11 @@ async function runReset(wipe){
   if(keep && keep.rows.length){
     Club.archive(keep.rows, keep.title, keep.code, keep.games).then(n =>{
       if(n) toast(n + ' player' + (n > 1 ? 's' : '') + ' added to the club ladder.');
+      /* Only once the results are actually banked, and it cannot fail loudly:
+         the ladder is the important half of this and the write-up is the
+         nice half. sideout_post_night refuses a second one for the same
+         code, so a retry here cannot post the night twice. */
+      try{ Posts.night(keep); }catch(e){}
       if(keep.rated && keep.rated.length){
         Club.rate(keep.rated).then(()=>{ Club.list = []; Club.load(true); }).catch(()=>{});
       }
