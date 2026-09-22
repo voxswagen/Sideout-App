@@ -5204,6 +5204,12 @@ body.casting{overflow:hidden}
 .nw-grp-row{width:100%;background:none;border:0;cursor:pointer;font-family:inherit;
   text-align:left;display:flex;align-items:center;gap:10px;min-height:56px;padding:9px 16px}
 .nw-grp-v{flex:none;font-size:14.5px;color:var(--sos-dim)}
+.nw-rep{padding:9px 16px}
+.nw-repseg{flex:none;width:auto}
+.nw-repseg button{padding:0 14px;min-height:32px;font-size:13.5px}
+.nw-sugg{width:100%;background:none;border:0;cursor:pointer;font-family:inherit;text-align:left;
+  display:flex;align-items:center;gap:10px;min-height:56px;padding:9px 16px}
+.nw-sugg .nw-grp-v{font-weight:700;color:var(--sos-accent)}
 .nw-grp-row svg{flex:none}
 /* The four stages: where you are, what you have done, what is left. Tappable
    backwards and to anything already reached, so it is the navigation as well
@@ -11875,7 +11881,25 @@ const NewFlow = {
 
   /* Opened fresh each time, or somebody who set a night up on Monday comes
      back on Thursday and lands on stage four of the last one. */
-  start(){ this.step = 0; }
+  start(){ this.step = 0; this.defaults(); },
+
+  /* A blank form is four stages of typing before anything can be published,
+     and most of it is the same every week. So a night that has had nothing
+     set on it arrives as tonight: today's date and the club's usual hours.
+     Everything is still editable, and nothing is assumed for a night
+     somebody has already started — the guard is that the date is empty,
+     which is the one field the flow actually requires. */
+  defaults(){
+    if(S.live || S.dateOn) return;
+    const now = new Date();
+    S.dateOn = now.getFullYear() + '-'
+      + String(now.getMonth() + 1).padStart(2, '0') + '-'
+      + String(now.getDate()).padStart(2, '0');
+    if(!S.startHM) S.startHM = '20:00';
+    if(!S.endHM) S.endHM = '23:00';
+    try{ recomputeWhen(); }catch(e){}
+    save();
+  }
 };
 
 function renderNew(){
@@ -11928,9 +11952,26 @@ function renderNew(){
         <input type="text" id="nw-title" value="${esc(S.title || '')}"
           placeholder="${esc(defaultTitle())}" oninput="setTitle(this.value)">
       </div>
+      <span class="sos-sep"></span>
+      ${/* Repeating lived only on the old Setup screen, which no longer
+            answers — so the one thing that means you never have to do this
+            again had quietly become unreachable. It belongs on the stage
+            that asks when, beside the date it repeats from. */''}
+      <div class="sos-row nw-rep">
+        <span class="sos-t-row">Repeats</span>
+        <span class="sos-row-v"></span>
+        <span class="sos-seg nw-repseg">
+          <button class="${S.repeat === 'weekly' ? '' : 'on'}"
+            onclick="setRepeat('none');renderNew()">Just once</button>
+          <button class="${S.repeat === 'weekly' ? 'on' : ''}"
+            onclick="setRepeat('weekly');renderNew()">Every week</button>
+        </span>
+      </div>
     </div>
-    <p class="nw-note2">The name is optional — left blank it is
-      “${esc(defaultTitle())}”.</p>`;
+    <p class="nw-note2">${S.repeat === 'weekly'
+      ? 'Ending the night opens next week straight away, on the same link — you will not have'
+        + ' to set it up again.'
+      : 'The name is optional — left blank it is “' + esc(defaultTitle()) + '”.'}</p>`;
 
   /* ── 2. where ── */
   const where = `
@@ -11984,10 +12025,21 @@ function renderNew(){
     <h2 class="sos-t-grp nw-grp">WHO CAN COME</h2>
     <div class="sos-list">
       <div class="sos-field nw-row">
-        <span>Places</span>
+        <span>How many players</span>
         <input type="number" id="nw-cap" min="0" max="200" inputmode="numeric"
           value="${cap || ''}" placeholder="No limit" oninput="setCap(this.value);newCapNote()">
       </div>
+      <span class="sos-sep"></span>
+      ${/* "Places" is a word about a session; this is a number of people, and
+            the suggestion is four to a court plus four waiting — with exactly
+            four per court nobody ever rotates off. */''}
+      <button class="sos-row nw-sugg" onclick="setCap(${(S.nCourts || 1) * 4 + 4});renderNew()">
+        <span class="sos-row-v">
+          <span class="sos-t-row">Suggested for ${S.nCourts} court${S.nCourts === 1 ? '' : 's'}</span>
+          <span class="sos-t-cap">Four on each court and four waiting</span>
+        </span>
+        <span class="nw-grp-v">${(S.nCourts || 1) * 4 + 4}</span>
+      </button>
       <span class="sos-sep"></span>
       <div class="sos-field nw-row">
         <span>Court fee</span>
@@ -23410,7 +23462,10 @@ async function doResetPastSession(code){
   await Feed.load(true);
   paintHome();
   renderAll(); renderLadder(); TV.paint(); syncRoundEndUI(); save();
-  go('setup');
+  /* The night is loaded and its scores are back at nought, so the overview
+     is what somebody wants to see — the list, and the button that starts it
+     again. 'setup' no longer answers. */
+  go('session');
 
   const heads = Object.keys(S.players || {}).length;
   toast(stripped
@@ -28852,12 +28907,19 @@ function confirmReset(){
       return scored ? `<button class="pick dupr-now" onclick="closeSheet();exportDUPR()">
         <span class="glyph">${icon('upload')}</span><span><b>Send to DUPR first</b>
         <span>${scored} game${scored === 1 ? '' : 's'} with scores. The game-by-game record goes when you clear.</span></span></button>` : ''; })()}
-    <button class="pick" onclick="doReset(false,this)">
-      <span class="glyph">${icon('undo')}</span><span><b>Keep the players</b>
-      <span>Same crowd next time — you start again in one tap</span></span></button>
+    ${/* Clearing is the default now, and it is the first thing offered. A
+          night's list is who turned up to that night — carrying it into the
+          next one means the next one starts with people on it who have not
+          said they are coming, which shows up as a roster that is wrong and
+          a count that is wrong, and somebody has to notice and undo it.
+          Keeping them is still there for the crowd that genuinely is the
+          same every week; it is just no longer the assumption. */''}
     <button class="pick" onclick="doReset(true,this)">
-      <span class="glyph">${icon('broom')}</span><span><b>Clear the players too</b>
-      <span>Different crowd — start from an empty list</span></span></button>
+      <span class="glyph">${icon('broom')}</span><span><b>End it and clear the list</b>
+      <span>The next night starts empty and people put their own names down</span></span></button>
+    <button class="pick" onclick="doReset(false,this)">
+      <span class="glyph">${icon('undo')}</span><span><b>Keep the players on the list</b>
+      <span>Only if it is the same crowd every week</span></span></button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep playing</button>`);
 }
 
@@ -28909,7 +28971,11 @@ async function runReset(wipe){
     ? { rows: Club.rowsForArchive(), title: sessionTitle(), code: S.liveCode,
         games: Club.gamesForArchive(), rated: Club.rateNight() } : null;
   if(S.live) await Live.finish();
-  if(wipe){ S.players = {}; S.order = []; S.levelsTouched = false; }
+  /* The waiting list goes with them. It was left behind, so a night cleared
+     from an empty list still had people queueing on it — names nobody could
+     see on the roster, counted in "N waiting", coming in the moment a place
+     opened on a night they never said they were coming to. */
+  if(wipe){ S.players = {}; S.order = []; S.levelsTouched = false; S.waiting = []; }
   else Object.values(S.players).forEach(p=>{ p.w=0;p.l=0;p.g=0;p.pf=0;p.pa=0;p.crowns=0;p.streak=0;p.sat=0;p.out=false; });
   S.hist = { p:{}, o:{} };
   /* A weekly session keeps its link and its PIN — that is the
@@ -28924,7 +28990,10 @@ async function runReset(wipe){
   S.cancelled = false; S.cancelNote = '';
   S.courts=[]; S.queue=[]; S.pool=[]; S.bracket=null; S.round=0; S.games=0; S.log=[]; S.active=false; S.snap=null; S.started=null;
   Spin.stop();
-  Clock.reset(); closeSheet(); renderAll(); renderLadder(); go('setup'); save();
+  /* Today, not the editor. The night is over: what somebody wants next is
+     the results and the feed, not a blank form. (This used to say 'setup',
+     which no longer answers.) */
+  Clock.reset(); closeSheet(); renderAll(); renderLadder(); go('home'); save();
   if(weekly){
     S.liveCode = keptCode; S.pin = keptPin;
     S.waiting = [];

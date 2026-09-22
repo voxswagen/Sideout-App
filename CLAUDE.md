@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v139`. Forgetting this means testers see last week's app and
+Currently `sideout-v140`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -904,6 +904,28 @@ still stamped by `sideout_archive` when a night has one. **But a night set
 up through the four stages now has no group**, so group tables will stop
 gaining nights unless a group is set some other way. Worth knowing before
 anybody wonders why a group's table stopped moving.
+
+**A fresh night arrives already filled in.** `NewFlow.defaults()` puts
+today's date and the club's usual hours on a session that has had nothing
+set on it, because a blank form is four stages of typing before anything can
+be published and most of it is the same every week. The guard is `S.dateOn`
+being empty — a night somebody has already started is never overwritten, and
+neither is a live one.
+
+**Weekly repeats had become unreachable.** `setRepeat()` and
+`nextOccurrence()` have always worked — ending a weekly night rolls it to
+next week on the same code and PIN — but the only control that called them
+was on the Setup screen, so retiring that screen quietly removed the one
+feature that means you do not have to set a night up again. It is on the
+When stage now, beside the date it repeats from.
+
+**Ending a night clears the list, and that includes the waiting list.**
+Clearing is the first thing offered now rather than the second: a night's
+roster is who came to *that* night, and carrying it forward means the next
+one opens with people on it who have not said they are coming. `S.waiting`
+was being left behind entirely — so a night cleared from an empty list still
+had people queueing on it, invisible on the roster, counted in "N waiting",
+and coming in the moment a place opened on a night they never joined.
 
 **A draft is `S` on this phone.** There is no drafts table and every setter
 on the compose screen writes through immediately, so "Save draft" is really
