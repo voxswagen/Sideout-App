@@ -9616,6 +9616,15 @@ function go(name){
      'setup' when no session is running. New open play is precisely the screen
      you want when there is no session, so that rule must not reach it — the
      same shape of trap as go('setup') not meaning "start a new night". */
+  /* The roster, before the night starts as well as during it — which is the
+     whole point of a roster. It was meeting the fall-through below and being
+     rewritten to the session overview, so an organizer could not add anybody
+     until they had already started playing. Fourth screen caught by that
+     rule; anything useful *before* a session exists has to return before it. */
+  if(name === 'people'){
+    if(!canOrganize()){ gateScreens(); return; }
+    showOnly('people'); renderPeople(); return;
+  }
   if(name === 'new'){
     if(!canOrganize()){ gateScreens(); return; }
     /* Back to stage one each time it is opened. Otherwise somebody who set a
@@ -11351,6 +11360,10 @@ function renderSession(){
               ? ((S.live && S.liveCode) ? 'Start play' : 'Start the session')
               : 'Add ' + (4 - onNight.length) + ' more to start'}</button>`}
       <button class="ses-quiet" onclick="go('people')">Players</button>
+      ${/* There was no way back into the form once a night existed. Setup
+            used to be it, and when Setup went the compose screen was left
+            with no door from the session it edits. */''}
+      <button class="ses-quiet" onclick="go('new')">Edit</button>
     </div>
 
     <h2 class="sos-t-grp ses-grp">ON COURT</h2>
@@ -12069,7 +12082,12 @@ function renderNew(){
       <button class="sos-act" onclick="newSaveDraft()">Save draft</button>
     </div>
     <div class="nw-head">
-      <h1 class="sos-t-sc">${S.live ? 'Edit this night' : 'New open play'}</h1>
+      ${/* Keyed on there being a night at all, not on it being online. A
+            session running on this phone with no link is still a night you
+            are editing, and calling that "New open play" reads as though
+            everything typed is about to make a second one. */''}
+      <h1 class="sos-t-sc">${(S.live || S.active || S.order.length)
+        ? 'Edit this night' : 'New open play'}</h1>
       <p class="sos-sub" id="nw-foot">${newFootText()}</p>
     </div>
     <div class="nw-steps">${steps}</div>
@@ -12077,13 +12095,15 @@ function renderNew(){
     ${pane}
 
     <button class="sos-btn sos-btn-go nw-go" onclick="NewFlow.next()">${last
-      ? (S.live ? 'Done' : members
+      ? ((S.live || S.active) ? 'Done' : members
           ? 'Publish to ' + members + ' member' + (members === 1 ? '' : 's')
           : 'Publish it')
       : 'Next'}</button>
     <p class="nw-foot">${last
-      ? (S.live
-        ? 'It is already online — this just saves what you have changed.'
+      ? ((S.live || S.active)
+        ? (S.live
+            ? 'It is already online — this just saves what you have changed.'
+            : 'This night is already running here — this just saves what you changed.')
         : 'Publishing puts it on the board and sends the club a notification.')
       : 'Nothing is shared until you publish.'}</p>
     <div class="sos-tail"></div>`;
@@ -12134,7 +12154,7 @@ function newSaveDraft(){
    session and starts the beat. */
 function newPublish(){
   if(!S.title || !String(S.title).trim()) S.title = defaultTitle();
-  if(S.live){ save(); toast('Saved.'); go('session'); return; }
+  if(S.live || S.active){ save(); toast('Saved.'); go('session'); return; }
   if(!Live.ready()){
     openSheet(`<h3>This needs the server</h3>
       <p class="sub">Without it a session stays on this device. Fill in CONFIG at the

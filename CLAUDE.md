@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v140`. Forgetting this means testers see last week's app and
+Currently `sideout-v141`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -64,6 +64,24 @@ say what happens ("Take it offline", "Start fresh", "Keep playing"), not
 ---
 
 ## Traps found the hard way
+
+**The `go()` fall-through has now caught four screens.** It rewrites any
+name to the compose screen or the session overview when no session is
+running, and every screen that is useful *before* a night exists has to
+return before it: `setup` taught it first, then `new`, then `comments`, and
+then **`people`** — which meant an organizer could not put anybody on the
+list until they had already started playing, because the roster screen was
+being rewritten to the overview. If a screen is reachable with an empty `S`,
+it needs an early return. Assume the rule will catch the next one too.
+
+**The compose screen is the editor, and it needed a door.** Retiring Setup
+left it with no way in from the night it edits — the Session overview has an
+**Edit** button now. It also keyed its own wording on `S.live`, so a session
+running on this phone with no link was titled "New open play", which reads
+as though everything typed is about to make a second one. Title, button and
+footnote all key on there being a night at all (`S.live || S.active ||
+S.order.length`), and only the footnote still distinguishes online from
+running-here, because that is the one place the difference matters.
 
 **Setup is gone, and `go('setup')` is a redirect.** The old panelled editor
 is no longer reachable: `go('setup')` sends you to the compose screen when
