@@ -2065,6 +2065,7 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
   font-size:9px;letter-spacing:.11em;text-transform:uppercase}
 .mem-tag{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:8.5px;
   letter-spacing:.13em;text-transform:uppercase;color:var(--court-ink)}
+.dupe-btn{width:100%;margin-bottom:10px}
 .mem-none{grid-column:1/-1;margin:6px 0;padding:18px 12px;text-align:center;font-size:13.5px;
   color:var(--ink-2);background:var(--card-2);border:1.5px dashed var(--edge-2);border-radius:var(--r)}
 #sheet .find{margin-bottom:12px}
@@ -14150,17 +14151,26 @@ async function clubSheet(q){
   const query = String(S.clubQ).toLowerCase().trim();
   const list = Club.list.filter(m => !query || String(m.name).toLowerCase().includes(query));
 
-  /* flag anyone sharing a name so duplicates are obvious at a glance */
+  /* Flag anyone sharing a name so duplicates are obvious at a glance — and
+     that has to include the numbered ones. "Kuya Kevs" and "Kuya Kevs 2" are
+     not the same string, so an exact match never saw them, which is exactly
+     the pair somebody needs to find: the suffix is what the app itself put
+     on the second row when it thought two people shared a name, so a trailing
+     number is the strongest evidence of a duplicate there is. */
   const counts = {};
-  Club.list.forEach(m =>{ const k = String(m.name).toLowerCase().trim(); counts[k] = (counts[k]||0)+1; });
+  Club.list.forEach(m =>{ const k = dupeKey(m.name); counts[k] = (counts[k]||0)+1; });
+  const dupeIds = Club.list.filter(m => counts[dupeKey(m.name)] > 1).map(m => m.id);
+  const onlyDupes = S.clubDupes === true;
 
-  const cards = list.slice(0, 200).map(m =>{
-    const dupe = counts[String(m.name).toLowerCase().trim()] > 1;
+  const cards = (onlyDupes ? list.filter(m => dupeIds.indexOf(m.id) >= 0) : list)
+    .slice(0, 200).map(m =>{
+    const dupe = counts[dupeKey(m.name)] > 1;
     return `<button class="mem-card" onclick="memberSheet('${m.id}')">
       ${avatar(m.name, m.photo, 'lg')}
       <span class="mem-n">${esc(m.name)}</span>
       ${m.dupr != null ? duprBadge(m.dupr, true) : ''}
-      ${dupe ? '<span class="mem-tag" style="color:var(--crown-ink)">same name</span>' : ''}
+      ${dupe ? `<span class="mem-tag" style="color:var(--crown-ink)">${
+        /\s\d{1,2}$/.test(String(m.name).trim()) ? 'duplicate?' : 'same name'}</span>` : ''}
     </button>`;
   }).join('');
 
@@ -14171,6 +14181,11 @@ async function clubSheet(q){
       <input type="text" class="ros-q" id="club-q" placeholder="Search ${Club.list.length} members"
         autocomplete="off" value="${esc(S.clubQ || '')}" oninput="clubSheet(this.value)">
     </div>
+    ${dupeIds.length ? `<button class="btn ${onlyDupes ? 'btn-go' : 'btn-quiet'} dupe-btn"
+      onclick="S.clubDupes=${onlyDupes ? 'false' : 'true'};clubSheet()">
+      ${onlyDupes
+        ? 'Showing ' + dupeIds.length + ' possible duplicate' + (dupeIds.length === 1 ? '' : 's') + ' \u2014 show everybody'
+        : dupeIds.length + ' possible duplicate' + (dupeIds.length === 1 ? '' : 's') + ' \u2014 show me'}</button>` : ''}
     <div class="mem-grid">${cards || '<p class="mem-none">Nobody matches that.</p>'}</div>
     <button class="btn btn-quiet" onclick="closeSheet()">Done</button>`);
   const el = document.getElementById('club-q');
@@ -14198,8 +14213,10 @@ async function saveClubPin(){
 function memberSheet(id){
   const m = Club.find(id);
   if(!m) return;
-  const twins = Club.list.filter(x => x.id !== id &&
-    String(x.name).toLowerCase().trim() === String(m.name).toLowerCase().trim());
+  /* Matched on dupeKey, not on the exact string, so the numbered twin the
+     app created itself is offered here — which is the whole reason somebody
+     opens this sheet. */
+  const twins = Club.list.filter(x => x.id !== id && dupeKey(x.name) === dupeKey(m.name));
   const inPlay = S.order.find(x => P(x).mid === id);
   const rec = (Club.ladderCache || []).find(r => r.member === id
     || r.key === 'n:' + String(m.name).trim().toLowerCase());
@@ -14286,6 +14303,20 @@ async function saveMember2(id){
   clubSheet();
   toast('Saved.');
 }
+/* Two names that are the same person. Case and spacing are the obvious half;
+   the trailing number is the important half, because the app put it there
+   itself — addPlayer() appends " 2" when it is told to add a name that is
+   already on the list, and a night banked with that name creates a member
+   row carrying it. So a trailing number is not a coincidence to be careful
+   about, it is a signature. */
+function dupeKey(name){
+  return String(name || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/\s+\d{1,2}$/, '')
+    .trim();
+}
+
 function mergeSheet(keep, drop){
   const a = Club.find(keep), b = Club.find(drop);
   if(!a || !b) return;

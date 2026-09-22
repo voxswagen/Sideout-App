@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v141`. Forgetting this means testers see last week's app and
+Currently `sideout-v142`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -681,6 +681,31 @@ group reads and `sideout_chat_may` key on it. They used to reach the group
 through an INNER join on `sessions`, so deleting a session quietly took a
 42-player night out of its club, off its club's table, and locked everyone
 who played it out of the conversation about it.
+
+**The duplicates the app already made are in `members`, not in a session.**
+Fixing `collect()` stops new ones; it does nothing about the rows already
+banked. A night played with "Kuya Kevs" and "Kuya Kevs 2" on it archives
+both, and `results` rows become member records — so the club roster carries
+the duplicate for ever, with the games split across the two.
+
+`clubSheet()` flagged duplicates by exact name, which is the one comparison
+that could never find these: the suffix is what the app itself appended, so a
+**trailing number is a signature, not a coincidence**. `dupeKey()` strips it
+(and normalises case and spacing), the roster tags those rows "duplicate?",
+and there is a "N possible duplicates — show me" filter that narrows to just
+them. `memberSheet()` matches twins on the same key, so tapping one offers
+the merge rather than making somebody find the other half by eye.
+
+One false positive by design: a club with genuine "Player 2" and "Player 3"
+rows sees them paired. Nothing merges without confirmation and the label
+says *possible*, which is the right trade for catching the real ones.
+
+**`sideout_member_merge`, `sideout_member_delete` and `sideout_member_add`
+are live but written down nowhere.** No `supabase-*.sql` in this repo
+defines them — they predate those files. The convention says those files are
+a copy of what is deployed, and for these three it is not true. Worth
+dumping them out of the project and writing them back the next time there is
+a token.
 
 **"Vox" and "Vox 2" came from one comparison hiding three cases.** A joiner
 whose name is already on the list is not proof of a duplicate, and
