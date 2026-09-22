@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v144`. Forgetting this means testers see last week's app and
+Currently `sideout-v145`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -505,6 +505,28 @@ throws. `sideout_post_night` refuses a second post for the same code in the
 insert itself rather than checking first, the same shape as
 `sideout_reminder_claim`, so a retry or two phones both thinking they are
 hosting cannot post the night twice.
+
+**HTML5 drag-and-drop does not exist on touch, and two screens were built
+on it.** `dragstart` never fires from a finger, on any mobile browser, and
+no markup changes that. The queue was a laptop screen and that was fine
+while it was one; making it a tab in the session strip put it in front of
+every phone running a night, where its only way of moving a name did
+nothing at all. The Players screen had the same hole for reordering.
+
+Tapping is the primary gesture on both now and dragging is the shortcut for
+whoever has a mouse:
+
+* **The queue** — tap somebody not in a stack and they join the first one
+  with room; tap somebody in a stack and they come out. Which stack is
+  stated rather than chosen, because "pick a stack, now pick a name" is a
+  worse answer to a problem the order already solves.
+* **Players** — the grip is a `<button>`. Tapping it sends that person to
+  the top of `S.order`, which is the move somebody is nearly always making
+  when they reach for a handle: *this one next*. Anything finer still needs
+  a mouse, and saying so beats a handle that does nothing.
+
+`cursor:grab` went with it. A grabbing hand promises a gesture a phone does
+not have.
 
 **Play and Score were the same tab twice.** Play was the old combined
 screen — interactive court cards, a score pad, the pools and the queue — and

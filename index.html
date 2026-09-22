@@ -4933,8 +4933,10 @@ body.casting{overflow:hidden}
 /* The dragged row, so it reads as held rather than as a row that has
    mysteriously changed colour. */
 .ppl-row.held{background:var(--sos-tint);opacity:.5}
-.ppl-grip{flex:none;width:26px;height:44px;display:grid;place-items:center;cursor:grab;
-  color:var(--sos-chevron)}
+.ppl-grip{flex:none;width:26px;height:44px;display:grid;place-items:center;cursor:pointer;
+  border:0;background:none;padding:0;color:var(--sos-chevron);
+  -webkit-tap-highlight-color:transparent}
+.ppl-grip:active{color:var(--sos-accent)}
 .ppl-grip svg{width:15px;height:15px}
 .ppl-face{position:relative;flex:none}
 .ppl-face .av{width:40px;height:40px;font-size:15px}
@@ -5686,8 +5688,13 @@ body.casting{overflow:hidden}
 .stk-cn{font-size:12px;font-weight:600;color:var(--sos-dim)}
 .stk-slots{margin-top:9px;display:flex;flex-direction:column;gap:7px}
 
+/* `cursor:pointer`, not `grab`. A grabbing hand promises a gesture that a
+   phone does not have and that a laptop no longer needs — tapping is the
+   primary way to move a name and dragging is the shortcut. */
 .stk-chip{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 10px 0 5px;
-  border-radius:10px;background:var(--sos-card);border:1px solid var(--sos-sep);cursor:grab}
+  border-radius:10px;background:var(--sos-card);border:1px solid var(--sos-sep);
+  cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stk-chip:active{transform:scale(.97)}
 .stk-col.up .stk-chip{background:var(--sos-card)}
 .stk-chip .av{width:24px;height:24px;font-size:10px;flex:none}
 .stk-chip b{flex:1;min-width:0;font-size:14.5px;font-weight:600;letter-spacing:-.01em;
@@ -5730,7 +5737,9 @@ body.casting{overflow:hidden}
    the honest thing is to have it end where the screen does. */
 .stk-list{margin-top:9px;padding:0 10px 12px;max-height:calc(100vh - 390px);
   min-height:200px;overflow:auto}
-.stk-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:11px;cursor:grab}
+.stk-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:11px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stk-row:active:not(.locked){background:var(--sos-fill)}
 /* On court and therefore not draggable — dimmed rather than draggable and
    then silently refused. */
 .stk-row.locked{opacity:.6;cursor:default}
@@ -11549,6 +11558,18 @@ const People = {
   end(){ this.drag = null; invalidatePlan(); renderPeople(); save(); },
 
   /* ── adding ── */
+  /* To the front of the call order. S.order is that order — the Players
+     screen rewrites it by dragging, and this is the one move that gesture is
+     nearly always making. */
+  first(id){
+    const at = S.order.indexOf(id);
+    if(at <= 0) return;
+    S.order.splice(at, 1);
+    S.order.unshift(id);
+    invalidatePlan(); renderPeople(); renderPlayers(); save();
+    toast(nm(id) + ' is next off the list.');
+  },
+
   addSheet(on){ this.addOpen = !!on; renderPeople(); },
   addTabSet(t){ this.addTab = t; renderPeople(); },
 
@@ -11638,9 +11659,17 @@ function renderPeople(){
     return `<div class="ppl-row${held ? ' held' : ''}" draggable="true"
         ondragstart="People.start('${id}')" ondragover="event.preventDefault();People.over('${id}')"
         ondragend="People.end()" onclick="People.toggle('${id}')">
-        <span class="ppl-grip" aria-hidden="true">
+        ${/* The grip drags on a laptop and is a button on a phone, because
+              HTML5 drag-and-drop does not exist on touch — dragstart never
+              fires from a finger. Tapping it sends that person to the top of
+              the order, which is the move somebody actually wants when they
+              reach for the grip: this one next. Anything finer than that
+              still needs a mouse, and saying so is better than a handle that
+              does nothing. */''}
+        <button class="ppl-grip" onclick="event.stopPropagation();People.first('${id}')"
+          title="Call this one next" aria-label="Move ${esc(p.name)} to the top">
           <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg>
-        </span>
+        </button>
         <span class="ppl-face">
           ${avatar(p.name, pPhoto(p))}
           ${p.sex ? `<i class="ppl-sex ${p.sex}">${p.sex === 'f' ? 'F' : 'M'}</i>` : ''}
@@ -12301,6 +12330,31 @@ const Stacks = {
     const box = document.querySelector('#screen-stacks .stk-list');
     if(box) box.innerHTML = stkRows()
       || '<div class="stk-none pad">Nobody matches that.</div>';
+  },
+
+  /* Tap, because drag does not exist on a phone.
+
+     HTML5 drag-and-drop is a mouse API — `dragstart` never fires from a
+     finger, on any mobile browser, and no amount of markup changes that.
+     This screen was built for a laptop on the bench and that was fine while
+     it was a laptop screen; promoting it to a tab in the session strip put
+     it in front of every phone running a night, where its only way of
+     moving a name did nothing at all.
+
+     So tapping is the primary gesture now and dragging is the shortcut for
+     whoever has a mouse. Tap somebody not in a stack and they join the
+     first one with room; tap somebody in a stack and they come out. Which
+     stack they land in is stated rather than chosen, because a two-step
+     "pick a stack, now pick a name" is a worse answer to a problem the
+     order already solves — the stacks fill up in the order they walk on. */
+  tap(id){
+    if(!id || !P(id)) return;
+    const st = this.all();
+    const at = st.findIndex(pool => (pool || []).indexOf(id) >= 0);
+    if(at >= 0){ this.move(id, 'free'); return; }
+    const room = st.findIndex(pool => (pool || []).length < 4);
+    if(room < 0){ toast('Every stack is full. Call one on first.'); return; }
+    this.move(id, room);
   }
 };
 
@@ -12325,7 +12379,8 @@ function stkRows(){
          somewhere. Dimmed and not draggable, rather than draggable and then
          silently refused. */
       return `<div class="stk-row${court ? ' locked' : ''}${held === id ? ' held' : ''}"
-        ${court ? '' : `draggable="true" ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()"`}>
+        ${court ? '' : `role="button" tabindex="0" onclick="Stacks.tap('${id}')"
+          draggable="true" ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()"`}>
         ${avatar(p.name, pPhoto(p), 'sm')}
         <span class="stk-rn">${esc(p.name)}</span>
         <span class="stk-st ${state[1]}">${state[0]}</span>
@@ -12351,6 +12406,7 @@ function renderStacks(){
   const chip = id =>{
     const p = P(id);
     return `<span class="stk-chip${held === id ? ' held' : ''}" draggable="true"
+      role="button" tabindex="0" onclick="Stacks.tap('${id}')"
       ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()">
       ${avatar(p.name, pPhoto(p), 'sm')}
       <b>${esc(firstName(p.name))}</b><i>${p.g || 0}</i>
@@ -12418,8 +12474,8 @@ function renderStacks(){
         ${courts ? `<div class="stk-cts">${courts}</div>` : ''}
         <div class="stk-h">
           <span class="sos-t-grp">NEXT OFF THE QUEUE</span>
-          <span class="stk-hint">Drag a name onto another stack. The top stack walks on
-            when a court opens.</span>
+          <span class="stk-hint">Tap a name to put them in the next stack, and tap again
+            to take them out. The top stack walks on when a court opens.</span>
           <button class="stk-add" onclick="Stacks.add()">Add a stack</button>
           <button class="stk-call${(st[0] || []).length === 4 ? ' go' : ''}"
             onclick="Stacks.call()">${(st[0] || []).length === 4
@@ -12429,7 +12485,7 @@ function renderStacks(){
 
         <div class="stk-free" ondragover="event.preventDefault()"
           ondrop="event.preventDefault();Stacks.move(Stacks.held,'free')">
-          <span class="stk-fl"><b>Free</b><span>Drag onto a stack</span></span>
+          <span class="stk-fl"><b>Free</b><span>Tap to add</span></span>
           <div class="stk-fw">${free.length
             ? free.map(chip).join('')
             : `<span class="stk-none">Everybody is in a stack or on court.</span>`}</div>
