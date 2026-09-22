@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v134`. Forgetting this means testers see last week's app and
+Currently `sideout-v135`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -771,6 +771,31 @@ tables matter:
 
 Organizer-only RPCs check the role from the JWT and raise on failure; the
 client string-matches `/organizer/i` on the error to show the right message.
+
+**The app bar carried the top safe-area inset for everything under it.**
+Hiding it on the screens that title themselves took that away with it, and
+Today, Sessions, Record, Shop, Messages, the profile and a group's page all
+slid under the notch and the clock. Each of those now carries
+`calc(6px + env(safe-area-inset-top,0px))` itself. Three of them —
+`#screen-board.on`, `#screen-games.on`, `#screen-market.on` — restate their
+padding further down the stylesheet and silently won it back, so the inset
+had to go on those rules rather than only on the shared one. A new
+self-titled screen needs adding in `syncNav`'s `titled` list **and** here.
+
+**The profile is five cards and nothing else.** Head, a four-up stat strip,
+RATING, ACTIVITY, SETTINGS — plus ORGANIZING for the people who have those
+tools, and Sign out. Everything that used to sit between them is either one
+row or is reached from the row that names it: the rank card folded into the
+rating card's bar and its one line ("23 points to Bronze"), the navy player
+ID card became a row and a sheet that draws its QR when it opens, the details
+table went behind Account, and the two session lists became "Sessions played"
+and "Match history". A page about a person should be readable in one look and
+the old one was five screens of scrolling.
+
+The birthday strip and the code field have come off Today for the same
+reason — the design has neither, and both were a second and third kind of
+thing on a screen that is meant to be one kind. Joining by code is not lost
+with the field: it is the third row of the `+` sheet.
 
 **Nothing opens with a coloured band any more, and `.onhero` has nothing
 left to do.** The profile and a group's page used to be `.screen.hero` —

@@ -4111,7 +4111,16 @@ body.casting{overflow:hidden}
    The large title scrolls away with the content — it is not a sticky header.
    `#screen-home` carries `.sos`, so the font stack and the tokens come from
    the system and nothing here restates them. */
-#screen-home.on{padding:0 0 8px}
+/* The app bar used to carry the top safe-area inset for everything under
+   it. Hiding it on the screens that draw their own title took that away
+   with it, so they sat under the notch and the clock. Each one that is in
+   syncNav's `titled` list — plus the profile and a group's page, which are
+   in it too — carries the inset itself now. A new self-titled screen has to
+   be added here as well as there. */
+#screen-home.on,#screen-games.on,#screen-board.on,#screen-market.on,
+#screen-chats.on,#screen-me.on,#screen-group.on{
+  padding-top:calc(6px + env(safe-area-inset-top,0px))}
+#screen-home.on{padding:calc(6px + env(safe-area-inset-top,0px)) 0 8px}
 #screen-home .hmx-top{display:flex;align-items:flex-start;justify-content:space-between;
   gap:12px;padding:10px 16px 0}
 .hmx-tx{min-width:0}
@@ -4165,6 +4174,36 @@ body.casting{overflow:hidden}
 .pf-c b.teal{color:var(--sos-accent)}
 .pf-c span{display:block;margin-top:2px;font-size:11.5px;color:var(--sos-ink-2)}
 .pf-grp{margin:22px 16px 7px}
+/* One card per group, rows inside it. The whole screen is this shape now —
+   the old profile had six different kinds of block on it. */
+.pf-card{margin:0 16px;background:var(--sos-card);border-radius:12px;overflow:hidden}
+.pf-row{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;
+  padding:10px 14px;border:0;background:none;cursor:pointer;font-family:inherit;
+  text-align:left}
+.pf-row > span:first-child{flex:1;min-width:0;font-size:16px;color:var(--sos-ink)}
+.pf-row em{flex:none;font-style:normal;font-size:16px;font-weight:600;color:var(--sos-ink-2)}
+.pf-row svg{flex:none}
+.pf-row .sos-tog{flex:none}
+.pf-sep{display:block;height:1px;background:var(--sos-sep);margin-left:14px}
+.pf-out{margin-top:14px}
+.pf-row.out{justify-content:center}
+.pf-row.out > span:first-child{flex:none;color:var(--sos-red)}
+
+/* The rating card: the two numbers side by side, the bar to the next tier,
+   and one line saying what it takes. */
+.pf-rt{padding:15px 16px}
+.pf-nums{display:flex;align-items:flex-end;gap:20px}
+.pf-nums i{display:block;font-style:normal;font-size:12.5px;color:var(--sos-ink-2)}
+.pf-nums b{display:block;margin-top:1px;font-size:28px;font-weight:700;
+  letter-spacing:-.025em;line-height:1;color:var(--sos-ink)}
+.pf-nums b.soft{color:var(--sos-ink-2)}
+.pf-bar{display:block;height:6px;margin-top:13px;border-radius:99px;
+  background:var(--sos-fill);overflow:hidden}
+.pf-bar i{display:block;height:100%;border-radius:99px}
+.pf-note{margin:9px 0 0;font-size:13.5px;line-height:1.45;color:var(--sos-ink-2);
+  text-wrap:pretty}
+.id-nm{margin:10px 0 12px;text-align:center;font-size:15px;font-weight:600;
+  color:var(--sos-ink)}
 /* The profile's own sections, brought into the system's idiom: a small grey
    group header over a white card, the same as every other grouped list in
    the app. The old `.sec` block drew a heavier heading from the screen this
@@ -4907,7 +4946,7 @@ body.casting{overflow:hidden}
 }
 
 /* ══════════════ THE RECORD ══════════════ */
-#screen-board.on{padding:0 0 8px}
+#screen-board.on{padding:calc(6px + env(safe-area-inset-top,0px)) 0 8px}
 .rec-head{padding:10px 16px 0}
 /* The tabs stick; the large title scrolls away with the content, which is
    the rule everywhere in this system. */
@@ -5060,7 +5099,7 @@ body.casting{overflow:hidden}
 }
 
 /* ══════════════ SESSIONS ══════════════ */
-#screen-games.on{padding:0 0 8px}
+#screen-games.on{padding:calc(6px + env(safe-area-inset-top,0px)) 0 8px}
 .gm-head{padding:10px 16px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .gm-htx{min-width:0}
 .gm-new{flex:none}
@@ -5190,7 +5229,8 @@ body.casting{overflow:hidden}
    A noticeboard. No basket, no total, no fee — and the footnote on every
    listing says so, because the one thing a grid of prices implies is a shop
    that takes your money, and this one does not. */
-#screen-market.on,#screen-listing.on{padding:0 0 8px}
+#screen-market.on{padding:calc(6px + env(safe-area-inset-top,0px)) 0 8px}
+#screen-listing.on{padding:0 0 8px}
 .mk-head{padding:10px 16px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .mk-htx{min-width:0}
 .mk-filters{position:sticky;top:0;z-index:4;background:var(--sos-bg);padding:12px 16px 10px}
@@ -18346,10 +18386,23 @@ async function paintMe(){
      group's, which is also what takes the `.onhero` exception off the app
      bar — a navy strip above a white page was the thing that needed the bar
      to change colour with it, and neither has to now. */
-  const meta = [roleWord || null, full || null].filter(Boolean).join(' \u00b7 ');
+  /* The design's profile, and the whole point of it is how little is on it:
+     who you are, four numbers, your rating, what you have done, what you can
+     change. Everything that used to sit in between — a rank card, a navy ID
+     card, a details table, two lists of sessions — is either one row now or
+     is reached from the row that names it. A page about a person should be
+     readable in one look, and the old one was five screens of scrolling. */
+  const nextT = nextTier(pts.points);
+  const toGo = nextT ? Math.max(0, nextT.at - pts.points) : 0;
+  const span = nextT ? Math.max(1, nextT.at - tier.at) : 1;
+  const pcT = nextT ? Math.min(100, Math.round((pts.points - tier.at) / span * 100)) : 100;
+  const since = me.created_at ? new Date(me.created_at).getFullYear() : null;
+  const meta = [roleWord || null, since ? 'Member since ' + since : null, full || null]
+    .filter(Boolean).join(' · ');
   const winPc = rec && rec.games ? Math.round(rec.wins / rec.games * 100) : null;
   const cell = (v, k, cls) => `<div class="pf-c">
     <b${cls ? ` class="${cls}"` : ''}>${v}</b><span>${esc(k)}</span></div>`;
+
   box.innerHTML = `
     <div class="pf-top">
       <button class="pf-face" onclick="editProfile()" aria-label="Change your picture">
@@ -18362,60 +18415,94 @@ async function paintMe(){
       </div>
     </div>
 
-    ${/* Four numbers, hairline-divided, the way the design opens this screen.
-          A figure the record has not returned is a dash rather than a nought,
-          because nought games won and no record yet are different things. */''}
+    ${/* A figure the record has not returned is a dash, not a nought: no
+          games won and no record yet are different things. */''}
     <div class="pf-strip">
-      ${cell(rec ? (rec.games || 0) : '\u2014', 'Games')}
-      ${cell(rec ? (rec.wins || 0) : '\u2014', 'Won')}
-      ${cell(winPc == null ? '\u2014' : winPc + '%', 'Win rate', 'teal')}
-      ${cell(place ? ordinalNum(place) : '\u2014', 'Rank')}
+      ${cell(rec ? (rec.games || 0) : '—', 'Games')}
+      ${cell(rec ? (rec.wins || 0) : '—', 'Won')}
+      ${cell(winPc == null ? '—' : winPc + '%', 'Win rate', 'teal')}
+      ${cell(place ? ordinal(place) : '—', 'Rank')}
     </div>
 
-    ${rates ? `<h2 class="sos-t-grp pf-grp">RATING</h2>
-    <div class="pf-rate">${rates}</div>` : ''}
-    <div id="me-stats"></div>
-
-    ${tierCardHTML(pts.points, pts.nights, !!(me.official || me.role === 'owner' || me.role === 'organizer'))}
-    <!-- What is coming first, then what has been. Reading your own profile,
-         "am I playing this week" is the live question; the record underneath
-         it is reference. -->
-    ${mySessionsHTML()}
-    <div id="me-nights"></div>
-
-    <div class="sec">
-      <div class="sec-h"><b>Your player ID</b></div>
-      <div class="pf-id">
-        <p>Show this at the door and the organizer adds you to a session in one tap.</p>
-        <div id="my-qr" class="id-qr"></div>
-        <div class="id-ft">
-          <span><b>${esc(me.name)}</b><em>${esc(Auth.email())}</em></span>
-          <button class="pf-share" onclick="shareMyId()">Share</button>
-        </div>
+    ${(me.rating != null || me.dupr != null) ? `
+    <h2 class="sos-t-grp pf-grp">RATING</h2>
+    <div class="pf-card pf-rt">
+      <div class="pf-nums">
+        ${me.rating != null ? `<div><i>Club</i><b>${Number(me.rating).toFixed(2)}</b></div>` : ''}
+        ${me.dupr != null ? `<div><i>DUPR</i><b class="soft">${Number(me.dupr).toFixed(2)}</b></div>` : ''}
       </div>
+      <span class="pf-bar"><i style="width:${pcT}%;background:${tier.hue}"></i></span>
+      <p class="pf-note">${nextT
+        ? esc(toGo + ' point' + (toGo === 1 ? '' : 's') + ' to ' + nextT.name
+            + '. Every session counts one, a podium counts two.')
+        : esc(tier.name + ' — the top of the table.')}</p>
+    </div>` : ''}
+
+    <h2 class="sos-t-grp pf-grp">ACTIVITY</h2>
+    <div class="pf-card">
+      <button class="pf-row" onclick="go('board')">
+        <span>Sessions played</span>
+        <em>${rec && rec.nights != null ? rec.nights : (pts.nights || 0)}</em>
+        ${HMX_IC.chev}
+      </button>
+      <span class="pf-sep"></span>
+      <button class="pf-row" onclick="Board.setTab('matches');go('board')">
+        <span>Match history</span>${HMX_IC.chev}
+      </button>
+      <span class="pf-sep"></span>
+      <button class="pf-row" onclick="myIdSheet()">
+        <span>Your player ID</span>${HMX_IC.chev}
+      </button>
     </div>
 
-    <div class="sec">
-      <div class="sec-h"><b>Details</b>
-        <button class="lnk" onclick="editProfile()">Edit</button></div>
-      <div class="sec-c"><div class="pf-facts">
-        ${meFact('Email', esc(Auth.email()))}
-        ${meFact('Phone', me.phone ? esc(me.phone) : '')}
-        ${meFact('Birthday', me.birth_month && me.birth_day
-          ? esc(Birthday.text(me.birth_month, me.birth_day)) : '')}
-        ${meFact('DUPR ID', me.dupr_id ? esc(me.dupr_id) : '')}
-      </div></div>
+    <h2 class="sos-t-grp pf-grp">SETTINGS</h2>
+    <div class="pf-card">
+      <button class="pf-row" onclick="go('groups')">
+        <span>Club settings</span>${HMX_IC.chev}
+      </button>
+      <span class="pf-sep"></span>
+      <button class="pf-row" onclick="accountSheet()">
+        <span>Account</span>${HMX_IC.chev}
+      </button>
+      <span class="pf-sep"></span>
+      <button class="pf-row" onclick="prefsSheet()">
+        <span>Notifications</span>${HMX_IC.chev}
+      </button>
+      <span class="pf-sep"></span>
+      <button class="pf-row" onclick="toggleTheme()">
+        <span>Dark appearance</span>
+        <span class="sos-tog${document.documentElement.dataset.theme === 'night' ? ' on' : ''}"><i></i></span>
+      </button>
     </div>
 
-    ${meTools()}`;
-  drawQR('my-qr', myIdURL(me.id), 190);
-  paintRecord();
-  /* the toggle is drawn before we know whether this phone is subscribed, so
-     it corrects itself once the browser has answered */
-  Push.refresh().then(()=>{
-    const row = document.getElementById('push-row');
-    if(row) row.outerHTML = Push.rowHTML();
-  }).catch(()=>{});
+    ${meOrganizing()}
+
+    <div class="pf-card pf-out">
+      <button class="pf-row out" onclick="AuthUI.confirmOut()"><span>Sign out</span></button>
+    </div>
+    <div class="sos-tail"></div>`;
+  /* The QR used to be drawn into a card on this page. It is behind the
+     player ID row now, which is where a thing you show somebody once a month
+     belongs — and it is drawn when that sheet opens, not before. */
+}
+
+/* The organizer's tools, kept off the page for everybody who is not one. The
+   design has no group for these because the person it draws is a member; on
+   an organizer's own profile they have to live somewhere, and under Settings
+   is where the other things that change the club already are. */
+function meOrganizing(){
+  const rows = [];
+  const row = (act, label) => `<button class="pf-row" onclick="${act}">
+    <span>${esc(label)}</span>${HMX_IC.chev}</button>`;
+  if(canOrganize()) rows.push(row('openResume()', 'Take over a session'));
+  if(Auth.isOrganizer && Auth.isOrganizer()) rows.push(row('accessSheet()', 'Roles'));
+  if(Auth.isOwner()){
+    rows.push(row("go('roles')", 'Player management'));
+    rows.push(row("go('audit')", 'Audit log'));
+  }
+  if(!rows.length) return '';
+  return `<h2 class="sos-t-grp pf-grp">ORGANIZING</h2>
+    <div class="pf-card">${rows.join('<span class="pf-sep"></span>')}</div>`;
 }
 
 /* ── YOUR RECORD ─────────────────────────────────────
@@ -18518,6 +18605,22 @@ function meFact(label, value){
 /* The ID card, out to whatever the phone does with a link — so somebody who
    has not got the app in front of them can still be added by the organizer
    opening what you sent. */
+/* The code somebody scans at the door. It was a navy card taking a third of
+   the profile for a thing that is used once a month, so it is behind a row
+   now and drawn when the sheet opens. */
+function myIdSheet(){
+  const me = Auth.me;
+  if(!me) return;
+  openSheet(`<h3>Your player ID</h3>
+    <p class="sub">Show this at the door and whoever is organizing adds you to the
+      session in one tap.</p>
+    <div class="id-qr" id="my-qr"></div>
+    <p class="id-nm">${esc(me.alias || me.name || '')}</p>
+    <button class="btn btn-go" onclick="shareMyId()">Share it</button>
+    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
+  setTimeout(()=>{ try{ drawQR('my-qr', myIdURL(me.id), 190); }catch(e){} }, 30);
+}
+
 function shareMyId(){
   const me = Auth.me;
   if(!me) return;
@@ -19978,8 +20081,11 @@ function paintHome(){
     ${hmxSay()}
     ${groupNudge()}
     ${hmxFeed()}
-    ${hmxCode()}
-    ${birthdayStrip()}
+    ${/* The birthday strip and the code field have come off Today. The
+          design has neither, and both were sitting under the feed as a
+          second and third kind of thing on a screen that is meant to be one
+          kind. Joining by code is not lost with the field — it is the third
+          row of the + sheet, which is the button directly above. */''}
     <div class="sos-tail"></div>`;
   hmTick();
 }
