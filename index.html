@@ -14727,6 +14727,7 @@ const Groups = {
    nothing new is fetched to open this tab. */
 const Games = {
   tab: 'upcoming',        /* invites | upcoming | done */
+  knowsPlace: false,      /* can sideout_past tell us which nights were ours */
   when: 'all',            /* all | 7 | 30 */
   /* Was organizing | playing, filtering on r.host — a field sideout_upcoming
      has never returned, because `sessions` does not record who created a
@@ -14763,8 +14764,22 @@ const Games = {
 
     const mine = (Feed.up || []).filter(r => r.mine && !r.ended)
       .sort((a, b) => (Feed.ms(a.starts_at) || 0) - (Feed.ms(b.starts_at) || 0));
-    const done = (Feed.past || [])
+    /* Upcoming filters to nights you joined, so Completed has to mean the
+       same thing or the two tabs are a pair that quietly disagree — which is
+       what they were: this listed every night the club had ever played under
+       a heading that said "every night you played".
+
+       `place` is the only per-viewer thing sideout_past returns, and it is
+       non-null exactly when the caller has a results row for that night, so
+       it doubles as "was I there". It is also the column that may not be
+       deployed yet, so when nothing in the list carries one there is no way
+       to tell and the tab shows the club's nights under a heading that says
+       so, rather than filtering everybody out or claiming they are yours. */
+    const past = (Feed.past || []);
+    const knowsPlace = past.some(r => r.place != null);
+    const done = (knowsPlace ? past.filter(r => r.place != null) : past)
       .sort((a, b) => (Feed.ms(b.played_at) || 0) - (Feed.ms(a.played_at) || 0));
+    this.knowsPlace = knowsPlace;
 
     /* Nobody records who put whose name down, so there is nothing to list
        here and a count of nought is the honest label. When `joiners` starts
@@ -14777,7 +14792,8 @@ const Games = {
 
     const sub = document.getElementById('games-sub');
     if(sub) sub.textContent = this.tab === 'invites' ? 'Somebody put your name down.'
-      : this.tab === 'done' ? 'Every night you played.'
+      : this.tab === 'done'
+        ? (this.knowsPlace ? 'Every night you played.' : 'Every night the club has played.')
       : 'What you are down for, and how full it is.';
 
     if(this.tab === 'invites'){
@@ -14804,7 +14820,9 @@ const Games = {
         <span class="sos-sep sos-sep-36"></span>`;
       }).join('')}</div>`
       : Feed.failed ? feedFailed('your games')
-      : `<div class="sos-list"><div class="sos-row run-empty">No finished games yet.</div></div>`;
+      : `<div class="sos-list"><div class="sos-row run-empty">${this.knowsPlace
+          ? 'No finished nights yet. Play one and it lands here.'
+          : 'No finished nights yet.'}</div></div>`;
       return;
     }
 
@@ -14844,7 +14862,9 @@ const Games = {
     }).join('')}</div>`
     : Feed.failed ? feedFailed('your games')
     : `<div class="sos-list"><div class="sos-row run-empty">Nothing coming up that you are
-        in. Today shows what the club has on.</div></div>`;
+        in. This tab is what you have put your name down for — the club's nights are on
+        Today, and one you join turns up here.
+        <button class="sos-again" onclick="go('home')">See what's on</button></div></div>`;
   },
 
   byDay(rows, done){

@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v127`. Forgetting this means testers see last week's app and
+Currently `sideout-v128`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -289,6 +289,23 @@ is load-bearing well beyond drawing — it also calls `refreshPlan()`,
 `renderPools()`, `paintDock()` and `Auto.maybeStart()`, and writes to
 `#courts` without a null guard. Retiring it means unpicking those side
 effects first.
+
+**Sessions' two tabs used to disagree about whose nights they were.**
+Upcoming filters to `r.mine` — nights you have actually joined — so a club
+with a night on and nobody signed up yet shows an empty Upcoming while
+Today shows the night, which reads as a fault and is not one. Completed,
+meanwhile, filtered nothing at all and listed every night the club had ever
+played, under a sub-line that said "Every night you played". One of the two
+was lying and it was that one.
+
+Both are personal now. `place` is the only per-viewer thing `sideout_past`
+returns and it is non-null exactly when the caller has a results row, so it
+doubles as "was I there" — but it is also the column that may not be
+deployed, so `Games.knowsPlace` asks whether *any* row carries one. When
+none does there is no way to tell, and the tab shows the club's nights under
+a sub-line that says so rather than filtering everybody out or claiming
+they are yours. Upcoming's empty state now explains what the tab is for and
+offers a way to Today, instead of dead-ending.
 
 **The feed renders as nothing at all when its schema is missing.** `Posts`
 is the one part of the app whose backend may genuinely not exist — the
