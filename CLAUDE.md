@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v129`. Forgetting this means testers see last week's app and
+Currently `sideout-v130`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -114,7 +114,19 @@ court resets and the round ticks — the same arithmetic `Score.legal()` uses.
 A page that animated a fake score could drift from what the product does;
 this one cannot.
 
-**`picksilog` was printed in two places, both string literals in JS.**
+**`picksilog` survived in nine visible places, and each check missed a
+different set.** Grepping the markup missed the two JS string literals
+(`ab-title`'s fallback, `paintBrandBar()`'s subtitle). Then
+`grep -c "'picksilog'"` returned 0 while the word was still in `<b>picksilog</b>`
+in the app bar's static markup and in the chat recap note, in two
+`navigator.share()` texts, in a theme swatch's `aria-label`, on the no-signal
+screen, and in the watch page's footer. The check that actually settles it is
+a runtime one — walk every screen and test `document.body.innerText` — because
+the question is what a person sees, not what the source says. All nine are
+Sideout Society now; the name survives only as the `picksilog()` /
+`picksilogSrc()` / `picksilogURI()` function names and in comments.
+
+**It used to be printed in two places, both string literals in JS.**
 `ab-title`'s fallback for any screen without a `NAV_TITLE`, and
 `paintBrandBar()`'s subtitle on Setup — which is to say it was on screen
 every time anybody set a night up. Neither is caught by grepping the markup,

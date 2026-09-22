@@ -5513,7 +5513,7 @@ body.casting{overflow:hidden}
        club you are looking at is already named on every screen under it, and a
        wordmark of one club at the top of an app that holds several was the
        thing that made it look like a single-club app. -->
-  <div class="ab-title" id="ab-title"><span class="ab-mark" id="ab-mark"></span><b>picksilog</b></div>
+  <div class="ab-title" id="ab-title"><span class="ab-mark" id="ab-mark"></span><b>Sideout Society</b></div>
   <!-- This bar is the one that is up on Home. The session bar above it is
        hidden there, which is where the bell was and why it could never be
        seen in the one place it belongs. -->
@@ -14508,7 +14508,7 @@ const Groups = {
     const g = (this.list || []).find(x => x.id === id);
     const name = (g && g.name) || 'this group';
     if(navigator.share){
-      navigator.share({ title: name, text: 'Join ' + name + ' on picksilog', url })
+      navigator.share({ title: name, text: 'Join ' + name + ' on Sideout Society', url })
         .catch(()=>{});
       return;
     }
@@ -17792,7 +17792,7 @@ function brandingSheet(){
       <div class="swatches" id="pref-accent">
         <button class="sw${!Groups.clubAccent ? ' on' : ''}" data-c=""
           onclick="Groups.setClubAccent(null)" style="background:var(--brand-green)"
-          aria-label="Default — picksilog green"></button>
+          aria-label="Default — Sideout Society teal"></button>
         ${['#0F2747','#2C82C9','#17836A','#B0483C','#7A4FBF','#C08421','#B3457E','#4B6A2F']
           .map(c => `<button class="sw${Groups.clubAccent === c ? ' on' : ''}" data-c="${c}"
             onclick="Groups.setClubAccent('${c}')" style="background:${c}"
@@ -18118,7 +18118,7 @@ function shareMyId(){
   const url = myIdURL(me.id);
   const shown = me.alias || me.name || 'me';
   if(navigator.share){
-    navigator.share({ title: shown, text: shown + ' on picksilog', url })
+    navigator.share({ title: shown, text: shown + ' on Sideout Society', url })
       .catch(()=>{});
     return;
   }
@@ -20265,7 +20265,7 @@ const Chat = {
         last = null;
         return rule + `<div class="ch-note">
           <span class="ch-note-h"><img src="${picksilogSrc()}" alt="">
-            <b>picksilog</b></span>
+            <b>Sideout Society</b></span>
           <p>${esc(m.body || '')}</p>
           ${this.code ? `<button class="btn btn-quiet" onclick="pastSession('${
             esc(this.code)}')">${icon('standings')} View results</button>` : ''}
@@ -23383,7 +23383,7 @@ const Offline = {
     const off = navigator.onLine === false;
     el.innerHTML = `<div class="ns-in">
         <span class="ns-mark">${picksilog(96)}</span>
-        <b>picksilog</b>
+        <b>Sideout Society</b>
         <p>${off
           ? 'This phone is offline.'
           : 'Cannot reach the server just now.'}</p>
@@ -26277,7 +26277,7 @@ const View = {
       this.heroHTML(s2)
       + `<div class="vw-courts">${courts}</div>` + queue + table + this.cardBtn(s2) + facts
       + this.staffBar()
-      + `<p class="vw-foot">picksilog \u00b7 session ${esc(this.code)}</p>`;
+      + `<p class="vw-foot">Sideout Society \u00b7 session ${esc(this.code)}</p>`;
   },
 
   /* The night's own picture, across the top of Details. It used to be drawn
