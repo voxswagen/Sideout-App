@@ -10,6 +10,15 @@
 -- here drops a table, alters a column or deletes a row, so the blast
 -- radius on 157 members and the results behind the ladder is nil.
 --
+-- Safe to run more than once, and safe to run over an earlier copy of this
+-- same file. Every function drops every signature it has ever had before it
+-- is created, and the two columns the feed gained since the first draft are
+-- added with `add column if not exists` rather than inside the `create table
+-- if not exists`, which adds nothing to a table that already exists.
+--
+-- So: if you have run a version of this before, run this one. It will bring
+-- the project up to the current shape rather than leaving half of it behind.
+--
 -- Delete this file once both parts are applied — the repo's rule is that
 -- supabase-*.sql files describe what IS deployed, and a migration script
 -- left lying about is the thing that makes them stop being true.
@@ -158,6 +167,16 @@ create table if not exists public.posts (
   removed_at  timestamptz
 );
 
+-- `create table if not exists` adds no columns to a table that is already
+-- there, so a project that ran an earlier version of this file would keep
+-- the old shape and every insert naming `photos` or `card` would fail. These
+-- are stated separately for that reason, and they are no-ops on a fresh
+-- install. `photo` (singular) is left alone where it exists: nothing writes
+-- it any more, and dropping a column is not worth the risk of doing it to
+-- the wrong project.
+alter table public.posts add column if not exists card   jsonb;
+alter table public.posts add column if not exists photos jsonb;
+
 create index if not exists posts_club_at on public.posts (club, created_at desc)
   where removed_at is null;
 create index if not exists posts_code on public.posts (club, code)
@@ -291,6 +310,12 @@ grant execute on function public.sideout_posts(text, uuid, integer, timestamptz)
 
 -- ── saying something ────────────────────────────────────────────
 
+-- Both signatures. An overloaded sideout_* function is a broken one —
+-- PostgREST cannot choose between two candidates and answers 300 to every
+-- caller — and a project that ran the earlier version of this file has the
+-- text form of this function sitting there. Dropping only the shape we are
+-- about to create would leave the old one beside it.
+drop function if exists public.sideout_post_add(text, uuid, text, text, text);
 drop function if exists public.sideout_post_add(text, uuid, text, text, jsonb);
 
 create function public.sideout_post_add(p_club text, p_group uuid, p_code text,
@@ -504,6 +529,7 @@ grant execute on function public.sideout_post_remove(text, uuid) to authenticate
 -- write-up twice. Same shape as sideout_reminder_claim: the insert is the
 -- lock, not a check before it.
 
+drop function if exists public.sideout_post_night(text, text, uuid, text);
 drop function if exists public.sideout_post_night(text, text, uuid, text, jsonb);
 
 create function public.sideout_post_night(p_club text, p_code text,
