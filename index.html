@@ -4144,6 +4144,58 @@ body.casting{overflow:hidden}
   border:1.5px solid var(--sos-card)}
 .hmx-me{width:40px;height:40px;border-radius:99px;border:0;background:none;padding:0;
   cursor:pointer;display:block}
+/* ── the profile head, with no band behind it ──
+   The design opens this screen on white: a face, a name, a line of context,
+   then four numbers. The navy band it replaces is what forced the app bar to
+   turn navy with it. */
+.pf-top{display:flex;align-items:center;gap:14px;padding:10px 16px 0}
+.pf-top .pf-face{position:relative;flex:none;border:0;background:none;padding:0;cursor:pointer}
+.pf-top .av{width:68px;height:68px;font-size:25px;font-weight:600}
+.pf-who{flex:1;min-width:0}
+/* font-family stated: h1 in this file is the condensed display face, which
+   is right for a session brand bar and wrong for somebody's name. */
+.pf-who h1{margin:0;font-family:inherit;font-size:26px;font-weight:700;
+  letter-spacing:-.025em;line-height:1.15;color:var(--sos-ink)}
+.pf-who p{margin:2px 0 0;font-size:15px;color:var(--sos-ink-2)}
+.pf-strip{margin:18px 16px 0;padding:14px 0;border-radius:14px;background:var(--sos-card);
+  display:grid;grid-template-columns:repeat(4,1fr)}
+.pf-c{text-align:center}
+.pf-c + .pf-c{border-left:1px solid var(--sos-hair)}
+.pf-c b{display:block;font-size:21px;font-weight:700;letter-spacing:-.02em;color:var(--sos-ink)}
+.pf-c b.teal{color:var(--sos-accent)}
+.pf-c span{display:block;margin-top:2px;font-size:11.5px;color:var(--sos-ink-2)}
+.pf-grp{margin:22px 16px 7px}
+/* The profile's own sections, brought into the system's idiom: a small grey
+   group header over a white card, the same as every other grouped list in
+   the app. The old `.sec` block drew a heavier heading from the screen this
+   replaced. */
+#screen-me .sec{margin:22px 0 0}
+#screen-me .sec-h{margin:0 16px 7px;font-family:inherit;font-size:13px;font-weight:600;
+  letter-spacing:.02em;text-transform:none;color:var(--sos-ink-2);
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+#screen-me .sec-h b{font-family:inherit;font-size:13px;font-weight:600;letter-spacing:.02em;
+  color:var(--sos-ink-2)}
+#screen-me .sec-c{margin:0 16px;background:var(--sos-card);border-radius:12px;overflow:hidden}
+#screen-me .sec-note{margin:0 16px 7px;font-size:12.5px;color:var(--sos-dim)}
+#screen-me .pf-strip + .sec{margin-top:18px}
+.pf-rate{margin:0 16px;padding:15px 16px;border-radius:14px;background:var(--sos-card)}
+
+/* A group's head, on white and in the profile's idiom. */
+.gp-bar{padding:8px 16px 0}
+.gp-top{display:flex;align-items:center;gap:14px;padding:4px 16px 0}
+.gp-top .gp-logo{flex:none;width:68px;height:68px;border-radius:14px;overflow:hidden;
+  display:grid;place-items:center;background:var(--sos-fill);color:var(--sos-accent)}
+.gp-top .gp-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.gp-top .gp-logo b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;
+  letter-spacing:.04em}
+.gp-top .gp-who{flex:1;min-width:0}
+.gp-top .gp-who h1{margin:0;font-family:inherit;font-size:26px;font-weight:700;
+  letter-spacing:-.025em;line-height:1.15;color:var(--sos-ink)}
+.gp-top .gp-court{display:flex;align-items:center;gap:5px;margin:3px 0 0;font-size:15px;
+  color:var(--sos-ink-2)}
+.gp-top .gp-court svg{width:15px;height:15px}
+.gp-strip{grid-template-columns:repeat(3,1fr)}
+
 /* ── pull to refresh ──
    A spacer whose height is the pull distance, so the page moves with the
    finger instead of a spinner appearing over the top of it. */
@@ -5720,7 +5772,7 @@ body.casting{overflow:hidden}
   <!-- Full bleed for the same reason the profile is: the page opens with the
        group's own band, and the back link lives inside it rather than on a
        strip of paper above it. -->
-  <section class="screen hero" id="screen-group">
+  <section class="screen" id="screen-group">
     <div id="group-head"></div>
     <div class="gp-seg" id="group-seg">
       <button class="on" data-t="details" onclick="Groups.setPane('details')">Details</button>
@@ -6024,7 +6076,7 @@ body.casting{overflow:hidden}
   <!-- Full bleed, because the page opens with a coloured band and a band
        with 14px of paper down either side is a stripe. Everything inside is
        inset by its own section instead. -->
-  <section id="screen-me" class="screen hero">
+  <section id="screen-me" class="screen">
     <div id="me-box"></div>
   </section>
 
@@ -14474,24 +14526,32 @@ const Groups = {
     const tile = (val, lab, own) =>
       `<div class="gp-tile${own ? ' own' : ''}"><b>${val}</b><i>${lab}</i></div>`;
 
+    /* The logo lockup on white, then a three-up strip — the same idiom as
+       the profile, which is the point: a club and a person are introduced
+       the same way, and the coloured band that used to do it here has gone
+       from both. */
     head.innerHTML = info ? `
-      <div class="hero-band">
-        <button class="hero-back" onclick="go('groups')"><span>&lsaquo;</span>All groups</button>
-        <div class="gp-idr">
-          <span class="gp-logo">${info.photo
-            ? `<img src="${info.photo}" alt="">`
-            : `<b>${esc(meMono(info.name))}</b>`}</span>
-          <div class="gp-who">
-            <h1>${esc(info.name || '')}</h1>
-            ${info.home_court
-              ? `<p class="gp-court">${icon('pin')}${esc(info.home_court)}</p>` : ''}
-          </div>
+      <div class="sos-bar gp-bar">
+        <button class="sos-back" onclick="go('groups')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+          All groups</button>
+      </div>
+      <div class="gp-top">
+        <span class="gp-logo">${info.photo
+          ? `<img src="${info.photo}" alt="">`
+          : `<b>${esc(meMono(info.name))}</b>`}</span>
+        <div class="gp-who">
+          <h1>${esc(info.name || '')}</h1>
+          ${info.home_court
+            ? `<p class="gp-court">${icon('pin')}${esc(info.home_court)}</p>` : ''}
         </div>
-        <div class="gp-tiles">
-          ${tile(nMem, nMem === 1 ? 'member' : 'members')}
-          ${tile(nSes, nSes === 1 ? 'session' : 'sessions')}
-          ${place ? tile(ord(place), 'you rank', true) : ''}
-        </div>
+      </div>
+      <div class="pf-strip gp-strip">
+        <div class="pf-c"><b>${nMem}</b><span>${nMem === 1 ? 'Member' : 'Members'}</span></div>
+        <div class="pf-c"><b>${nSes}</b><span>${nSes === 1 ? 'Session' : 'Sessions'}</span></div>
+        <div class="pf-c"><b${place ? ' class="teal"' : ''}>${place
+          ? esc(ord(place)) : '\u2014'}</b><span>You rank</span></div>
       </div>` : '';
 
     if(this.pane === 'details') this.paneDetails(body, info);
@@ -18137,31 +18197,39 @@ async function paintMe(){
   const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th'
     : ['th','st','nd','rd'][n % 10] || 'th');
 
+  /* No coloured band. The handoff takes it off both this screen and a
+     group's, which is also what takes the `.onhero` exception off the app
+     bar — a navy strip above a white page was the thing that needed the bar
+     to change colour with it, and neither has to now. */
+  const meta = [roleWord || null, full || null].filter(Boolean).join(' \u00b7 ');
+  const winPc = rec && rec.games ? Math.round(rec.wins / rec.games * 100) : null;
+  const cell = (v, k, cls) => `<div class="pf-c">
+    <b${cls ? ` class="${cls}"` : ''}>${v}</b><span>${esc(k)}</span></div>`;
   box.innerHTML = `
-    <div class="hero-band">
-      <div class="pf-idr">
-        <button class="pf-face" onclick="editProfile()" aria-label="Change your picture">
-          ${avatar(shown, me.photo, 'xl')}
-          ${me.official ? `<span class="pf-tick">${icon('check')}</span>` : ''}
-        </button>
-        <div class="pf-who">
-          <h1>${esc(shown)}</h1>
-          ${full ? `<p>${esc(full)}</p>` : ''}
-          <div class="pf-chips">
-            ${roleWord ? `<span class="pf-chip role">${esc(roleWord)}</span>` : ''}
-            ${tier && tier.at > 0
-              ? `<span class="pf-chip tier" style="--tier:${tier.hue}">${esc(tier.name)}</span>`
-              : '<span class="pf-chip flat">Unranked</span>'}
-          </div>
-        </div>
+    <div class="pf-top">
+      <button class="pf-face" onclick="editProfile()" aria-label="Change your picture">
+        ${avatar(shown, me.photo, 'xl')}
+        ${me.official ? `<span class="pf-tick">${icon('check')}</span>` : ''}
+      </button>
+      <div class="pf-who">
+        <h1>${esc(shown)}</h1>
+        ${meta ? `<p>${esc(meta)}</p>` : ''}
       </div>
-      ${rates ? `<div class="pf-rates">${rates}</div>` : ''}
     </div>
+
+    ${/* Four numbers, hairline-divided, the way the design opens this screen.
+          A figure the record has not returned is a dash rather than a nought,
+          because nought games won and no record yet are different things. */''}
+    <div class="pf-strip">
+      ${cell(rec ? (rec.games || 0) : '\u2014', 'Games')}
+      ${cell(rec ? (rec.wins || 0) : '\u2014', 'Won')}
+      ${cell(winPc == null ? '\u2014' : winPc + '%', 'Win rate', 'teal')}
+      ${cell(place ? ordinalNum(place) : '\u2014', 'Rank')}
+    </div>
+
+    ${rates ? `<h2 class="sos-t-grp pf-grp">RATING</h2>
+    <div class="pf-rate">${rates}</div>` : ''}
     <div id="me-stats"></div>
-    ${place ? `<div class="pf-stand">
-      <b>${place}<small>${ordinal(place).slice(String(place).length)}</small></b><s></s>
-      <span><i>Where you stand</i><em>${rankWord(place, total)}</em></span>
-    </div>` : ''}
 
     ${tierCardHTML(pts.points, pts.nights, !!(me.official || me.role === 'owner' || me.role === 'organizer'))}
     <!-- What is coming first, then what has been. Reading your own profile,
@@ -18832,7 +18900,12 @@ function syncDocks(){
      into it, so the bar is the top of the page rather than a shelf above it.
      Anywhere else it goes back to being a bar. */
   const ab = document.getElementById('appbar');
-  if(ab) ab.classList.toggle('onhero', scr === 'me' || scr === 'group');
+  /* Nothing is on a hero any more. The handoff takes the coloured band off
+     the profile and a group's page, so the app bar is white everywhere and
+     this exception has nothing left to make an exception of. The class and
+     its rules are left in the stylesheet for now, with no element carrying
+     them. */
+  if(ab) ab.classList.remove('onhero');
 
   if(tb){
     tb.hidden = !showTabs;
@@ -18939,7 +19012,7 @@ function syncNav(name){
      of the coloured band rather than a strip above one, and on the screens
      that use it for a title and a way back. */
   const titled = (name === 'home' || name === 'games' || name === 'board'
-    || name === 'market' || name === 'chats');
+    || name === 'market' || name === 'chats' || name === 'me' || name === 'group');
   const bare = (name === 'landing' || name === 'auth' || name === 'session'
     || name === 'people' || name === 'new' || name === 'listing'
     || name === 'share' || name === 'stacks' || name === 'comments' || titled);

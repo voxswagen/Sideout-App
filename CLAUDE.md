@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v131`. Forgetting this means testers see last week's app and
+Currently `sideout-v132`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -733,15 +733,24 @@ tables matter:
 Organizer-only RPCs check the role from the JWT and raise on failure; the
 client string-matches `/organizer/i` on the error to show the right message.
 
-**Two screens open with a coloured band, and the app's own bar is part of
-it.** The profile and a group's page are `.screen.hero` — full bleed, no side
-padding — and `syncNav()` puts `.onhero` on `#appbar` for exactly those two so
-the bar goes navy and loses its border. Anything that changes the app bar has
-to survive being white-on-navy, and any third screen given a band has to be
-added to that check or it gets a paper-coloured strip above its own header.
-The band, the white strip that straddles it, `.sec`/`.sec-h`/`.sec-c` and the
-`.me-item` rows are shared by both: a club and a person are introduced the
-same way, and when the two were drawn separately they drifted.
+**Nothing opens with a coloured band any more, and `.onhero` has nothing
+left to do.** The profile and a group's page used to be `.screen.hero` —
+full bleed, navy band, with `syncNav()` putting `.onhero` on `#appbar` so the
+bar turned navy to match. The handoff removes the band from both, so both are
+ordinary screens, the app bar is white everywhere, and `syncNav()` only ever
+*removes* that class now. Its rules are still in the stylesheet with no
+element carrying them.
+
+Both draw their own head instead — a face or a logo, a name at 26px, a line
+of context, then a hairline-divided stat strip (`.pf-strip`, four cells on a
+person and three on a club). That sharing is the point and predates the
+redesign: a club and a person are introduced the same way, and when the two
+were drawn separately they drifted. Both are in the `titled` list now, so the
+app bar steps aside for them as it does for every screen that titles itself.
+
+`.pf-who h1` states `font-family:inherit`. `h1` in this file is the condensed
+display face, which is right for a session brand bar and wrong for somebody's
+name — it rendered "VOX DEQUINA" until it was stated.
 
 **A two- or three-letter class name in this file is probably already taken.**
 `.sw` is the club-colour swatch — a 34px white circle — so the day/night
