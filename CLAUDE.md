@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v128`. Forgetting this means testers see last week's app and
+Currently `sideout-v129`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -114,6 +114,14 @@ court resets and the round ticks — the same arithmetic `Score.legal()` uses.
 A page that animated a fake score could drift from what the product does;
 this one cannot.
 
+**`picksilog` was printed in two places, both string literals in JS.**
+`ab-title`'s fallback for any screen without a `NAV_TITLE`, and
+`paintBrandBar()`'s subtitle on Setup — which is to say it was on screen
+every time anybody set a night up. Neither is caught by grepping the markup,
+which is why this note claimed the surfaces were clean while the word was at
+17px across the top of the app. `grep -c "'picksilog'"` is the check that
+would have caught both, and it is 0 now.
+
 **`picksilog` is gone from every surface a person can see** — the document
 title, the install card, the install sheets, and the mark's own `aria-label`
 and `<title>`, which is what a screen reader announces. The name survives
@@ -177,6 +185,21 @@ checkout.
 answered in the new block rather than deleted, the same way the old board's
 rules are. Watch for this shape whenever a redesigned screen keeps the old
 class names: a rule you are not restating is still in force.
+
+**New open play was built, registered, routed — and unreachable.** Nothing
+in the app called `go('new')`. Every way of starting a night —
+`startOrganizing()`, `freshSession()`, the two "carry on with what is there"
+buttons — ended at `go('setup')`, so the redesigned compose screen existed
+and the old panels were what everybody actually saw. All four route to
+`'new'` now. The lesson is the one the `SCREENS` note makes from the other
+direction: a screen can be correct in every particular and still never be
+seen, and neither an error nor a sweep of the screens catches it, because
+the screen is fine. What catches it is `grep -c "go('new')"` returning 0.
+
+`screen-setup` is still there and still the editor for a loaded session —
+`renderNew()` covers the compose case and titles itself "Edit this night"
+when one is live, but Setup holds the roster panel, the online/sharing panel
+and the round length, so it cannot be deleted yet.
 
 **`go('new')` needs an early return, for the same reason `go('setup')` is a
 trap.** After the organizer gate, `go()` rewrites any name to `'setup'` when

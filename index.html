@@ -4943,6 +4943,12 @@ body.casting{overflow:hidden}
 
 /* ══════════════ NEW OPEN PLAY ══════════════ */
 #screen-new.on{padding:0 0 8px}
+/* The group row is a button sitting in a list of fields, so it has to match
+   the inputs beside it rather than read as a control of a different kind. */
+.nw-grp-row{width:100%;background:none;border:0;cursor:pointer;font-family:inherit;
+  text-align:left;display:flex;align-items:center;gap:10px;min-height:56px;padding:9px 16px}
+.nw-grp-v{flex:none;font-size:14.5px;color:var(--sos-dim)}
+.nw-grp-row svg{flex:none}
 .nw-bar{padding:8px 16px 0}
 .nw-cancel{display:flex;align-items:center;min-height:44px;padding:0 6px;margin-left:-6px;
   background:none;border:0;cursor:pointer;font-family:inherit;font-size:16px;
@@ -11496,6 +11502,21 @@ function renderNew(){
         <input type="text" id="nw-venue" value="${esc(S.venueName || '')}"
           placeholder="Where it is" oninput="setVenueName(this.value)">
       </div>
+      <span class="sos-sep"></span>
+      ${/* The one thing the old Setup screen had that this did not, and it is
+            not cosmetic: a night filed under a group lands on that group's
+            table and its chat keys on the same id. Leaving it out meant the
+            redesigned flow could only ever make ungrouped nights. */''}
+      <button class="sos-row sos-row-2 nw-grp-row" onclick="GroupPick.open()">
+        <span class="sos-row-v">
+          <span class="sos-t-row">Group</span>
+          <span class="sos-t-cap">Its table and its chat are built from the nights filed
+            under it</span>
+        </span>
+        <span class="nw-grp-v">${S.groupId
+          ? esc(S.groupName || 'A group') : 'No group'}</span>
+        ${HMX_IC.chev}
+      </button>
     </div>
 
     <h2 class="sos-t-grp nw-grp">COURTS</h2>
@@ -18695,10 +18716,15 @@ function paintBrandBar(name){
        visible once you have scrolled past their rows. Only for a session
        that exists — on a blank form they would be describing a night that
        nobody has agreed to yet. */
+    /* The second place the old name was still being printed, and the one on
+       screen whenever somebody set a night up. The first was the app bar's
+       fallback; this is the small line under the title on Setup's own brand
+       bar. Neither is caught by grepping the markup, because both are string
+       literals in JS. */
     bsub.textContent = live
       ? (S.groupId ? (S.groupName || 'A group') : 'No group')
         + ' · ' + (MODE_NAME[S.mode] || 'Gauntlet')
-      : 'picksilog';
+      : 'Sideout Society';
     return;
   }
   if(badge) badge.hidden = false;
@@ -18927,9 +18953,9 @@ function freshSession(){
   setMode(S.mode);
   Feed.up = null; Feed.past = null;
   syncDocks();
-  go('setup');
+  go('new');
   renderAll(); renderLive();
-  toast('Fresh sheet \u2014 set it up however you like.');
+  toast('Fresh sheet — set it up however you like.');
 }
 
 async function startOrganizing(){
@@ -18965,7 +18991,7 @@ async function startOrganizing(){
           <b>${esc(S.liveCode)}</b> and everyone who joined, and you can pick it up again from its
           card on Home whenever you like.</p>
         <button class="btn btn-go" onclick="closeSheet();freshSession()">Start a new one</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('setup')">
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('new')">
           Go back to ${esc(sessionTitle())}</button>`);
       return;
     }
@@ -18975,11 +19001,15 @@ async function startOrganizing(){
           from ${esc(S.title || 'the last one')}. Nothing here has been saved anywhere yet, so
           clearing it loses it.</p>
         <button class="btn btn-go" onclick="closeSheet();freshSession()">Start fresh</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('setup')">
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('new')">
           Carry on with what is there</button>`);
       return;
     }
-    go('setup'); return;
+    /* The compose screen, not the old panels. This was the last line keeping
+       the redesign's New open play unreachable — it was registered, routed
+       and rendered, and nothing in the app ever called go('new'), so every
+       way of starting a night still landed on Setup. */
+    go('new'); return;
   }
   openSheet(`<h3>Only organizers can set up a session</h3>
     <p class="sub">Ask whoever runs <b>${esc(CONFIG.club || 'the club')}</b> to make you an organizer
