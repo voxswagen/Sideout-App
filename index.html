@@ -4267,6 +4267,107 @@ body.casting{overflow:hidden}
 #ptr.spin .ptr-l{visibility:hidden}
 @keyframes ptrSpin{to{transform:rotate(360deg)}}
 
+/* ── Manage and Stats, brought into the system ──
+   Both are the app's oldest screens and were still wearing the old skin: a
+   navy brand bar, Barlow Condensed headings in caps, heavy bordered panels
+   and a yellow warning box. Everything they are built from already exists
+   in `--sos-*`, so this maps the old class names onto it rather than
+   rewriting two large screens' markup — the same way the shop's old rules
+   were answered rather than deleted.
+
+   Scoped to the two ids, so nothing else using `.panel` moves. */
+#screen-players.on,#screen-stats.on{background:var(--sos-bg)}
+#screen-players .panel,#screen-stats .panel{
+  margin:14px 16px 0;padding:14px 15px;border-radius:14px;
+  background:var(--sos-card);border:0;box-shadow:0 1px 3px rgba(23,36,43,.06)}
+#screen-players .panel > h2,#screen-stats .panel > h2{
+  margin:0 0 11px;font-family:inherit;font-weight:600;font-size:13px;
+  letter-spacing:.02em;text-transform:none;color:var(--sos-ink-2)}
+#screen-players .hint,#screen-stats .hint{font-size:13.5px;line-height:1.45;
+  color:var(--sos-ink-2)}
+/* `.label` is the sub-heading over each control on Manage — FORMAT, COURTS
+   IN PLAY, A ROUND ENDS — and was Barlow Condensed in caps. `.lbl` is the
+   text inside the format button. */
+#screen-players .label,#screen-stats .label{font-family:inherit;font-weight:600;
+  font-size:12.5px;letter-spacing:.02em;text-transform:none;color:var(--sos-ink-2)}
+#screen-players .lbl b,#screen-stats .lbl b{font-family:inherit;font-weight:600;
+  font-size:16px;letter-spacing:-.01em;text-transform:none;color:var(--sos-ink)}
+#screen-players .lbl span{font-size:13px;color:var(--sos-ink-2)}
+#screen-players .fmt-now{border-radius:12px;background:var(--sos-fill-2);
+  border:1px solid var(--sos-hair)}
+#screen-players .row-lab,#screen-players .set-h{font-family:inherit;font-weight:600;
+  font-size:15.5px;letter-spacing:-.01em;text-transform:none;color:var(--sos-ink)}
+/* The amber "local mode" box is a note, not a warning — nothing is wrong,
+   the server simply has not been filled in. */
+/* `.conn.warn` is the amber "local mode" note. Nothing is wrong — the
+   server simply has not been filled in — so it reads as a note rather than
+   as a warning about a fault. */
+#screen-players .conn,#screen-stats .conn{border-radius:12px;font-size:13.5px;
+  line-height:1.45}
+#screen-players .conn.warn,#screen-stats .conn.warn{background:var(--sos-fill-2);
+  border:1px solid var(--sos-hair);color:var(--sos-ink-2)}
+#screen-players .warn-box,#screen-stats .warn-box{background:var(--sos-fill-2);
+  border:1px solid var(--sos-hair);border-radius:12px;color:var(--sos-ink-2);
+  font-size:13.5px;line-height:1.45}
+#screen-players .warn-box b{color:var(--sos-ink)}
+/* The toggle rows: a title and a line under it, in the system's own voice
+   rather than condensed caps. */
+#screen-players .switch .txt b,#screen-stats .switch .txt b{font-family:inherit;
+  font-weight:600;font-size:15.5px;letter-spacing:-.01em;text-transform:none;
+  color:var(--sos-ink)}
+#screen-players .switch .txt span,#screen-stats .switch .txt span{font-size:13px;
+  color:var(--sos-ink-2)}
+#screen-players .rule,#screen-stats .rule{border:0;border-top:1px solid var(--sos-sep);
+  margin:13px 0}
+
+/* The session brand bar, which the design does not have at all. It still
+   carries the way back and the cast button, so it stays — on paper rather
+   than in navy, with the name in the system face. */
+#screen-players ~ *,#screen-stats ~ *{}
+.top{background:var(--sos-card);border-bottom:1px solid var(--sos-sep)}
+.top #brand-name{font-family:inherit;font-weight:700;font-size:17px;
+  letter-spacing:-.02em;text-transform:none;color:var(--sos-ink)}
+.top #brand-sub{font-family:inherit;font-weight:500;font-size:12.5px;
+  letter-spacing:0;text-transform:none;color:var(--sos-ink-2)}
+.top .icon-btn,.top .back-btn{color:var(--sos-ink-2)}
+
+/* Buttons take the accent, the card and the hairline rather than the old
+   navy and the old borders. */
+#screen-players .btn,#screen-stats .btn{border-radius:12px;font-family:inherit;
+  font-weight:600;letter-spacing:-.01em;text-transform:none;font-size:15.5px}
+#screen-players .btn-go,#screen-stats .btn-go{background:var(--sos-accent);
+  border-color:var(--sos-accent);color:var(--sos-on-accent)}
+#screen-players .btn-quiet,#screen-stats .btn-quiet{background:var(--sos-card);
+  border:1px solid var(--sos-hair);color:var(--sos-ink)}
+#screen-players .warn-box{background:var(--sos-fill-2);border:1px solid var(--sos-hair);
+  border-radius:12px;color:var(--sos-ink-2)}
+
+/* The standings: one card with hairlines, not ten bordered tiles, and the
+   top three marked by the accent rather than by an amber ground. The rows
+   are `.lb-row`, not `.st-row` — `renderStats()` draws the same leaderboard
+   part the old Play screen used. */
+#screen-stats .lb{display:block}
+#screen-stats .lb-row{border:0;border-radius:0;background:none;margin:0;
+  padding:11px 2px;gap:10px}
+#screen-stats .lb-row + .lb-row{border-top:1px solid var(--sos-sep)}
+#screen-stats .lb-row.podium{background:none}
+#screen-stats .lb-row .rk{width:auto;min-width:22px;height:auto;border:0;
+  border-radius:0;background:none;font-family:inherit;font-weight:700;
+  font-size:15px;color:var(--sos-ink-3);text-align:center}
+#screen-stats .lb-row.podium .rk{background:none;border:0;color:var(--sos-accent)}
+#screen-stats .lb-row .nm{font-family:inherit;font-size:16px;font-weight:500;
+  letter-spacing:-.01em;text-transform:none;color:var(--sos-ink)}
+#screen-stats .lb-row .rec{font-family:inherit;font-size:14px;color:var(--sos-ink-2)}
+#screen-stats .lb-row .rec b{font-weight:700;color:var(--sos-ink)}
+#screen-stats .lb-row .dif{font-style:normal;font-size:12.5px;color:var(--sos-dim)}
+
+/* The figures under it read as rows rather than as a ruled table. */
+#screen-stats .kv{padding:10px 2px;font-size:16px;color:var(--sos-ink);border:0}
+#screen-stats .kv + .kv{border-top:1px solid var(--sos-sep)}
+#screen-stats .kv b{font-family:inherit;font-weight:700;font-size:17px;
+  letter-spacing:-.02em;color:var(--sos-ink)}
+
+
 /* ── the pinned session banner ──
    Compact, and the handoff says why: the tall card pushed the composer and
    the first post under the fold, so the feed read as empty on the one screen
@@ -4798,6 +4899,19 @@ body.casting{overflow:hidden}
 
 .run-foot{padding:9px 14px 14px;display:flex;align-items:center;gap:9px}
 .run-hint{flex:1;min-width:0;font-size:12.5px;line-height:1.35;color:var(--sos-dim);text-wrap:pretty}
+.run-type{display:flex;align-items:center;gap:6px;flex:none;min-height:38px;padding:0 12px;
+  border-radius:10px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;
+  letter-spacing:-.01em;background:var(--sos-card);border:1px solid var(--sos-hair);
+  color:var(--sos-ink-2)}
+.run-type svg{width:16px;height:16px}
+.run-type:disabled{opacity:.45;cursor:default}
+/* Two big fields, because a score is two numbers and nothing else. */
+.sc-in{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sc-in label{display:block}
+.sc-in span{display:block;margin-bottom:5px;font-size:13px;color:var(--sos-ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-in input{width:100%;padding:12px;border-radius:12px;font-family:inherit;
+  font-size:30px;font-weight:700;text-align:center;letter-spacing:-.02em}
 .run-undo{flex:none;display:flex;align-items:center;gap:6px;min-height:38px;padding:0 13px;
   border-radius:11px;border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;
   background:var(--sos-fill);color:var(--sos-ink-3)}
@@ -5695,6 +5809,18 @@ body.casting{overflow:hidden}
   border-radius:10px;background:var(--sos-card);border:1px solid var(--sos-sep);
   cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stk-chip:active{transform:scale(.97)}
+/* touch-action:none is what makes the drag possible at all — without it the
+   browser takes the gesture for scrolling and the finger moves the page
+   instead of the name. */
+.stk-chip,.stk-row:not(.locked){touch-action:none}
+/* The copy that follows the finger. Fixed and pointer-events:none so it
+   never becomes the thing under the cursor when we ask what is. */
+.stk-ghost{position:fixed;top:0;left:0;z-index:80;pointer-events:none;
+  padding:7px 13px;border-radius:99px;background:var(--sos-ink);color:#fff;
+  font-size:14px;font-weight:600;letter-spacing:-.01em;
+  box-shadow:0 8px 24px rgba(23,36,43,.28)}
+/* Where it would land. */
+.stk-over{outline:2px solid var(--sos-accent);outline-offset:2px}
 .stk-col.up .stk-chip{background:var(--sos-card)}
 .stk-chip .av{width:24px;height:24px;font-size:10px;flex:none}
 .stk-chip b{flex:1;min-width:0;font-size:14.5px;font-weight:600;letter-spacing:-.01em;
@@ -11034,6 +11160,58 @@ const Score = {
     return hi >= this.target() && hi - lo >= 2;
   },
 
+  /* Typing the score in, rather than tapping to it.
+
+     Tapping a rally at a time is right when you are standing at the net
+     watching. It is wrong when somebody walks over and says "we won 11-7":
+     that is one fact, and tapping it in is eighteen taps and a chance to
+     lose count. Both now, because both happen on the same night.
+
+     It writes the same `c.pts` the tapping writes, so everything downstream
+     — the ahead tint, Game point, Finish game, the big screen — reads it
+     without knowing which way it got there. */
+  type(ci){
+    const c = S.courts[ci];
+    if(!c) return;
+    if(c.win !== null){ toast('That game is recorded. Undo it first.'); return; }
+    if(c.teams[0].length < 2 || c.teams[1].length < 2){
+      toast('Four players to a court first.'); return;
+    }
+    const p = this.pts(c);
+    const nm2 = k => (c.teams[k] || []).filter(Boolean).map(nm).join(' / ') || 'Side ' + (k + 1);
+    openSheet(`<h3>Type the score</h3>
+      <p class="sub">First to ${this.target()}, win by two \u2014 ${esc(ordinal(ci))}.</p>
+      <div class="sc-in">
+        <label><span>${esc(nm2(0))}</span>
+          <input type="number" id="sc-a" inputmode="numeric" min="0" max="99"
+            value="${p.a || 0}" onfocus="this.select()"></label>
+        <label><span>${esc(nm2(1))}</span>
+          <input type="number" id="sc-b" inputmode="numeric" min="0" max="99"
+            value="${p.b || 0}" onfocus="this.select()"></label>
+      </div>
+      <button class="btn btn-go" onclick="Score.typed(${ci})">Save the score</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
+    setTimeout(()=>{ const e = document.getElementById('sc-a'); if(e){ e.focus(); e.select(); } }, 60);
+  },
+
+  typed(ci){
+    const c = S.courts[ci];
+    if(!c) return;
+    const num = id =>{
+      const el = document.getElementById(id);
+      return Math.max(0, Math.min(99, parseInt((el && el.value) || '0', 10) || 0));
+    };
+    const a = num('sc-a'), b = num('sc-b');
+    c.pts = { a, b };
+    /* Undo is one rally back, and a score that was typed has no last rally
+       to step back to — so it is cleared rather than left pointing at a
+       tap that never happened. */
+    c.lastPt = null;
+    closeSheet();
+    renderRun(); renderCourts(); TV.paint(); pushLive(); save();
+    if(this.legal(c)) toast('Ready to record.');
+  },
+
   /* Which side is ahead, or null while it is level. */
   lead(c){
     const p = this.pts(c);
@@ -11190,6 +11368,11 @@ function renderRun(){
           : short ? 'Four players to a court'
           : legal ? 'Ready to record'
           : 'First to ' + Score.target() + ', win by 2'}</span>
+        ${/* Typing beside tapping, because both are how a score arrives. */''}
+        <button class="run-type" onclick="Score.type(${i})"${recorded || short ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6"/></svg>
+          Type it</button>
         <button class="run-undo" onclick="Score.undo(${i})"${canUndo ? '' : ' disabled'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4.5V9h4.5"/></svg>
@@ -12332,6 +12515,73 @@ const Stacks = {
       || '<div class="stk-none pad">Nobody matches that.</div>';
   },
 
+  /* Dragging with a finger.
+
+     HTML5 drag-and-drop is a mouse API and never fires from touch, so this
+     is the same gesture built on pointer events: press, move past a few
+     pixels, and a copy of the chip follows the finger while whatever is
+     under it is asked whether it takes a drop. Tapping still works — a
+     press that never moves far enough is a tap, which is what the threshold
+     is for.
+
+     `touch-action:none` on the draggable elements stops the page scrolling
+     out from under the drag; without it the browser claims the gesture and
+     nothing moves. */
+  DRAG: 8,
+  grab: null,
+
+  down(ev, id){
+    if(ev.button != null && ev.button !== 0) return;
+    this.grab = { id, x: ev.clientX, y: ev.clientY, on: false };
+    const move = e => this.moveTo(e);
+    const up = e => this.up(e, move, up);
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  },
+
+  moveTo(ev){
+    const g = this.grab;
+    if(!g) return;
+    if(!g.on){
+      if(Math.abs(ev.clientX - g.x) + Math.abs(ev.clientY - g.y) < this.DRAG) return;
+      g.on = true;
+      this.start(g.id);
+      const ghost = document.createElement('div');
+      ghost.className = 'stk-ghost';
+      ghost.textContent = nm(g.id);
+      document.body.appendChild(ghost);
+      g.ghost = ghost;
+    }
+    ev.preventDefault();
+    g.ghost.style.transform = 'translate(' + (ev.clientX + 12) + 'px,' + (ev.clientY - 18) + 'px)';
+    const over = this.zoneAt(ev.clientX, ev.clientY);
+    document.querySelectorAll('.stk-over').forEach(e => e.classList.remove('stk-over'));
+    if(over) over.classList.add('stk-over');
+  },
+
+  /* What is under the finger, and whether it takes a name. */
+  zoneAt(x, y){
+    const el = document.elementFromPoint(x, y);
+    return el ? el.closest('[data-drop]') : null;
+  },
+
+  up(ev, move, upFn){
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', upFn);
+    window.removeEventListener('pointercancel', upFn);
+    const g = this.grab;
+    this.grab = null;
+    if(!g) return;
+    if(g.ghost) g.ghost.remove();
+    document.querySelectorAll('.stk-over').forEach(e => e.classList.remove('stk-over'));
+    if(!g.on){ this.tap(g.id); return; }        /* never moved: it was a tap */
+    const zone = this.zoneAt(ev.clientX, ev.clientY);
+    const to = zone ? zone.getAttribute('data-drop') : null;
+    if(to == null){ this.end(); return; }
+    this.move(g.id, to === 'free' ? 'free' : Number(to));
+  },
+
   /* Tap, because drag does not exist on a phone.
 
      HTML5 drag-and-drop is a mouse API — `dragstart` never fires from a
@@ -12379,8 +12629,8 @@ function stkRows(){
          somewhere. Dimmed and not draggable, rather than draggable and then
          silently refused. */
       return `<div class="stk-row${court ? ' locked' : ''}${held === id ? ' held' : ''}"
-        ${court ? '' : `role="button" tabindex="0" onclick="Stacks.tap('${id}')"
-          draggable="true" ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()"`}>
+        ${court ? '' : `role="button" tabindex="0"
+          onpointerdown="Stacks.down(event,'${id}')"`}>
         ${avatar(p.name, pPhoto(p), 'sm')}
         <span class="stk-rn">${esc(p.name)}</span>
         <span class="stk-st ${state[1]}">${state[0]}</span>
@@ -12405,9 +12655,8 @@ function renderStacks(){
 
   const chip = id =>{
     const p = P(id);
-    return `<span class="stk-chip${held === id ? ' held' : ''}" draggable="true"
-      role="button" tabindex="0" onclick="Stacks.tap('${id}')"
-      ondragstart="Stacks.start('${id}')" ondragend="Stacks.end()">
+    return `<span class="stk-chip${held === id ? ' held' : ''}"
+      role="button" tabindex="0" onpointerdown="Stacks.down(event,'${id}')">
       ${avatar(p.name, pPhoto(p), 'sm')}
       <b>${esc(firstName(p.name))}</b><i>${p.g || 0}</i>
     </span>`;
@@ -12415,8 +12664,7 @@ function renderStacks(){
 
   /* A short stack is padded with dashed slots, so an unfinished stack reads
      as unfinished rather than as a stack of two that somebody meant. */
-  const stack = (s, i) => `<div class="stk-col${i === 0 ? ' up' : ''}"
-      ondragover="event.preventDefault()" ondrop="event.preventDefault();Stacks.move(Stacks.held,${i})">
+  const stack = (s, i) => `<div class="stk-col${i === 0 ? ' up' : ''}" data-drop="${i}">
       <div class="stk-ch">
         <span class="stk-cl">${i === 0 ? 'Up next' : 'Stack ' + (i + 1)}</span>
         <span class="stk-cn">${s.length}/4</span>
@@ -12483,8 +12731,7 @@ function renderStacks(){
         </div>
         <div class="stk-cols">${st.map(stack).join('')}</div>
 
-        <div class="stk-free" ondragover="event.preventDefault()"
-          ondrop="event.preventDefault();Stacks.move(Stacks.held,'free')">
+        <div class="stk-free" data-drop="free">
           <span class="stk-fl"><b>Free</b><span>Tap to add</span></span>
           <div class="stk-fw">${free.length
             ? free.map(chip).join('')

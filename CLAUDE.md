@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v145`. Forgetting this means testers see last week's app and
+Currently `sideout-v146`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -505,6 +505,33 @@ throws. `sideout_post_night` refuses a second post for the same code in the
 insert itself rather than checking first, the same shape as
 `sideout_reminder_claim`, so a retry or two phones both thinking they are
 hosting cannot post the night twice.
+
+**The queue drags with a finger, on pointer events.** HTML5 drag-and-drop
+is a mouse API and never fires from touch, so `Stacks.down/moveTo/up` is the
+same gesture rebuilt: press, move past eight pixels, and a copy of the chip
+follows the finger while `elementFromPoint` asks what is underneath and
+whether it carries `data-drop`. A press that never passes the threshold is
+a tap, which is why both gestures can live on one handler.
+
+`touch-action:none` on the chips and rows is what makes it possible at all
+— without it the browser claims the gesture for scrolling and the finger
+moves the page instead of the name. The ghost is `pointer-events:none`, or
+it becomes the thing under the cursor when we ask what is.
+
+**A score can be typed as well as tapped.** Tapping a rally at a time is
+right at the net; it is wrong when somebody walks over and says "we won
+11-7", which is one fact and eighteen taps. `Score.type()` writes the same
+`c.pts`, so the tint, Game point, Finish game and the big screen read it
+without knowing how it arrived — and it clears `c.lastPt`, because Undo is
+one rally back and a typed score has no last rally to step back to.
+
+**Manage and Stats were the last screens in the old skin.** Navy brand bar,
+Barlow Condensed in caps, bordered tiles, an amber box for a thing that is
+not a fault. They are mapped onto `--sos-*` by a block scoped to the two
+ids rather than rewritten — the same move the shop's old rules got. Two
+things to know if you touch it: the standings rows are `.lb-row`, not
+`.st-row` (`renderStats()` draws the same leaderboard part the old Play
+screen used), and the amber note is `.conn.warn`, not `.warn-box`.
 
 **HTML5 drag-and-drop does not exist on touch, and two screens were built
 on it.** `dragstart` never fires from a finger, on any mobile browser, and
