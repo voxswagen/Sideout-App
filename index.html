@@ -12436,10 +12436,33 @@ const Stacks = {
   filter: 'All',
   byGames: false,
 
+  /* Whether the organizer owns the stacks, or the matchmaker does. In every
+     format but Open play the app decides who walks on next, so showing four
+     empty boxes and asking somebody to fill them is a lie about who is in
+     charge — and an empty Queue tab in Gauntlet reads as a broken screen
+     rather than as a screen with nothing to say. */
+  manual(){ return S.mode === 'queue'; },
+
+  /* What the planner intends, flattened into the same shape a stack has:
+     court 1's next four, court 2's next four, and so on. `nextLineups()` is
+     the one place that knows how each format deals, so this asks it rather
+     than growing a second opinion. A format with no honest preview — River,
+     Court Wars — returns nulls and gets an empty stack, which is correct:
+     those rebuild from standings that have not been tapped in yet. */
+  planned(){
+    const on = new Set(onCourtIds());
+    return (nextLineups() || []).map(nx =>{
+      if(!nx) return [];
+      const four = [].concat(nx[0] || [], nx[1] || []).filter(Boolean);
+      return four.filter(id => P(id) && !P(id).out && !on.has(id));
+    });
+  },
+
   /* Stacks live on the session so they survive a reload and travel with it.
      Cleaned on every read: a name that has gone home, gone on court or been
      removed must not sit in a stack pretending to be available. */
   all(){
+    if(!this.manual()) return this.planned();
     if(!Array.isArray(S.stacks)) S.stacks = [[], [], [], []];
     const on = new Set(onCourtIds());
     S.stacks = S.stacks.map(st => (st || [])
@@ -12457,6 +12480,14 @@ const Stacks = {
 
   move(id, to){
     if(!id || !P(id)) return;
+    /* Moving somebody *into* a stack is the app's job in every format but
+       Open play — but swapping two names is not a move, and goes through
+       swap() instead. */
+    if(!this.manual()){
+      toast('Drop one name onto another to swap them \u2014 '
+        + (MODE_NAME[S.mode] || 'the format') + ' deals the rest.');
+      this.held = null; renderStacks(); return;
+    }
     const st = this.all();
     st.forEach((s, i) =>{ st[i] = s.filter(x => x !== id); });
     if(to !== 'free'){
@@ -12475,11 +12506,20 @@ const Stacks = {
   start(id){ this.held = id; renderStacks(); },
   end(){ this.held = null; renderStacks(); },
 
-  add(){ this.all().push([]); renderStacks(); save(); },
+  add(){
+    if(!this.manual()) return;
+    S.stacks = this.all().concat([[]]);
+    renderStacks(); save();
+  },
 
   /* Those four walk on. The first court that is free or already recorded
      takes them; whoever was standing on it goes back to the queue. */
   call(){
+    if(!this.manual()){
+      toast('Start the next round instead \u2014 the ' + (MODE_NAME[S.mode] || 'format')
+        + ' deals it.');
+      return;
+    }
     const st = this.all();
     const four = (st[0] || []).slice(0, 4);
     if(four.length < 4){ toast('A stack needs four to walk on.'); return; }
@@ -12566,6 +12606,67 @@ const Stacks = {
     return el ? el.closest('[data-drop]') : null;
   },
 
+  /* Whose name is under the finger, if anybody's. */
+  nameAt(x, y){
+    const el = document.elementFromPoint(x, y);
+    const who = el ? el.closest('[data-who]') : null;
+    return who ? who.getAttribute('data-who') : null;
+  },
+
+  /* Trade two places. Either can be in a stack, in Free, or on a court —
+     and a swap with somebody on a court is the useful one, because that is
+     how you take a player off mid-round and put the next one on without
+     unpicking the whole stack.
+
+     Written as one operation rather than two moves: taking A out and then
+     putting B in changes what "out" means in between, and the second half
+     would be working from a list the first half already rearranged. */
+  swap(a, b){
+    if(!a || !b || a === b) return;
+    if(!P(a) || !P(b)) return;
+    const where = id =>{
+      const ci = S.courts.findIndex(c => c.teams.some(t => t.indexOf(id) >= 0));
+      if(ci >= 0){
+        const ti = S.courts[ci].teams.findIndex(t => t.indexOf(id) >= 0);
+        return { kind: 'court', ci, ti, at: S.courts[ci].teams[ti].indexOf(id) };
+      }
+      if(this.manual()){
+        const si = (S.stacks || []).findIndex(st => (st || []).indexOf(id) >= 0);
+        if(si >= 0) return { kind: 'stack', si, at: S.stacks[si].indexOf(id) };
+      } else if(S.next && S.next.courts){
+        /* The plan the app made for this round. It is rebuilt only when the
+           round number moves on, so an edit here survives until the round
+           ends — which is exactly as long as it should. */
+        for(let ci = 0; ci < S.next.courts.length; ci++){
+          const teams = S.next.courts[ci] || [];
+          for(let ti = 0; ti < teams.length; ti++){
+            const at = (teams[ti] || []).indexOf(id);
+            if(at >= 0) return { kind: 'plan', ci, ti, at };
+          }
+        }
+      }
+      const qi = S.queue.indexOf(id);
+      if(qi >= 0) return { kind: 'queue', at: qi };
+      return null;
+    };
+    const A = where(a), B = where(b);
+    if(!A || !B) return;
+    const put = (spot, id) =>{
+      if(spot.kind === 'court') S.courts[spot.ci].teams[spot.ti][spot.at] = id;
+      else if(spot.kind === 'stack') S.stacks[spot.si][spot.at] = id;
+      else if(spot.kind === 'plan') S.next.courts[spot.ci][spot.ti][spot.at] = id;
+      else S.queue[spot.at] = id;
+    };
+    put(A, b); put(B, a);
+    this.held = null;
+    /* Not invalidatePlan(): throwing the plan away is what would undo the
+       swap that was just made in it. The courts have not changed shape, so
+       there is nothing to replan — only to redraw. */
+    if(A.kind === 'court' || B.kind === 'court') invalidatePlan();
+    renderStacks(); renderCourts(); renderRun(); TV.paint(); pushLive(); save();
+    toast(nm(a) + ' and ' + nm(b) + ' have swapped.');
+  },
+
   up(ev, move, upFn){
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', upFn);
@@ -12576,6 +12677,12 @@ const Stacks = {
     if(g.ghost) g.ghost.remove();
     document.querySelectorAll('.stk-over').forEach(e => e.classList.remove('stk-over'));
     if(!g.on){ this.tap(g.id); return; }        /* never moved: it was a tap */
+    /* A name dropped on another name trades places with it. Asked before the
+       zone, because a chip is inside a stack and both would answer — and
+       landing on somebody is a more specific thing to have meant than
+       landing near them. */
+    const onto = this.nameAt(ev.clientX, ev.clientY);
+    if(onto && onto !== g.id){ this.swap(g.id, onto); return; }
     const zone = this.zoneAt(ev.clientX, ev.clientY);
     const to = zone ? zone.getAttribute('data-drop') : null;
     if(to == null){ this.end(); return; }
@@ -12599,6 +12706,10 @@ const Stacks = {
      order already solves — the stacks fill up in the order they walk on. */
   tap(id){
     if(!id || !P(id)) return;
+    if(!this.manual()){
+      toast('The ' + (MODE_NAME[S.mode] || 'format') + ' decides who is up. Switch to Open play to pick yourself.');
+      return;
+    }
     const st = this.all();
     const at = st.findIndex(pool => (pool || []).indexOf(id) >= 0);
     if(at >= 0){ this.move(id, 'free'); return; }
@@ -12628,7 +12739,11 @@ function stkRows(){
       /* Somebody mid-game cannot be dragged into a stack — they are already
          somewhere. Dimmed and not draggable, rather than draggable and then
          silently refused. */
+      /* On-court rows are a drop target even though they cannot be picked
+         up: dropping somebody onto a player who is mid-game is how you
+         substitute. */
       return `<div class="stk-row${court ? ' locked' : ''}${held === id ? ' held' : ''}"
+        data-who="${id}"
         ${court ? '' : `role="button" tabindex="0"
           onpointerdown="Stacks.down(event,'${id}')"`}>
         ${avatar(p.name, pPhoto(p), 'sm')}
@@ -12655,7 +12770,7 @@ function renderStacks(){
 
   const chip = id =>{
     const p = P(id);
-    return `<span class="stk-chip${held === id ? ' held' : ''}"
+    return `<span class="stk-chip${held === id ? ' held' : ''}" data-who="${id}"
       role="button" tabindex="0" onpointerdown="Stacks.down(event,'${id}')">
       ${avatar(p.name, pPhoto(p), 'sm')}
       <b>${esc(firstName(p.name))}</b><i>${p.g || 0}</i>
@@ -12666,13 +12781,15 @@ function renderStacks(){
      as unfinished rather than as a stack of two that somebody meant. */
   const stack = (s, i) => `<div class="stk-col${i === 0 ? ' up' : ''}" data-drop="${i}">
       <div class="stk-ch">
-        <span class="stk-cl">${i === 0 ? 'Up next' : 'Stack ' + (i + 1)}</span>
+        <span class="stk-cl">${Stacks.manual()
+          ? (i === 0 ? 'Up next' : 'Stack ' + (i + 1))
+          : ordinal(i) + ' next'}</span>
         <span class="stk-cn">${s.length}/4</span>
       </div>
       <div class="stk-slots">
         ${s.map(chip).join('')}
         ${new Array(Math.max(0, 4 - s.length)).fill(0).map(()=>
-          `<span class="stk-empty">Empty</span>`).join('')}
+          `<span class="stk-empty">${Stacks.manual() ? 'Empty' : '\u2014'}</span>`).join('')}
       </div>
     </div>`;
 
@@ -12722,12 +12839,14 @@ function renderStacks(){
         ${courts ? `<div class="stk-cts">${courts}</div>` : ''}
         <div class="stk-h">
           <span class="sos-t-grp">NEXT OFF THE QUEUE</span>
-          <span class="stk-hint">Tap a name to put them in the next stack, and tap again
-            to take them out. The top stack walks on when a court opens.</span>
+          <span class="stk-hint">${Stacks.manual()
+            ? 'Tap a name to put them in the next stack, or drag it. Drop one name on another to swap them. The top stack walks on when a court opens.'
+            : esc((MODE_NAME[S.mode] || 'The format') + ' is dealing these. Drag one name onto another to swap two players — everything else is worked out when the round ends.')}</span>
+          ${Stacks.manual() ? `
           <button class="stk-add" onclick="Stacks.add()">Add a stack</button>
           <button class="stk-call${(st[0] || []).length === 4 ? ' go' : ''}"
             onclick="Stacks.call()">${(st[0] || []).length === 4
-              ? 'Call these four' : 'Call this stack'}</button>
+              ? 'Call these four' : 'Call this stack'}</button>` : ''}
         </div>
         <div class="stk-cols">${st.map(stack).join('')}</div>
 

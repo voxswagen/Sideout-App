@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v146`. Forgetting this means testers see last week's app and
+Currently `sideout-v147`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -505,6 +505,27 @@ throws. `sideout_post_night` refuses a second post for the same code in the
 insert itself rather than checking first, the same shape as
 `sideout_reminder_claim`, so a retry or two phones both thinking they are
 hosting cannot post the night twice.
+
+**The Queue shows what the format has decided, except in Open play.**
+`Stacks.manual()` is the switch. In Open play the stacks are `S.stacks` and
+the organizer fills them; in every other format `Stacks.planned()` reads
+`nextLineups()` — the one place that knows how each format deals — and shows
+court 1's next four, court 2's next four, and so on. Four empty boxes in
+Gauntlet asked somebody to do a job the app had already done, and read as a
+broken screen rather than as a screen with nothing to say. A format with no
+honest preview (River, Court Wars) returns nulls and gets an empty stack,
+which is correct: those rebuild from standings nobody has tapped in yet.
+
+**A name dropped on another name swaps them, in every format.** That is not
+a move and does not go through `move()` — `Stacks.swap()` finds both spots
+first and writes them together, because taking A out and then putting B in
+changes what "out" means in between. A spot is a court, a manual stack, the
+planner's own `S.next.courts`, or the queue. Swapping inside the plan is
+allowed and *sticks*, because `refreshPlan()` only rebuilds when the round
+number moves on — so it survives exactly as long as it should. It therefore
+must **not** call `invalidatePlan()`, which would throw away the plan
+holding the swap that was just made in it; only a swap involving a court
+replans.
 
 **The queue drags with a finger, on pointer events.** HTML5 drag-and-drop
 is a mouse API and never fires from touch, so `Stacks.down/moveTo/up` is the
