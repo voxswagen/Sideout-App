@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v148`. Forgetting this means testers see last week's app and
+Currently `sideout-v149`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -1026,11 +1026,35 @@ or one missed save stops that phone ever pulling again. It also declines
 while a sheet is open or a field has focus, because redrawing everything
 under somebody mid-tap is its own bug.
 
-What is left, stated honestly: two organizers scoring inside the same three
-seconds still resolve last-write-wins. Closing that needs `sideout_save` to
-refuse a write against a row that has moved on, and the client to re-read,
-re-apply and retry — which needs the client to know what its own pending
-change *was*, and a whole-state blob cannot say.
+**And a write that would overwrite somebody is refused and merged.**
+`sideout_save` takes `p_seen`, the `updated_at` the caller last saw, and
+raises `stale` if the row has moved on — which turns "your co-host's points
+vanished" into an answer the client can act on. `Live.rebase()` reads what
+they wrote and puts our own courts back on top of it.
+
+The merge is per court, and `Score.touch()` is what makes it possible: every
+courtside change stamps `c.touched`, so `mergeInto()` can take the server's
+night and keep only the courts this phone touched more recently. Two
+organizers scoring **different** courts therefore both keep their work; two
+scoring the **same** court resolve to whoever touched it last, which is the
+answer they would expect standing next to each other. Players added locally
+are carried across as well — adding is additive and cannot conflict, and
+losing a latecomer to a merge is the latecomer bug arrived at a third way.
+
+A round that has moved on is not merged: advancing rewrites every court, and
+half of round seven beside half of round eight is not a state anybody should
+be handed, so the later round wins outright.
+
+It rebases **once**. A second refusal means two phones are saving faster
+than a round trip and looping on it would be worse than letting the later
+one win.
+
+`p_seen` defaults to null server-side and the client stops sending it after
+one 404, so a project that has not run the migration behaves exactly as
+before — which is what keeps every phone on a stale cache working the day it
+lands. Simulated both ways: with the check, two organizers on different
+courts both survive one refusal and one rebase; without it, one probe and
+then it never asks again.
 
 A phone still shows one night at a time, because `S` is a single global and
 the whole app is one session. That is real and the sheet says so plainly

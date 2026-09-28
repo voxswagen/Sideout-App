@@ -74,9 +74,22 @@ end $function$;
 -- two candidates when the extra arguments of one default. That is the fault
 -- that killed chat for the whole club and blanked Matchups. The twin is
 -- dropped; replace this one, never add beside it.
-create or replace function public.sideout_save(
+-- Replaced, not added beside: an overloaded sideout_* function is a broken
+-- one, and this gained an argument. Both signatures are dropped first.
+--
+-- `p_seen` is the `updated_at` the caller last saw. Given one, the write is
+-- refused if the row has moved on since — which turns "your co-host's points
+-- vanished" into an answer the client can act on: read what they wrote, put
+-- your own courts back on top, and save again. It defaults to null so a
+-- client that does not send it behaves exactly as before, which is what
+-- keeps phones on a stale cache working the day this lands.
+drop function if exists public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid);
+drop function if exists public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid,timestamptz);
+
+create function public.sideout_save(
   p_code text, p_pin text, p_state jsonb, p_snapshot jsonb,
-  p_club text default null, p_listed boolean default null, p_group uuid default null)
+  p_club text default null, p_listed boolean default null, p_group uuid default null,
+  p_seen timestamptz default null)
 returns timestamptz
 language plpgsql
 security definer
@@ -99,6 +112,15 @@ begin
   if exists (select 1 from public.session_tombs
               where code = p_code and killed_at > now() - interval '30 days') then
     raise exception 'session deleted';
+  end if;
+
+  -- Somebody else wrote between the copy this caller is holding and now.
+  -- Raised rather than merged here: the server has no idea which court each
+  -- of them was standing at, and the client does.
+  if p_seen is not null and exists (
+       select 1 from public.sessions s
+        where s.code = p_code and s.updated_at > p_seen) then
+    raise exception 'stale';
   end if;
 
   select pin into existing from public.session_keys where code = p_code;
@@ -131,7 +153,7 @@ begin
 end
 $function$;
 
-grant execute on function public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid)
+grant execute on function public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid,timestamptz)
   to anon, authenticated;
 grant execute on function public.sideout_session_delete(text,text) to authenticated;
 

@@ -606,3 +606,103 @@ as $$
 $$;
 
 grant execute on function public.sideout_open(text, text) to authenticated;
+
+
+-- ═══════════════════════════════════════════════════════════════
+-- PART THREE — two organizers can score the same night
+-- ═══════════════════════════════════════════════════════════════
+-- NOT DEPLOYED. Safe to run on its own, and safe before or after the other
+-- two.
+--
+-- Until this lands, two people scoring inside the same few seconds lose
+-- points: sideout_save writes the whole session as one blob and the later
+-- write wins, so whatever the other one recorded since they last read is
+-- gone. The client already pulls the other's copy every three seconds, so
+-- the hole is small — but it is real, and it is the one that costs a rally
+-- somebody actually played.
+--
+-- Nothing changes for a client that does not send `p_seen`: it defaults to
+-- null and the check is skipped, so every phone on a stale cache carries on
+-- exactly as before the day this is applied.
+
+-- Replaced, not added beside: an overloaded sideout_* function is a broken
+-- one, and this gained an argument. Both signatures are dropped first.
+--
+-- `p_seen` is the `updated_at` the caller last saw. Given one, the write is
+-- refused if the row has moved on since — which turns "your co-host's points
+-- vanished" into an answer the client can act on: read what they wrote, put
+-- your own courts back on top, and save again. It defaults to null so a
+-- client that does not send it behaves exactly as before, which is what
+-- keeps phones on a stale cache working the day this lands.
+drop function if exists public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid);
+drop function if exists public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid,timestamptz);
+
+create function public.sideout_save(
+  p_code text, p_pin text, p_state jsonb, p_snapshot jsonb,
+  p_club text default null, p_listed boolean default null, p_group uuid default null,
+  p_seen timestamptz default null)
+returns timestamptz
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
+declare existing text; stamp timestamptz := now(); prior uuid;
+begin
+  if p_code is null or char_length(p_code) < 4 then raise exception 'bad code'; end if;
+  if p_pin  is null or char_length(p_pin)  < 4 then raise exception 'bad pin';  end if;
+
+  -- A night somebody deleted is not a gap to be filled in. The client matches
+  -- on this wording to put its own copy down rather than beating for ever.
+  --
+  -- A tombstone has one job: outlive the phones still beating a night that was
+  -- deleted. A phone closed or reopened once since is no longer a threat --
+  -- Live.resume() puts its copy down on the way in. Permanent tombstones would
+  -- slowly poison the code space instead, because goLive() rolls a random
+  -- five-character code and one that had ever been deleted could never be
+  -- issued again. Thirty days outlives any stale phone and keeps the pool whole.
+  if exists (select 1 from public.session_tombs
+              where code = p_code and killed_at > now() - interval '30 days') then
+    raise exception 'session deleted';
+  end if;
+
+  -- Somebody else wrote between the copy this caller is holding and now.
+  -- Raised rather than merged here: the server has no idea which court each
+  -- of them was standing at, and the client does.
+  if p_seen is not null and exists (
+       select 1 from public.sessions s
+        where s.code = p_code and s.updated_at > p_seen) then
+    raise exception 'stale';
+  end if;
+
+  select pin into existing from public.session_keys where code = p_code;
+
+  if existing is null then
+    insert into public.session_keys (code, pin) values (p_code, p_pin);
+  elsif existing <> p_pin then
+    raise exception 'PIN does not match';
+  end if;
+
+  -- Only checked when the group is actually changing. A running session saves
+  -- every few seconds, and re-checking each of those would lock out a co-host
+  -- who has the PIN and is legitimately keeping the board up to date.
+  select group_id into prior from public.sessions where code = p_code;
+  if p_group is not null and p_group is distinct from prior
+     and not public.sideout_may_organize_group(p_club, p_group) then
+    raise exception 'not an organizer of that group';
+  end if;
+
+  insert into public.sessions (code, state, snapshot, club, listed, group_id, updated_at)
+  values (p_code, p_state, p_snapshot, p_club, coalesce(p_listed, false), p_group, stamp)
+  on conflict (code) do update
+    set state = excluded.state, snapshot = excluded.snapshot,
+        club = coalesce(excluded.club, public.sessions.club),
+        listed = coalesce(p_listed, public.sessions.listed),
+        group_id = coalesce(p_group, public.sessions.group_id),
+        updated_at = stamp;
+
+  return stamp;
+end
+$function$;
+
+grant execute on function public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid,timestamptz)
+  to anon, authenticated;

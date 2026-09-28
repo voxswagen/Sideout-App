@@ -7455,14 +7455,68 @@ const Live = {
       try{ new BroadcastChannel('sideout').postMessage({ code:this.code, snap:true }); }catch(e){}
       return Date.now();
     }
-    const at = await this.rpc('sideout_save', {
+    const body = {
       p_code: this.code, p_pin: S.pin,
       p_state: this.packState(), p_snapshot: this.snapshot(),
       p_club: CONFIG.club || 'sideout',
       p_listed: !!S.listed,
       p_group: S.groupId || null
-    });
+    };
+    /* What we last saw. The server refuses the write if the row has moved on
+       since then, which is the difference between overwriting somebody and
+       being told to look again.
+
+       Sent only while the function is known to take it: a project that has
+       not run the migration has the six-argument form, and PostgREST matches
+       an RPC by the argument names it is given — so passing an argument that
+       does not exist would 404 every save rather than fail once. First
+       refusal on those grounds turns it off for the rest of the session. */
+    if(this.seenArg !== false && S.pulled) body.p_seen = new Date(S.pulled).toISOString();
+    let at;
+    try{
+      at = await this.rpc('sideout_save', body);
+    }catch(e){
+      if(body.p_seen && this.noSeenArg(e)){
+        this.seenArg = false;
+        delete body.p_seen;
+        at = await this.rpc('sideout_save', body);
+      }
+      else if(this.stale(e)) return await this.rebase(body);
+      else throw e;
+    }
     return Date.parse(at) || Date.now();
+  },
+
+  /* The server has not got the `p_seen` argument. */
+  noSeenArg(e){
+    return (e && e.status === 404)
+      || /could not find the function|schema cache/i.test(String((e && e.detail) || ''));
+  },
+  stale(e){
+    return /stale/i.test(String((e && e.detail) || '') + ' ' + String((e && e.message) || ''));
+  },
+
+  /* Refused because somebody else wrote first. Read what they wrote, put our
+     own courts back on top of it, and write once more. Once — a second
+     refusal means two phones are saving faster than a round trip, and
+     looping on it would be worse than letting the later one win. */
+  async rebase(body){
+    const got = await this.fetchState(this.code);
+    if(!got || !got.state) throw new Error('stale');
+    const merged = this.mergeInto(got.state);
+    if(!merged){
+      /* Our round is ahead of theirs: ours is the write that should stand. */
+      delete body.p_seen;
+      const at2 = await this.rpc('sideout_save', body);
+      return Date.parse(at2) || Date.now();
+    }
+    renderAll(); TV.paint();
+    const again = Object.assign({}, body, {
+      p_state: this.packState(), p_snapshot: this.snapshot()
+    });
+    delete again.p_seen;
+    const at3 = await this.rpc('sideout_save', again);
+    return Date.parse(at3) || Date.now();
   },
   async fetchState(code){
     if(this.mode() === 'local'){
@@ -7922,6 +7976,51 @@ const Live = {
       this.bc.onmessage = ev => { if(ev.data && ev.data.joiner && ev.data.code === this.code) this.collect(); };
     }catch(e){}
   },
+  /* Two saves inside one beat, merged court by court.
+
+     `sideout_save` refuses a write against a row that has moved on since the
+     copy we last saw, which turns a silent overwrite into an answer we can
+     do something about. What we do is take the server's version of the night
+     and put back only the courts this phone touched more recently — so two
+     organizers scoring different courts both keep their work, and two
+     scoring the *same* court resolve to whoever touched it last, which is
+     the honest answer and the one they would expect standing next to it.
+
+     A round that has moved on is not merged. Advancing is a whole-night
+     event that rewrites every court, and half of round seven beside half of
+     round eight is not a state anybody should be handed — so the later round
+     wins outright and the earlier phone simply catches up. */
+  mergeInto(theirs){
+    if(!theirs || !Array.isArray(theirs.courts)) return false;
+    const mine = S.courts || [];
+    const myOrder = (S.order || []).slice();
+    const myPlayers = S.players || {};
+    if((theirs.round || 0) !== (S.round || 0)){
+      if((theirs.round || 0) > (S.round || 0)){ S = Object.assign(blank(), theirs,
+        { live:true, liveCode:this.code, pin:S.pin }); return true; }
+      return false;   /* ours is the later round: our save stands as it is */
+    }
+    const keep = [];
+    theirs.courts.forEach((tc, i) =>{
+      const mc = mine[i];
+      if(mc && (mc.touched || 0) > (tc.touched || 0)) keep.push(i);
+    });
+    S = Object.assign(blank(), theirs, { live:true, liveCode:this.code, pin:S.pin });
+    keep.forEach(i =>{ S.courts[i] = mine[i]; });
+    /* Anybody this phone put on the list who is not on theirs. Adding is
+       additive and cannot conflict, so they are carried across rather than
+       dropped — losing a latecomer to a merge is the same bug as losing one
+       to the queue, arrived at a third way. They go back on the queue too,
+       for the same reason addPlayer() puts them there. */
+    (myOrder || []).forEach(id =>{
+      if(S.players[id] || !myPlayers[id]) return;
+      S.players[id] = myPlayers[id];
+      S.order.push(id);
+      if(S.active && !S.queue.includes(id)) S.queue.unshift(id);
+    });
+    return true;
+  },
+
   /* Take the server's copy when it is ahead of ours — unless this device has
      something of its own that has not landed yet.
 
@@ -11212,6 +11311,13 @@ const Score = {
 
   pts(c){ return (c && c.pts) || { a: 0, b: 0 }; },
 
+  /* When this court was last changed on this phone. It is the whole of the
+     merge: when two organizers save inside the same beat, whichever of them
+     touched a given court more recently keeps it, and every other court is
+     taken from the server. Two people scoring different courts therefore
+     both survive, which is the case that actually happens. */
+  touch(c){ if(c) c.touched = Date.now(); },
+
   legal(c){
     const p = this.pts(c);
     const hi = Math.max(p.a, p.b), lo = Math.min(p.a, p.b);
@@ -11265,6 +11371,7 @@ const Score = {
        to step back to — so it is cleared rather than left pointing at a
        tap that never happened. */
     c.lastPt = null;
+    this.touch(c);
     closeSheet();
     renderRun(); renderCourts(); TV.paint(); pushLive(); save();
     if(this.legal(c)) toast('Ready to record.');
@@ -11303,6 +11410,7 @@ const Score = {
     p[side === 0 ? 'a' : 'b']++;
     c.pts = p;
     c.lastPt = side;
+    this.touch(c);
     renderRun(); renderCourts(); TV.paint(); pushLive(); save();
   },
 
@@ -11314,6 +11422,7 @@ const Score = {
     p[k] = Math.max(0, p[k] - 1);
     c.pts = p;
     c.lastPt = null;
+    this.touch(c);
     renderRun(); renderCourts(); TV.paint(); pushLive(); save();
   },
 
@@ -11329,6 +11438,7 @@ const Score = {
     c.win = win;
     c.sc = { w: Math.max(p.a, p.b), l: Math.min(p.a, p.b) };
     c.ws = undefined;
+    this.touch(c);
     if(rolling()){ if(settled(c)) Spin.arm(ci); else Spin.cancel(ci); }
     renderRun(); renderCourts(); TV.paint(); paintDock();
     Auto.maybeStart(); pushLive(); save();
@@ -11342,6 +11452,7 @@ const Score = {
     if(!c) return;
     Auto.stop();
     c.win = null; c.sc = null; c.ws = undefined;
+    this.touch(c);
     if(rolling()) Spin.cancel(ci);
     renderRun(); renderCourts(); TV.paint(); paintDock(); pushLive(); save();
   },
