@@ -5813,6 +5813,13 @@ body.casting{overflow:hidden}
    browser takes the gesture for scrolling and the finger moves the page
    instead of the name. */
 .stk-chip,.stk-row:not(.locked){touch-action:none}
+/* A drag over a name is a drag, not a text selection. Without this the
+   browser does what it does to any run of text under a moving finger and
+   highlights it blue behind the ghost, so the gesture looks like it failed
+   and picked up words instead. `body.dragging` covers the sweep across
+   everything else on the screen on the way past. */
+.stk-chip,.stk-row,.stk-empty,.stk-slot,body.dragging,body.dragging *{
+  -webkit-user-select:none;user-select:none}
 /* The copy that follows the finger. Fixed and pointer-events:none so it
    never becomes the thing under the cursor when we ask what is. */
 .stk-ghost{position:fixed;top:0;left:0;z-index:80;pointer-events:none;
@@ -5833,6 +5840,10 @@ body.casting{overflow:hidden}
    stack somebody meant to leave short. */
 .stk-empty{display:flex;align-items:center;min-height:38px;padding:0 10px;border-radius:10px;
   border:1px dashed var(--sos-chevron);font-size:14px;color:var(--sos-dim)}
+/* The column carries the outline, but the seat the name is about to land in
+   is the thing being answered, so it lights too. Dropping onto a column with
+   four dashed boxes in it and no idea which one takes you reads as a guess. */
+.stk-over .stk-empty{border-color:var(--sos-accent);border-style:solid;color:var(--sos-accent)}
 
 .stk-free{background:var(--sos-card);border:1px solid var(--sos-hair);border-radius:14px;
   padding:11px 13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:58px}
@@ -12647,16 +12658,57 @@ const Stacks = {
     return waitingIds().filter(id => !inStack.has(id));
   },
 
+  /* Putting somebody into the planner's own next round. Into the first free
+     seat on that court, or nowhere if it is already four — a fifth name on a
+     court is not a thing the night can deal, and silently dropping one of
+     the others to make room would be worse than saying so. */
+  planMove(id, to){
+    this.held = null;
+    /* The queue is deliberately left alone here. In a planned format the plan
+       is pencil — `waitingIds()` reads `S.queue`, so taking somebody out of it
+       to put them in the next round makes them neither on court nor waiting,
+       which is the latecomer bug arrived at from a third direction. They walk
+       on when the round ends and `nextRound()` deals them. */
+    const plan = S.next && S.next.courts;
+    /* River and Court Wars rebuild the next round from standings nobody has
+       tapped in yet, and King of the Court fills a court at a time, so some or
+       all of the plan is genuinely not written yet. Say that rather than
+       accepting the drop and appearing to lose the name. */
+    if(!plan){
+      toast('Nothing is pencilled in for the next round yet \u2014 '
+        + (MODE_NAME[S.mode] || 'this format') + ' works it out when the round ends.');
+      renderStacks(); return;
+    }
+    if(to === 'free'){
+      /* Out of the plan. They stay on the queue, which is where they were. */
+      plan.forEach(teams => (teams || []).forEach((t, ti) =>{
+        teams[ti] = t.filter(x => x !== id); }));
+      renderStacks(); save(); return;
+    }
+    const ci = Number(to);
+    const teams = plan[ci];
+    if(!teams){
+      toast('Court ' + (ci + 1) + ' is not filled in yet \u2014 that one is worked out when the round ends.');
+      renderStacks(); return;
+    }
+    const count = teams.reduce((n, t) => n + (t || []).filter(Boolean).length, 0);
+    if(count >= 4){ toast('That court is full. Swap somebody out instead.'); renderStacks(); return; }
+    /* Off whichever court they were pencilled in for, then onto this one. */
+    S.next.courts.forEach(cs => (cs || []).forEach((t, ti) =>{ cs[ti] = t.filter(x => x !== id); }));
+    const side = (teams[0] || []).length <= (teams[1] || []).length ? 0 : 1;
+    teams[side] = (teams[side] || []).concat([id]);
+    renderStacks(); renderCourts(); TV.paint(); pushLive(); save();
+  },
+
   move(id, to){
     if(!id || !P(id)) return;
-    /* Moving somebody *into* a stack is the app's job in every format but
-       Open play — but swapping two names is not a move, and goes through
-       swap() instead. */
-    if(!this.manual()){
-      toast('Drop one name onto another to swap them \u2014 '
-        + (MODE_NAME[S.mode] || 'the format') + ' deals the rest.');
-      this.held = null; renderStacks(); return;
-    }
+    /* In a planned format this writes into the plan rather than being
+       refused. Swapping two names already edits `S.next` and sticks, so
+       refusing the simpler thing — putting somebody into a seat the planner
+       left empty — was the app being inconsistent with itself about who is
+       allowed to change its mind. The plan is a suggestion; overriding it is
+       the organizer's job, and it survives until the round ends either way. */
+    if(!this.manual()){ this.planMove(id, to); return; }
     const st = this.all();
     st.forEach((s, i) =>{ st[i] = s.filter(x => x !== id); });
     if(to !== 'free'){
@@ -12755,6 +12807,9 @@ const Stacks = {
     if(!g.on){
       if(Math.abs(ev.clientX - g.x) + Math.abs(ev.clientY - g.y) < this.DRAG) return;
       g.on = true;
+      /* Whatever the press already selected before we knew it was a drag. */
+      try{ const sel = window.getSelection(); if(sel) sel.removeAllRanges(); }catch(e){}
+      document.body.classList.add('dragging');
       this.start(g.id);
       const ghost = document.createElement('div');
       ghost.className = 'stk-ghost';
@@ -12842,6 +12897,7 @@ const Stacks = {
     window.removeEventListener('pointercancel', upFn);
     const g = this.grab;
     this.grab = null;
+    document.body.classList.remove('dragging');
     if(!g) return;
     if(g.ghost) g.ghost.remove();
     document.querySelectorAll('.stk-over').forEach(e => e.classList.remove('stk-over'));
@@ -12876,7 +12932,17 @@ const Stacks = {
   tap(id){
     if(!id || !P(id)) return;
     if(!this.manual()){
-      toast('The ' + (MODE_NAME[S.mode] || 'format') + ' decides who is up. Switch to Open play to pick yourself.');
+      /* Same rule as a drag: in the plan, a tap takes somebody out of it and
+         an empty seat takes them back. */
+      const inPlan = (S.next && S.next.courts || []).some(cs =>
+        (cs || []).some(t => (t || []).indexOf(id) >= 0));
+      if(inPlan){ this.planMove(id, 'free'); return; }
+      const plan = S.next && S.next.courts;
+      if(!plan){ this.planMove(id, 0); return; }   /* says there is no plan yet */
+      const room = plan.findIndex(cs =>
+        cs && cs.reduce((n, t) => n + (t || []).filter(Boolean).length, 0) < 4);
+      if(room < 0){ toast('Every court is full for the next round. Drop one name on another to swap them.'); return; }
+      this.planMove(id, room);
       return;
     }
     const st = this.all();
@@ -12958,7 +13024,7 @@ function renderStacks(){
       <div class="stk-slots">
         ${s.map(chip).join('')}
         ${new Array(Math.max(0, 4 - s.length)).fill(0).map(()=>
-          `<span class="stk-empty">${Stacks.manual() ? 'Empty' : '\u2014'}</span>`).join('')}
+          `<span class="stk-empty">Empty</span>`).join('')}
       </div>
     </div>`;
 
@@ -13010,7 +13076,7 @@ function renderStacks(){
           <span class="sos-t-grp">NEXT OFF THE QUEUE</span>
           <span class="stk-hint">${Stacks.manual()
             ? 'Tap a name to put them in the next stack, or drag it. Drop one name on another to swap them. The top stack walks on when a court opens.'
-            : esc((MODE_NAME[S.mode] || 'The format') + ' is dealing these. Drag one name onto another to swap two players — everything else is worked out when the round ends.')}</span>
+            : esc((MODE_NAME[S.mode] || 'The format') + ' dealt these. Drag or tap a name to change who is up — drop one on another to swap them. It holds until the round ends.')}</span>
           ${Stacks.manual() ? `
           <button class="stk-add" onclick="Stacks.add()">Add a stack</button>
           <button class="stk-call${(st[0] || []).length === 4 ? ' go' : ''}"
@@ -13236,7 +13302,11 @@ function planLevels(projected){
   syncCourtLevels();
   const proj = projected ? projectedGames() : (id => P(id).g);
   const pool = { adv:[], int:[], beg:[] };
-  activeIds().forEach(id => pool[P(id).level].push(id));
+  /* A level that is not one of the three bands lands in the middle rather
+     than throwing. Levels arrive from the joiners table as well as from the
+     roster, so one unexpected value used to take the whole plan — and with it
+     the Queue screen — down for the night. */
+  activeIds().forEach(id => (pool[P(id).level] || pool.int).push(id));
   Object.keys(pool).forEach(l => { pool[l] = shuffle(pool[l]).sort((a,b)=> proj(a) - proj(b)); });
   const near = { adv:['int','beg'], int:['adv','beg'], beg:['int','adv'] };
   const courts = [];

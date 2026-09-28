@@ -516,6 +516,35 @@ broken screen rather than as a screen with nothing to say. A format with no
 honest preview (River, Court Wars) returns nulls and gets an empty stack,
 which is correct: those rebuild from standings nobody has tapped in yet.
 
+**An empty seat takes a name, in every format that has one.** `move()` used
+to refuse any drop in a planned format and offer the swap instead, which was
+the app being inconsistent with itself: a swap already edits `S.next` and
+sticks, so refusing the simpler thing — putting somebody into a seat the
+planner left empty — said the plan was both editable and not. `Stacks.planMove()`
+writes into `S.next.courts` for a drag *and* for a tap, onto the side with
+fewer names, and refuses a fifth on a court rather than dropping one of the
+four to make room.
+
+It deliberately does **not** touch `S.queue`. In a planned format the plan is
+pencil and `waitingIds()` reads the queue, so taking somebody out of it to
+pencil them in makes them neither on court nor waiting — the latecomer bug
+arrived at from a third direction, and the reachability check is what caught
+it again.
+
+River, Court Wars and King of the Court have no plan to edit, or only part of
+one: `nextLineups()` returns nulls for a court it cannot honestly preview.
+Those say so — a drop that is accepted and changes nothing reads as a name
+being lost. `planLevels()` also stopped throwing on a `level` outside the
+three bands; one unexpected value from the joiners table used to take the
+whole Queue screen down for the night.
+
+**A drag over a name is a drag, not a text selection.** Nothing carried
+`user-select:none`, so the browser highlighted every name the finger swept
+past and the gesture looked like it had picked up words instead of a player.
+The chips, rows and empty slots state it, `body.dragging` covers the sweep
+across everything else, and `moveTo()` clears whatever the press had already
+selected before the eight-pixel threshold told us it was a drag.
+
 **A name dropped on another name swaps them, in every format.** That is not
 a move and does not go through `move()` — `Stacks.swap()` finds both spots
 first and writes them together, because taking A out and then putting B in
