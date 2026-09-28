@@ -7580,6 +7580,7 @@ const Live = {
      next save() beats the whole thing straight back up. */
   orphaned(){
     clearInterval(this.joinT); this.joinT = null;
+    clearInterval(this.pullT); this.pullT = null;
     try{ clearInterval(this.timer); this.timer = null; }catch(e){}
     this.code = null;
     S.live = false; S.liveCode = null; S.pin = null;
@@ -7860,6 +7861,7 @@ const Live = {
     S.ended = true; S.endedAt = Date.now();
     try{ await this.saveAll(); }catch(e){}
     clearInterval(this.joinT); this.joinT = null;
+    clearInterval(this.pullT); this.pullT = null;
   },
   async goLive(){
     this.lastError = null;
@@ -7901,15 +7903,60 @@ const Live = {
   startHost(){
     clearInterval(this.joinT);
     this.joinT = setInterval(()=> this.collect(), 4000);
+    /* And the state, not only the joiners.
+
+       A hosting phone used to poll for people arriving and nothing else, so
+       it never learned what another organizer had recorded. That is what
+       made a session feel like it belonged to a device: two people could
+       both hold the night, both write to it, and neither could see the
+       other — so the second one's next beat quietly overwrote the first's
+       scores, and the app had to warn about "the session you are running"
+       as though it were owned.
+
+       It is not owned. Anybody who can organize this club can hold it, and
+       now they all see the same night within a few seconds of each other. */
+    clearInterval(this.pullT);
+    this.pullT = setInterval(()=> this.pullState(), 3000);
     try{
       this.bc = this.bc || new BroadcastChannel('sideout');
       this.bc.onmessage = ev => { if(ev.data && ev.data.joiner && ev.data.code === this.code) this.collect(); };
     }catch(e){}
   },
+  /* Take the server's copy when it is ahead of ours — unless this device has
+     something of its own that has not landed yet.
+
+     `dirty` is the whole of that guard. It is set the moment anything
+     schedules a beat and cleared when that beat's save comes back, so the
+     window where a pull could throw away a local tap is exactly the window
+     where a save is in flight. Outside it, the server's copy is strictly
+     newer than ours and taking it is the right thing.
+
+     The consequence worth being honest about: two organizers scoring inside
+     the same three seconds still resolve last-write-wins. That is a much
+     smaller hole than never seeing each other at all, and closing it needs
+     the save to refuse a write against a row that has moved on. */
+  async pullState(){
+    if(!S.live || !this.code || this.adopting || this.dirty) return;
+    if(document.hidden) return;
+    let got = null;
+    try{ got = await this.fetchState(this.code); }catch(e){ return; }
+    if(!got || !got.state) return;
+    if(!(got.at > (S.pulled || 0) + 1500)) return;
+    /* Nothing that would pull the screen out from under somebody mid-tap:
+       a sheet open, or a field being typed into, means wait for the next
+       pass rather than redraw everything underneath them. */
+    const busy = document.getElementById('veil');
+    if(busy && busy.classList.contains('on')) return;
+    const el = document.activeElement;
+    if(el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+    this.adopt(got.state, this.code, S.pin);
+  },
+
   async stopLive(){
     await this.finish();
     S.live = false;
     clearInterval(this.joinT); this.joinT = null;
+    clearInterval(this.pullT); this.pullT = null;
     renderLive(); save();
     toast('Session is offline again.');
   },
@@ -8097,11 +8144,15 @@ const Live = {
   beat(){
     if(!S.live || this.adopting) return;
     if(!this.ensureCode()) return;
+    /* Something local is waiting to be written, so the state poll must not
+       take the server's copy over the top of it. */
+    this.dirty = true;
     clearTimeout(this._d);
     this._d = setTimeout(()=>{
       this.saveAll()
         .then(at =>{
           S.pulled = at;
+          this.dirty = false;
           if(this.offline){ this.offline = false; renderLive(); }
         })
         .catch(e =>{
@@ -8109,6 +8160,13 @@ const Live = {
              fault to retry through — it is the answer, and beating on
              regardless is what put a deleted session back on everybody's Home
              from whichever phone still had it open. */
+          /* Cleared on the failure too, or a single missed save stops this
+             phone ever pulling again. It is safe: pullState only adopts a
+             copy that is strictly newer than ours, so if our write is the
+             only one that was attempted there is nothing ahead to take. If
+             somebody else did write, theirs landed and ours did not — and
+             theirs is the one the server has. */
+          this.dirty = false;
           if(this.deadSession(e)){ this.orphaned(); toast('That session was deleted.'); return; }
           if(!this.offline){ this.offline = true; renderLive(); }
         });
@@ -20211,6 +20269,7 @@ function freshSession(){
   try{ Live.stop && Live.stop(); }catch(e){}
   try{ if(Live.timer){ clearInterval(Live.timer); Live.timer = null; } }catch(e){}
   try{ if(Live.joinT){ clearInterval(Live.joinT); Live.joinT = null; } }catch(e){}
+  try{ if(Live.pullT){ clearInterval(Live.pullT); Live.pullT = null; } }catch(e){}
   Live.code = null;
   S = blank();
   CONFIG.club = keepClub;
@@ -29037,12 +29096,19 @@ async function manageSession(code, title){
   }
   const swap = S.active && S.liveCode && S.liveCode !== code;
   if(swap){
-    openSheet(`<h3>Leave the session you are running?</h3>
-      <p class="sub">This device is hosting <b>${esc(S.title || 'a session')}</b>.
-        Opening <b>${esc(title || code)}</b> swaps to it. The other one keeps running
-        and its own board stays live \u2014 you can come back to it the same way.</p>
-      <button class="btn btn-go" onclick="doManageSession('${esc(code)}')">Open it anyway</button>
-      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Stay where I am</button>`);
+    /* Nothing is owned here. A phone shows one night at a time because the
+       whole app is one session, so opening another swaps what is on screen —
+       it does not take anything away from anybody. The old wording said
+       "leave the session you are running", which made it sound like this
+       device held a lock, and it never did: any organizer can open any of
+       the club's nights, and they all see the same one. */
+    openSheet(`<h3>Open ${esc(title || code)} instead?</h3>
+      <p class="sub">This phone is showing <b>${esc(S.title || 'another night')}</b>.
+        A phone shows one at a time, so this swaps which one you are looking at.
+        Nothing happens to the other \u2014 it carries on, its board stays live, and
+        you or anybody else who organizes can open it again whenever.</p>
+      <button class="btn btn-go" onclick="doManageSession('${esc(code)}')">Open it</button>
+      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Stay on this one</button>`);
     return;
   }
   doManageSession(code);

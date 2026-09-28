@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v147`. Forgetting this means testers see last week's app and
+Currently `sideout-v148`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -1010,19 +1010,32 @@ image inside a box, and faces came out letterboxed. The square one is
 `cropSquare()` now. Both are live and they do different jobs; a file this
 size will hide a duplicate declaration indefinitely, and nothing warns.
 
-**Two organizers can both hold a session, and that is by design — but they
-cannot both score it.** `sideout_save` takes the code and the PIN and writes
-the *whole state* as one blob, last write wins; the SQL even says a co-host
-with the PIN must not be locked out. What is missing is the other half:
-`Live.collect()` polls only for **joiners**, never for state, so a hosting
-phone never learns what another host recorded. Two people scoring at once
-today lose points — each beat silently overwrites everything the other did
-since they last adopted.
+**A session is not owned by a device, and the app no longer behaves as
+though it were.** Any organizer of the club can hold any of its nights —
+that always worked — but a hosting phone polled only for **joiners** and
+never for state, so it never learned what another organizer had recorded.
+That is what made it feel device-bound: two people could both hold the
+night, both write to it, and neither could see the other, so the second
+one's next beat quietly overwrote the first's scores.
 
-Making that safe is not a small change. It needs hosts to pull state as well
-as joiners, and `sideout_save` to refuse a write against a row that has
-moved on so the client can re-read, re-apply and retry. Until then the honest
-position is one scorer at a time, and the app should not imply otherwise.
+`Live.pullState()` runs on a 3s timer beside the joiners poll and adopts the
+server's copy whenever it is strictly newer than `S.pulled`. `Live.dirty` is
+the whole of the guard: set the moment anything schedules a beat, cleared
+when that beat's save comes back **or fails** — cleared on the failure too,
+or one missed save stops that phone ever pulling again. It also declines
+while a sheet is open or a field has focus, because redrawing everything
+under somebody mid-tap is its own bug.
+
+What is left, stated honestly: two organizers scoring inside the same three
+seconds still resolve last-write-wins. Closing that needs `sideout_save` to
+refuse a write against a row that has moved on, and the client to re-read,
+re-apply and retry — which needs the client to know what its own pending
+change *was*, and a whole-state blob cannot say.
+
+A phone still shows one night at a time, because `S` is a single global and
+the whole app is one session. That is real and the sheet says so plainly
+now; what it used to say was "leave the session you are running", which
+implied a lock this app has never had.
 
 `sideout_open` is the part that could be done: an owner or organizer is
 handed the PIN for any session of their club rather than being asked for it,
