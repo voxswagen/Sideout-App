@@ -20527,39 +20527,42 @@ async function startOrganizing(){
   /* the role may not have been read yet on a cold open */
   if(!Auth.me) await Auth.whoami();
   if(canOrganize()){
-    /* A session is still running on this device: setting up a second
-       one here would tear down the first, so say so rather than
-       quietly reopening what is already on. */
-    /* Running one night no longer stops you setting up another. It used to
-       refuse outright, which is wrong for the job: an organizer takes next
-       Thursday's entries while tonight is still on court, and the one that
-       is running keeps its own code and its own link either way. The sheet
-       says plainly what happens to the night in progress rather than
-       pretending nothing does. */
+    /* Running one night does not stop you setting up another — an organizer
+       takes next Thursday's entries while tonight is still on court. What this
+       sheet is for is the screen, not the session: the app shows one night at
+       a time, so the new one takes this one's place in front of you.
+
+       It used to say that setting another one up "puts tonight down on this
+       phone", which is the device-ownership story the app no longer tells and
+       never should have. Nothing happens to the night. It is on the server,
+       every organizer can open it, and this phone was only ever the one
+       looking at it. */
     if(S.active){
-      openSheet(`<h3>${esc(S.title || 'A session')} is running</h3>
-        <p class="sub">Setting another one up here puts tonight down on <b>this phone</b>.
-          It carries on for everybody else on its own link and its code
-          <b>${esc(S.liveCode || '')}</b>, and you can pick it up again from What's on.</p>
-        <button class="btn btn-go" onclick="closeSheet();freshSession()">Set up another</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('run')">Back to tonight</button>`);
+      openSheet(`<h3>You are on ${esc(S.title || 'tonight')}</h3>
+        <p class="sub">Sideout shows one night at a time, so a new one takes its place on
+          screen. ${esc(S.title || 'Tonight')} carries on exactly as it is — same link, same
+          code <b>${esc(S.liveCode || '')}</b>, same people — and any organizer can open it
+          from Sessions, you included.</p>
+        <button class="btn btn-go" onclick="closeSheet();freshSession()">Set up another night</button>
+        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('run')">
+          Stay on ${esc(S.title || 'tonight')}</button>`);
       return;
     }
     /* Last night's roster is still sitting in the setup screen. Offer
        a clean sheet rather than making somebody delete eight players. */
-    /* Two different situations wear the same face here. Either this
-       device is managing a session that exists on the server and has
-       its own link, or the setup screen simply still has last
-       night's roster sitting in it. Say which, because the
-       reassurance somebody needs is different. */
+    /* Two different situations wear the same face here. Either a session that
+       exists on the server is the one open on screen, or the compose screen
+       simply still has last night's roster sitting in it. Say which, because
+       the reassurance somebody needs is different — and the first one is not
+       about this device either. */
     const left = Object.keys(S.players || {}).length;
     if(S.liveCode){
       openSheet(`<h3>Start a new open play?</h3>
-        <p class="sub">This device is set up on <b>${esc(sessionTitle())}</b>${
+        <p class="sub">You have <b>${esc(sessionTitle())}</b> open${
           left ? ` with <b>${left}</b> player${left === 1 ? '' : 's'} on the list` : ''}.
-          Starting a new one leaves that session exactly as it is — it keeps its link, its code
-          <b>${esc(S.liveCode)}</b> and everyone who joined, and you can pick it up again from its
-          card on Home whenever you like.</p>
+          Starting a new one leaves it exactly as it is — same link, same code
+          <b>${esc(S.liveCode)}</b>, everyone who joined still on it — and it is there on
+          Sessions whenever you want it back.</p>
         <button class="btn btn-go" onclick="closeSheet();freshSession()">Start a new one</button>
         <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('new')">
           Go back to ${esc(sessionTitle())}</button>`);
@@ -29380,8 +29383,12 @@ async function doManageSession(code){
   }
   Live.adopt(row.state, code, row.pin);
   go(S.active ? 'play' : 'setup');
-  toast(S.active ? 'You are running this session from this device.'
-                 : 'You are managing this session from this device.');
+  /* Not "from this device". Opening a night does not take it off anybody —
+     `sideout_save` refuses a stale write and `Live.pullState()` keeps both
+     organizers looking at the same thing, so this is simply the night you now
+     have open. */
+  toast(S.active ? 'You are running this session.'
+                 : 'You are managing this session.');
 }
 
 function openResume(){
@@ -29482,7 +29489,8 @@ function renderLive(){
     ${Live.offline ? '<p class="conn bad" style="margin:0 0 10px">Cannot reach the server \u2014 still running here, and it will catch up when the signal is back.</p>' : ''}
     <div class="live-code">${S.liveCode}</div>
     <div class="live-pin"><span>Host PIN</span><b>${S.pin || '\u2014'}</b>
-      <em>Type this with the code on another device to carry on there.</em></div>
+      <em>An organizer does not need this. It is for anybody else you want helping
+        run the night \u2014 they type it with the code.</em></div>
     <div class="live-qr" id="live-qr"></div>
     <p class="live-url">${esc(url)}</p>
     <button class="btn btn-go" style="width:100%" onclick="shareJoinCard()">Send the invite \u2014 QR and link</button>
@@ -29516,7 +29524,8 @@ function liveSheet(){
     <button class="btn btn-go" onclick="shareJoinCard()">Send the invite \u2014 QR and link</button>
     <button class="btn btn-quiet" style="margin-top:8px" onclick="copyLink()">Just the link</button>
     <div class="live-pin" style="margin:12px 0 0"><span>Host PIN</span><b>${S.pin || '\u2014'}</b>
-      <em>Yours, not theirs \u2014 it moves the session to another device.</em></div>
+      <em>Yours, not theirs \u2014 it lets somebody else help run the night, rather
+        than join it.</em></div>
     <button class="btn btn-quiet" style="margin-top:10px" onclick="closeSheet()">Done</button>`);
   setTimeout(()=> drawQR('sheet-qr', url, 240), 40);
 }

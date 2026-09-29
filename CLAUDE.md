@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v151`. Forgetting this means testers see last week's app and
+Currently `sideout-v152`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -1117,6 +1117,26 @@ A phone still shows one night at a time, because `S` is a single global and
 the whole app is one session. That is real and the sheet says so plainly
 now; what it used to say was "leave the session you are running", which
 implied a lock this app has never had.
+
+**Fixing the architecture did not fix the words, and five strings were still
+telling the old story.** The sheet an organizer actually hits said setting
+another night up "puts tonight down on **this phone**", which reads as a
+teardown — and nothing happens to the night at all. It is on the server, any
+organizer can open it, and the phone was only ever the one looking at it. The
+sheet is about the *screen* now: "Sideout shows one night at a time, so a new
+one takes its place on screen." The others were `manageSession()`'s "You are
+running this session **from this device**", the second sheet's "**This device**
+is set up on…", and the two PIN captions, one of which said the PIN "moves the
+session to another device" — it moves nothing; it lets somebody who is not an
+organizer help run the night, which is the only thing it has ever been for.
+Both sheets also still pointed at "What's on" and "its card on Home", neither
+of which exists since Today became a feed; the nights are on Sessions.
+
+The lesson is worth the space: a change of model leaves its old story lying
+around in copy, and copy is the only part of it anybody reads. `grep -n "this
+phone\|this device"` is the sweep — most hits are correct (a draft, keep me
+signed in, local mode, the theme) because those things genuinely are local.
+The test is whether the sentence claims the device holds the *session*.
 
 `sideout_open` is the part that could be done: an owner or organizer is
 handed the PIN for any session of their club rather than being asked for it,
