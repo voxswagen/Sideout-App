@@ -1622,6 +1622,34 @@ select.mini{padding:6px 8px;border-radius:var(--r-s);border:1px solid var(--edge
 .log-more{margin-top:10px;text-align:center;width:100%}
 .log-q{margin-bottom:0}
 .ros-tools{display:flex;flex-direction:column;gap:9px;margin-bottom:13px}
+.ros-find{display:flex;align-items:center;gap:8px}
+.ros-find .find{flex:1 1 auto;min-width:0}
+/* Shrink-to-fit on a button is `width:auto`, and this file has been caught by
+   that twice — `flex:none` is what keeps it beside the search box. */
+.ros-more{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;
+  padding:0 13px;border-radius:11px;border:1px solid var(--sos-sep);
+  background:var(--sos-card);color:var(--sos-fg);font-size:13.5px;font-weight:600;
+  cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ros-more svg{width:16px;height:16px}
+.ros-more.on{border-color:var(--sos-accent);color:var(--sos-accent)}
+.ros-more i{font-style:normal;min-width:18px;height:18px;display:inline-flex;
+  align-items:center;justify-content:center;border-radius:9px;font-size:11px;
+  background:var(--sos-accent);color:#fff}
+.ros-fold{display:flex;flex-direction:column;gap:9px}
+
+/* The Manage screen's own head. Same shape as the profile and a group's page —
+   a name, a line of context, then a hairline-divided strip — because a night
+   is introduced the same way a person or a club is. */
+.mg-head{background:var(--sos-card);border:1px solid var(--sos-hair);border-radius:16px;
+  padding:15px 16px 0;margin-bottom:14px}
+.mg-tx h1{font-family:inherit;font-size:24px;line-height:1.15;margin:3px 0 4px}
+.mg-tx p{margin:0 0 13px;font-size:13px;color:var(--sos-dim)}
+.mg-strip{display:flex;border-top:1px solid var(--sos-hair);margin:0 -16px}
+.mg-cell{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:11px 4px 13px;border-left:1px solid var(--sos-hair)}
+.mg-cell:first-child{border-left:0}
+.mg-cell b{font-size:19px;line-height:1}
+.mg-cell em{font-style:normal;font-size:11px;color:var(--sos-dim);text-align:center}
 /* search box */
 .find{position:relative;display:flex;align-items:center}
 .find-i{position:absolute;left:12px;width:16px;height:16px;pointer-events:none;
@@ -6798,6 +6826,11 @@ body.casting{overflow:hidden}
 </section>
 
 <section class="screen" id="screen-players">
+  <!-- Every other redesigned screen names itself; this one opened on "Session
+       settings" with no indication of which night's settings they were, which
+       on a phone that has been in a pocket for twenty minutes is the first
+       question. -->
+  <div class="mg-head" id="mg-head"></div>
   <div class="panel">
     <h2>Session settings</h2>
     <label class="label" style="display:block;margin-bottom:6px">Format</label>
@@ -6913,6 +6946,7 @@ body.casting{overflow:hidden}
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18V9M10 18V5M16 18v-6M22 18H2"/></svg>
         Set by DUPR</button>
     </div>
+    <label class="label" style="display:block;margin:2px 0 6px">Level for anyone added above</label>
     <span class="seg-pick wide" role="group" aria-label="Level for new players" style="margin-bottom:12px">
       <button class="sp adv" id="lvlpick2-adv" aria-pressed="false" onclick="setNewLevel('adv')">Advanced</button>
       <button class="sp int" id="lvlpick2-int" aria-pressed="true"  onclick="setNewLevel('int')">Intermediate</button>
@@ -9721,14 +9755,24 @@ function rosterTools(){
     onclick="setRosterLv('${v}')">${label}${count != null ? '<i>' + count + '</i>' : ''}</button>`;
   const side = (v, label) => `<button class="${rosterSx === v ? 'on' : ''}"
     onclick="setRosterSx('${v}')">${label}</button>`;
+  const narrowing = (rosterLv !== 'all' ? 1 : 0) + (rosterSx !== 'all' ? 1 : 0);
+  const open = rosterOpen || narrowing > 0;
   return `<div class="ros-tools">
-    <div class="find">
-      <svg class="find-i" viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 18 18"/></svg>
-      <input type="text" class="ros-q" placeholder="Search ${n} players" autocomplete="off"
-        value="${esc(S.rosterQ || '')}" oninput="setRosterQ(this.value)">
-      <button class="ros-clear" onclick="clearRosterQ(this)" aria-label="Clear the search"
-        ${S.rosterQ ? '' : 'hidden'}>\u2715</button>
+    <div class="ros-find">
+      <div class="find">
+        <svg class="find-i" viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 18 18"/></svg>
+        <input type="text" class="ros-q" placeholder="Search ${n} players" autocomplete="off"
+          value="${esc(S.rosterQ || '')}" oninput="setRosterQ(this.value)">
+        <button class="ros-clear" onclick="clearRosterQ(this)" aria-label="Clear the search"
+          ${S.rosterQ ? '' : 'hidden'}>\u2715</button>
+      </div>
+      <button class="ros-more${open ? ' on' : ''}" onclick="toggleRosterFilters()"
+        aria-expanded="${open}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        ${narrowing ? '<i>' + narrowing + '</i>' : 'Filter'}</button>
     </div>
+    <div class="ros-fold"${open ? '' : ' hidden'}>
     <div class="ros-chips">
       ${chip('all', 'All levels', ids.length)}
       ${chip('adv', 'Adv', lvN('adv'))}
@@ -9741,6 +9785,7 @@ function rosterTools(){
         ${Object.keys(SORTS).map(k => `<button class="sortb" aria-pressed="${(S.rosterSort||'added')===k}"
           onclick="setRosterSort('${k}')">${SORTS[k]}</button>`).join('')}
       </div>
+    </div>
     </div>
   </div>`;
 }
@@ -10888,16 +10933,28 @@ function loadDemo(){
   toast(added + ' sample player' + (added===1?'':'s') + ' ready.');
 }
 
+/* The search is not always what emptied the list — a level or side chip can
+   do it too, and blaming a search nobody typed reads as a fault. */
 function noHits(what){
-  return `<div class="empty"><span class="glyph">${icon('search')}</span>Nobody called “${esc(S.rosterQ)}” ${what}.</div>`;
+  const q = String(S.rosterQ || '').trim();
+  return `<div class="empty"><span class="glyph">${icon('search')}</span>${
+    q ? `Nobody called “${esc(q)}” ${what}.`
+      : `Nobody matching those filters ${what}.`}</div>`;
 }
 /* Two filters over the same list: what standard, and which side. Both are
    about looking rather than about the night, so neither is saved — come
    back tomorrow to a list showing three of your thirty and you would think
    people had dropped out. */
 let rosterLv = 'all', rosterSx = 'all';
-function setRosterLv(v){ rosterLv = v; renderRoster(); }
-function setRosterSx(v){ rosterSx = v; renderRoster(); }
+/* Three rows of filters above a list of ten names is four controls between an
+   organizer and the thing they came to tap. They fold away, and the button
+   says how many are narrowing the list so a filtered list can never look like
+   a short one. Open whenever something is on, because a hidden filter that is
+   doing something is worse than a visible one that is not. */
+let rosterOpen = false;
+function toggleRosterFilters(){ rosterOpen = !rosterOpen; renderRoster(); renderPlayers(); }
+function setRosterLv(v){ rosterLv = v; renderRoster(); renderPlayers(); }
+function setRosterSx(v){ rosterSx = v; renderRoster(); renderPlayers(); }
 function rosterShown(ids){
   return ids.filter(id =>{
     const p = P(id); if(!p) return false;
@@ -10945,7 +11002,12 @@ function rosterRows(){
 function playingRows(){
   const live = S.order.filter(id => P(id) && !P(id).out);
   const on = onCourtIds();
-  const rows = sortedRoster(live).map(id=>{
+  /* `rosterShown` was missing here, so the level and side chips drawn above
+     this list did nothing to it — the search worked, because that lives in
+     `sortedRoster`, and tapping "Adv" simply redrew all thirty names. A
+     control that is on screen and has no effect is worse than one that is not
+     there, and it took folding the filters away to notice. */
+  const rows = sortedRoster(rosterShown(live)).map(id=>{
     const p = P(id);
     const where = on.includes(id) ? 'on court' : (S.active ? 'waiting' : '');
     const when = timeAgo(p.at, true);
@@ -14338,10 +14400,41 @@ function renderPlayers(){
   const live = S.order.filter(id => P(id) && !P(id).out);
   const out  = S.order.filter(id => P(id) && P(id).out);
   document.getElementById('active-count').textContent = live.length + ' playing';
+
+  /* Which night, and the three numbers the settings below are about. Without
+     it the screen is a wall of controls with no subject. */
+  const mh = document.getElementById('mg-head');
+  if(mh){
+    const on = onCourtIds().length, waiting = Math.max(0, live.length - on);
+    const cell = (v, l) => `<span class="mg-cell"><b>${v}</b><em>${esc(l)}</em></span>`;
+    mh.innerHTML = `<div class="mg-tx">
+        <span class="sos-t-grp">MANAGE</span>
+        <h1>${esc(S.title || defaultTitle())}</h1>
+        <p>${S.active ? 'Round ' + S.round : 'Not started yet'}${
+          S.liveCode ? ' \u00b7 ' + esc(S.liveCode) : ''} \u00b7 ${
+          esc(MODE_NAME[S.mode] || S.mode)}</p>
+      </div>
+      <div class="mg-strip">${cell(live.length, 'on the list')}${
+        cell(on, 'on court')}${cell(waiting, 'waiting')}${
+        cell(S.courts.length, S.courts.length === 1 ? 'court' : 'courts')}</div>`;
+  }
+  /* This was only ever written by renderCourts(), so opening Manage without
+     having drawn the courts left the static "3" from the markup sitting under
+     "Courts in play" — a number that was not the number. */
+  const cv = document.getElementById('live-courts-val');
+  if(cv) cv.textContent = S.courts.length;
   const box = document.getElementById('active-list');
   box.innerHTML = !live.length
     ? '<div class="empty">Nobody on the list yet.</div>'
     : rosterTools() + `<div data-rows="playing">${playingRows()}</div>`;
+
+  /* Signing in belongs on the profile. This panel is here for the case where
+     the app has no accounts at all, or nobody is signed in on this phone —
+     which on an organizer-only screen is close to never, and the rest of the
+     time it was a "Create an account" button under the roster of a night the
+     organizer is already running. */
+  const ap = document.getElementById('account-panel');
+  if(ap) ap.hidden = !!(Auth.on() && Auth.signedIn());
 
   const wp = document.getElementById('wait-panel');
   if(wp){

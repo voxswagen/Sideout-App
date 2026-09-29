@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v155`. Forgetting this means testers see last week's app and
+Currently `sideout-v156`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -667,6 +667,35 @@ right at the net; it is wrong when somebody walks over and says "we won
 `c.pts`, so the tint, Game point, Finish game and the big screen read it
 without knowing how it arrived — and it clears `c.lastPt`, because Undo is
 one rally back and a typed score has no last rally to step back to.
+
+**Manage opened on a wall of controls with no subject.** The first words on
+it were "Session settings", with nothing saying whose settings — which on a
+phone that has been in a pocket for twenty minutes is the first question. It
+has a head now, the same shape the profile and a group's page use: a name, a
+line of context (round, code, format) and a hairline-divided strip. A night is
+introduced the way a person or a club is.
+
+Three things it was getting wrong underneath:
+
+* **"Courts in play" printed the number in the markup.** `live-courts-val` was
+  only ever written by `renderCourts()`, so arriving at Manage without having
+  drawn the courts showed the static `3` from the HTML. `renderPlayers()`
+  writes it too.
+* **The level and side chips did nothing to that list.** `playingRows()`
+  called `sortedRoster(live)` and never `rosterShown()`, so the search worked
+  — that lives in `sortedRoster` — and tapping "Adv" simply redrew all thirty
+  names. It took folding the filters away to notice, which is the argument for
+  folding them.
+* **Four controls stood between the organizer and the list**: search, level
+  chips, Everyone/Men/Women, and four sort buttons, above ten rows. The search
+  stays out; the rest is behind a Filter button that carries a count, and it
+  opens itself whenever something is narrowing — a hidden filter that is doing
+  something is worse than a visible one that is not.
+
+`noHits()` no longer blames a search nobody typed when a chip is what emptied
+the list. And the "Your account" panel is hidden for anybody signed in: it is
+a second place to sign in, under the roster of a night, on a screen only an
+organizer reaches.
 
 **Manage and Stats were the last screens in the old skin.** Navy brand bar,
 Barlow Condensed in caps, bordered tiles, an amber box for a thing that is
