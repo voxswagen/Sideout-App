@@ -4923,13 +4923,23 @@ body.casting{overflow:hidden}
 .run-side.done .run-pts{color:var(--sos-ink-3)}
 
 .run-foot{padding:9px 14px 14px;display:flex;align-items:center;gap:9px}
+/* Nothing to do on this court, so nothing but the line saying why. */
+.run-foot:empty{display:none}
+/* Once the game can be recorded, that is the only thing worth tapping, so it
+   takes everything the two icons leave. */
+.run-foot .run-fin.go{flex:1 1 auto}
 .run-hint{flex:1;min-width:0;font-size:12.5px;line-height:1.35;color:var(--sos-dim);text-wrap:pretty}
-.run-type{display:flex;align-items:center;gap:6px;flex:none;min-height:38px;padding:0 12px;
-  border-radius:10px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;
-  letter-spacing:-.01em;background:var(--sos-card);border:1px solid var(--sos-hair);
-  color:var(--sos-ink-2)}
-.run-type svg{width:16px;height:16px}
-.run-type:disabled{opacity:.45;cursor:default}
+/* The two corrections are icons. They are not what anybody came to the screen
+   to do, and spelling them out gave each the same weight as the button that
+   records the game. */
+.run-mini{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:11px;cursor:pointer;font-family:inherit;
+  font-size:13.5px;font-weight:600;letter-spacing:-.01em;background:var(--sos-card);
+  border:1px solid var(--sos-hair);color:var(--sos-ink-2);
+  -webkit-tap-highlight-color:transparent}
+.run-mini svg{width:17px;height:17px}
+.run-mini.wide{width:auto;padding:0 16px}
+.run-mini:active{background:var(--sos-fill)}
 /* Two big fields, because a score is two numbers and nothing else. */
 .sc-in{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .sc-in label{display:block}
@@ -11482,6 +11492,19 @@ const Score = {
     renderRun(); renderCourts(); TV.paint(); pushLive(); save();
   },
 
+  /* Taking back a result on a night that keeps no score. `unfinish()` puts the
+     rallies back, which is right when there were rallies and wrong here —
+     there is no score to return to, only a winner to unpick. */
+  clearWin(ci){
+    const c = S.courts[ci];
+    if(!c) return;
+    Auto.stop();
+    if(typeof Spin !== 'undefined') Spin.cancel(ci);
+    c.win = null; c.sc = null; c.ws = undefined;
+    this.touch(c);
+    renderRun(); renderCourts(); TV.paint(); paintDock(); pushLive(); save();
+  },
+
   undo(ci){
     const c = S.courts[ci];
     if(!c || c.lastPt === undefined || c.lastPt === null) return;
@@ -11571,6 +11594,14 @@ function renderRun(){
        the one that did nothing was the one people tried. It is not drawn at
        all now, so whatever says Undo is the one that works. */
     const canUndo = !recorded && c.lastPt !== undefined && c.lastPt !== null;
+    /* A night set up without scores never wanted points: a tap on a side is
+       the result and tapping it again takes it back — `Score.tap()` has always
+       done that. The card was drawing the other model over the top of it
+       regardless: two nought-nought scoreboards, "Tap to score", "First to 11,
+       win by 2", a Finish button and a keypad, none of which mean anything
+       when nobody is counting. That is the screen looking complicated for
+       something that is one tap. */
+    const counting = S.scores !== false;
 
     const side = k =>{
       const me = k === 0 ? p.a : p.b, them = k === 0 ? p.b : p.a;
@@ -11584,6 +11615,7 @@ function renderRun(){
       const nextWins = Score.legal({ pts: onePlus });
       const note = recorded ? (c.win === k ? 'Won it' : '')
         : short ? 'Waiting for a player'
+        : !counting ? 'Tap if they won'
         : ahead && legal ? 'Game won'
         : ahead && nextWins ? 'Game point'
         : ahead ? 'Ahead'
@@ -11594,7 +11626,7 @@ function renderRun(){
           <b>${esc(names.length >= 2 ? names.join(' / ') : (names[0] || 'Waiting'))}</b>
           <span>${esc(note)}</span>
         </span>
-        <span class="run-pts">${me}</span>
+        ${counting ? `<span class="run-pts">${me}</span>` : ''}
       </button>`;
     };
 
@@ -11605,24 +11637,41 @@ function renderRun(){
           recorded ? 'Recorded' : short ? 'Waiting' : 'Playing'}</span>
       </div>
       <div class="run-sides">${side(0)}${side(1)}</div>
+      ${/* The footer only ever carries what there is to do right now.
+
+            It used to carry all three buttons on every court in every state —
+            Type it, Undo and Finish game — and two of the three were greyed
+            out most of the time, three courts deep. A row of dead controls is
+            the thing that makes a screen look complicated: the eye has to
+            read each one to find out it is not the one.
+
+            So: nothing at all on a court that cannot play yet. One quiet Undo
+            on a court already recorded. While a game is on, the two small
+            corrections live as icons and there is no Finish button, because
+            the game cannot be finished — the line says what it is waiting
+            for. The moment `Score.legal()` is true, Finish is the whole
+            width, and it is the only thing there that is not an icon. */''}
       <div class="run-foot">
-        <span class="run-hint">${recorded ? 'Saved to the record'
-          : short ? 'Four players to a court'
-          : legal ? 'Ready to record'
-          : 'First to ' + Score.target() + ', win by 2'}</span>
-        ${/* Typing beside tapping, because both are how a score arrives. */''}
-        <button class="run-type" onclick="Score.type(${i})"${recorded || short ? ' disabled' : ''}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6"/></svg>
-          Type it</button>
-        ${recorded ? '' : `<button class="run-undo" onclick="Score.undo(${i})"${
-          canUndo ? '' : ' disabled'}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4.5V9h4.5"/></svg>
-          Undo</button>`}
-        <button class="run-fin${!recorded && legal ? ' go' : ''}"
-          onclick="Score.${recorded ? 'unfinish' : 'finish'}(${i})"${
-          recorded || legal ? '' : ' disabled'}>${recorded ? 'Undo' : 'Finish game'}</button>
+        ${short
+          ? `<span class="run-hint">Four players to a court</span>`
+          : recorded
+          ? `<span class="run-hint">Saved to the record</span>
+             <button class="run-mini wide" onclick="Score.${
+               counting ? 'unfinish' : 'clearWin'}(${i})">Undo</button>`
+          : !counting
+          ? `<span class="run-hint">Tap whoever won \u2014 no score kept on this night</span>`
+          : `${legal ? '' : `<span class="run-hint">First to ${Score.target()}, win by 2</span>`}
+             ${canUndo ? `<button class="run-mini" onclick="Score.undo(${i})"
+               title="Take back the last point" aria-label="Take back the last point">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4.5V9h4.5"/></svg>
+               </button>` : ''}
+             <button class="run-mini" onclick="Score.type(${i})"
+               title="Type the score" aria-label="Type the score">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6"/></svg>
+               </button>
+             ${legal ? `<button class="run-fin go" onclick="Score.finish(${i})">Finish game</button>` : ''}`}
       </div>
     </article>`;
   }).join('');

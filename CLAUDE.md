@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v156`. Forgetting this means testers see last week's app and
+Currently `sideout-v157`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -660,6 +660,26 @@ recorded — so a recorded card carried a greyed-out Undo beside a live one.
 The rally Undo is not drawn at all on a recorded card now, so whatever says
 Undo is the one that works. A *playing* card with no rally yet still shows it
 greyed, which is right: there is something to take back there, just not yet.
+
+**The court card only carries what there is to do right now.** It used to
+carry Type it, Undo and Finish game on every court in every state, and two of
+the three were greyed out most of the time, three or four courts deep. A row
+of dead controls is what makes a screen look complicated — the eye has to read
+each one to find out it is not the one. Now: nothing but a line on a court
+that cannot play yet, one quiet Undo on a court already recorded, two *icon*
+corrections while a game is on, and Finish game at full width only once
+`Score.legal()` is true. There is no disabled Finish, because a game that
+cannot be recorded does not need a button saying so.
+
+**And there have always been two scoring models, but the card only drew one.**
+`Score.tap()` has always treated a night with `S.scores === false` as "tap
+whoever won, tap again to take it back" — no counting, one tap, done. The card
+drew the other model straight over the top: two nought-nought scoreboards,
+"Tap to score", "First to 11, win by 2", a Finish button and a keypad, none of
+which mean anything when nobody is counting. `counting` gates all of it now,
+so a no-score night is two names and a line, and `Score.clearWin()` is its
+Undo — `unfinish()` restores the rallies, which is right when there were
+rallies and wrong when there were none.
 
 **A score can be typed as well as tapped.** Tapping a rally at a time is
 right at the net; it is wrong when somebody walks over and says "we won
