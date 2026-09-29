@@ -4888,6 +4888,17 @@ body.casting{overflow:hidden}
 #screen-run.on{padding:0 0 8px}
 .run-head{padding:10px 16px 0;display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
 .run-tx{min-width:0}
+/* States the scoring model and goes to the setting that changes it. Quiet,
+   because it is an answer rather than an action — but a real target, because
+   "why has this card no numbers on it" and "where do I change that" are the
+   same question asked twice. */
+.run-mode{display:inline-flex;align-items:center;gap:6px;margin-top:7px;
+  min-height:28px;padding:0 10px;border-radius:9px;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:600;letter-spacing:-.01em;
+  background:var(--sos-fill);border:1px solid var(--sos-hair);color:var(--sos-ink-2);
+  -webkit-tap-highlight-color:transparent}
+.run-mode svg{width:13px;height:13px;flex:none}
+.run-mode:active{background:var(--sos-sep)}
 .run-clock{flex:none;display:flex;align-items:center;gap:9px;min-height:44px;padding:0 13px;
   border-radius:12px;border:0;cursor:pointer;font-family:inherit;
   background:var(--sos-fill);color:var(--sos-ink-3)}
@@ -6702,7 +6713,7 @@ body.casting{overflow:hidden}
     </div>
     <div class="switch">
       <span class="txt"><b>Record the scores</b>
-        <span>One extra tap per court, and you can skip any of them.</span></span>
+        <span id="scores-note">One extra tap per court, and you can skip any of them.</span></span>
       <label class="toggle"><input type="checkbox" id="opt-scores" onchange="setScoring(this.checked)"><i></i></label>
     </div>
     <div id="rest-box">
@@ -6921,7 +6932,7 @@ body.casting{overflow:hidden}
     </div>
     <hr class="rule">
     <div class="switch">
-      <span class="txt"><b>Record the scores</b><span>One extra tap per court.</span></span>
+      <span class="txt"><b>Record the scores</b><span id="scores-note-live">One extra tap per court.</span></span>
       <label class="toggle"><input type="checkbox" id="opt-scores-live" onchange="setScoring(this.checked)"><i></i></label>
     </div>
     <div id="rest-box-live">
@@ -10421,6 +10432,14 @@ function syncRoundEndUI(){
   press('end-scored', !S.timed); press('end-scored-live', !S.timed);
   hide('timed-box', !S.timed);   hide('timed-box-live', !S.timed);
   hide('scored-box', S.timed);   hide('scored-box-live', S.timed);
+  /* The sub-line under a switch usually explains the feature. This one says
+     what the night is doing right now, because that is the thing somebody is
+     actually checking when they come looking for it. */
+  const sn = S.scores === false
+    ? 'Off \u2014 tap whoever won and move on. Nothing is counted.'
+    : 'On \u2014 tap each rally, first to ' + S.target + '. Or type the score.';
+  set('scores-note', sn); set('scores-note-live', sn);
+
   const rv = S.restAfter ? S.restAfter : 'OFF';
   set('rest-val', rv); set('rest-val-live', rv);
   ['rest-unit','rest-unit-live'].forEach(id2=>{
@@ -11574,6 +11593,23 @@ function renderRun(){
     <div class="run-tx">
       <h1 class="sos-t-sc">Round ${S.round}</h1>
       <p class="sos-sub">${done} of ${N} game${N === 1 ? '' : 's'} in</p>
+      ${/* Which of the two scoring models this night is running, stated on the
+            screen it changes. "Record the scores" is a switch on another
+            screen, and a switch names the feature rather than the state — so
+            the only way to know which one you were about to tap into was to
+            tap and see what happened. It is also the way to change it: an
+            indicator that answers "why is this card like this" and then makes
+            you go and find the setting has only done half the job. */''}
+      <button class="run-mode" onclick="go('players')"
+        title="Tap to change how scores are kept">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">${S.scores === false
+          ? '<path d="M20 6 9 17l-5-5"/>'
+          : '<path d="M4 19V5M10 19v-9M16 19v-5M22 19H2"/>'}</svg>
+        ${S.scores === false
+          ? 'Winner only \u00b7 no score kept'
+          : 'Keeping score \u00b7 first to ' + Score.target()}
+      </button>
     </div>
     <button class="run-clock${Clock.running ? ' on' : ''}" onclick="Clock.toggle()"
       aria-label="${Clock.running ? 'Pause the clock' : 'Start the clock'}">
@@ -11655,7 +11691,11 @@ function renderRun(){
         ${short
           ? `<span class="run-hint">Four players to a court</span>`
           : recorded
-          ? `<span class="run-hint">Saved to the record</span>
+          ? `<span class="run-hint">${typeof c.left === 'number' && c.left > 0
+               ? `Saved. This court goes again in <b id="run-cd-${i}">${c.left}</b>s`
+               : 'Saved to the record'}</span>
+             ${typeof c.left === 'number' && c.left > 0
+               ? `<button class="run-mini wide" onclick="Spin.hold(${i})">Hold</button>` : ''}
              <button class="run-mini wide" onclick="Score.${
                counting ? 'unfinish' : 'clearWin'}(${i})">Undo</button>`
           : !counting
@@ -13879,7 +13919,11 @@ function fillGaps(){
    RENDER — PLAY
    ═══════════════════════════════════════════════════ */
 function renderAll(){
-  renderCourts(); renderPlayers(); renderStats(); renderRoster(); renderBracket(); renderLive();
+  /* renderRun was missing from this list, which is the same shape of bug as
+     renderCourts missing from go()'s tail: change "Record the scores" and the
+     Score screen carried on drawing the model it had, because nothing told it
+     to repaint. */
+  renderCourts(); renderRun(); renderPlayers(); renderStats(); renderRoster(); renderBracket(); renderLive();
   renderTour();
   const live = !!(S.active || S.bracket);
   /* the bar itself belongs to syncNav now — it is there for
@@ -14085,12 +14129,22 @@ const Spin = {
         if(c.left <= 0){ beep(660,.18); finishCourt(i); rotated = true; }
         else live = true;
       }
-      if(rotated){ renderCourts(); renderStats(); TV.paint(); save(); }
+      if(rotated){ renderCourts(); renderRun(); renderStats(); TV.paint(); save(); }
       else {
-        /* touch only the counter — redrawing the card would restart its animation */
+        /* touch only the counter — redrawing the card would restart its
+           animation. Both screens have one: `nc-count-` on the old Play cards
+           and `run-cd-` on the Score card, and only the first existed, so the
+           Score screen showed a game recorded and then, with no warning at
+           all, a fresh one. */
         S.courts.forEach((c,i)=>{
+          const n = (typeof c.left === 'number' && c.left > 0) ? c.left : '';
           const el = document.getElementById('nc-count-' + i);
-          if(el) el.textContent = (typeof c.left === 'number' && c.left > 0) ? c.left : '';
+          if(el) el.textContent = n;
+          const rl = document.getElementById('run-cd-' + i);
+          if(rl) rl.textContent = n;
+          /* The footer changes shape when the countdown ends or is held, and
+             that is a redraw rather than a number. */
+          if(rl && n === '') renderRun();
         });
       }
       if(!live) this.stop();
@@ -14098,7 +14152,17 @@ const Spin = {
   },
   stop(){ clearInterval(this.t); this.t = null; },
   arm(i){ S.courts[i].left = SPIN_SECS; this.ensure(); },
-  cancel(i){ if(S.courts[i]) S.courts[i].left = undefined; }
+  cancel(i){ if(S.courts[i]) S.courts[i].left = undefined; },
+  /* Keep the result on screen. Four seconds is enough to record a game and not
+     enough to read it back to the four people who just played it, and a court
+     that empties itself while somebody is still looking at it reads as the
+     result having been lost. Held, it stays until `nextRound()` or another
+     recorded game moves it on. */
+  hold(i){
+    this.cancel(i);
+    renderRun(); renderCourts(); save();
+    toast('Holding court ' + (i + 1) + '. It goes again when you end the round.');
+  }
 };
 
 function ensurePools(){

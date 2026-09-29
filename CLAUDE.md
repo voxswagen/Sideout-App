@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v157`. Forgetting this means testers see last week's app and
+Currently `sideout-v158`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -680,6 +680,35 @@ which mean anything when nobody is counting. `counting` gates all of it now,
 so a no-score night is two names and a line, and `Score.clearWin()` is its
 Undo — `unfinish()` restores the rallies, which is right when there were
 rallies and wrong when there were none.
+
+**A switch names a feature; it does not say which state you are in.** "Record
+the scores" lives on Manage, so the only way to know which of the two scoring
+models a night was running was to tap a court and see what happened. The Score
+screen states it now, under the round: *Winner only · no score kept* or
+*Keeping score · first to 11*. It is a button to Manage, because "why has this
+card no numbers on it" and "where do I change that" are the same question
+asked twice. The switch's own sub-line says what is happening rather than what
+the feature is, and both copies are written by `syncRoundEndUI()`.
+
+**`renderAll()` never called `renderRun()`.** Same shape as `renderCourts()`
+missing from `go()`'s tail: change a setting and the Score screen carried on
+drawing the model it already had, because nothing told it to repaint.
+
+**The rolling countdown was invisible on the Score screen, and that is what
+"my recorded game was lost" actually was.** `Spin` gives a finished court four
+seconds and then refills it, and its tick wrote the number into `nc-count-i` —
+an element on the *old Play* cards. On the Score screen a game went Recorded
+and then, with no warning, became a fresh one; on an eight-player night with
+two courts it refills with the same four people re-paired, which looks exactly
+like the result being thrown away. Nothing was ever lost — both games bank to
+`S.log` — but the screen gave no reason to believe that.
+
+The recorded footer now reads "Saved. This court goes again in 3s" and carries
+**Hold** beside Undo. `Spin.hold(i)` cancels the countdown and the court keeps
+its result until the round ends, which is what you want when four people are
+still reading the score back. The tick writes `run-cd-i` as well, and redraws
+when the number runs out because the footer changes shape rather than just its
+digits.
 
 **A score can be typed as well as tapped.** Tapping a rally at a time is
 right at the net; it is wrong when somebody walks over and says "we won
