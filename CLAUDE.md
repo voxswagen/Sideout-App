@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v152`. Forgetting this means testers see last week's app and
+Currently `sideout-v153`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -576,13 +576,40 @@ selected before the eight-pixel threshold told us it was a drag.
 **A name dropped on another name swaps them, in every format.** That is not
 a move and does not go through `move()` — `Stacks.swap()` finds both spots
 first and writes them together, because taking A out and then putting B in
-changes what "out" means in between. A spot is a court, a manual stack, the
-planner's own `S.next.courts`, or the queue. Swapping inside the plan is
-allowed and *sticks*, because `refreshPlan()` only rebuilds when the round
-number moves on — so it survives exactly as long as it should. It therefore
-must **not** call `invalidatePlan()`, which would throw away the plan
-holding the swap that was just made in it; only a swap involving a court
-replans.
+changes what "out" means in between. Swapping inside the plan is allowed and
+*sticks*, because `refreshPlan()` only rebuilds when the round number moves
+on — so it survives exactly as long as it should. It therefore must **not**
+call `invalidatePlan()`, which would throw away the plan holding the swap
+that was just made in it; only a swap involving a court replans.
+
+**The three lists overlap, and that is what made swapping inexact.**
+Everybody waiting is in `S.queue`; a stack or a plan is a *selection from*
+that pool plus whoever is still on court. So one person can be in three lists
+at once, and the old `where()` resolved a name by searching them in a fixed
+order with **courts first**. Three separate wrongs came out of that:
+
+* A chip in the queue view for somebody mid-game resolved to their **live
+  court seat**, so dragging two names in the queue changed who was playing —
+  and then called `invalidatePlan()`, throwing away the swap as well.
+* A view seat traded with a pool index put the displaced player into
+  `S.queue` **a second time**, because they had never left it.
+* In a planned format everybody waiting has a plan seat *and* is in the pool,
+  so a roster row dropped onto a plan chip was read as a replacement and put
+  that person in the plan twice.
+
+The fix is that the drag says where each end came from. `Stacks.kindOfEl()`
+reads `view` / `court` / `pool` off the element — a chip inside `.stk-col`,
+a `.stk-row.locked`, anything else — `down()` records it and `up()` passes
+both. Then `swap()` asks the questions in the order that matters: a `court`
+hint is a substitution and the only case that touches a live game; both
+holding a seat is an exact trade of the two seats and nothing else moves;
+one holding a seat is the seat changing hands, with the loser left exactly
+where they already were; neither is the call order in `S.queue`.
+
+`viewOf(id)` is asked separately from `spotOf(id, kind)` for exactly that
+third question. Checked across five formats and all five gestures: no
+duplicate in any list, nobody unreachable, and the live courts unchanged by
+anything that was not a substitution.
 
 **The queue drags with a finger, on pointer events.** HTML5 drag-and-drop
 is a mouse API and never fires from touch, so `Stacks.down/moveTo/up` is the

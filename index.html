@@ -12814,7 +12814,8 @@ const Stacks = {
 
   down(ev, id){
     if(ev.button != null && ev.button !== 0) return;
-    this.grab = { id, x: ev.clientX, y: ev.clientY, on: false };
+    this.grab = { id, x: ev.clientX, y: ev.clientY, on: false,
+                  kind: this.kindOfEl(ev.target) };
     const move = e => this.moveTo(e);
     const up = e => this.up(e, move, up);
     window.addEventListener('pointermove', move, { passive: false });
@@ -12858,6 +12859,18 @@ const Stacks = {
     return who ? who.getAttribute('data-who') : null;
   },
 
+  /* Which list a chip belongs to, read off the element it was drawn as. A
+     name can be in three of them at once, so asking the DOM is the only way
+     to know which one the finger meant. */
+  kindOfEl(el){
+    const who = el ? el.closest('[data-who]') : null;
+    if(!who) return null;
+    if(who.closest('.stk-col')) return 'view';
+    if(who.classList.contains('locked')) return 'court';
+    return 'pool';
+  },
+  kindAt(x, y){ return this.kindOfEl(document.elementFromPoint(x, y)); },
+
   /* Trade two places. Either can be in a stack, in Free, or on a court —
      and a swap with somebody on a court is the useful one, because that is
      how you take a player off mid-round and put the next one on without
@@ -12866,48 +12879,149 @@ const Stacks = {
      Written as one operation rather than two moves: taking A out and then
      putting B in changes what "out" means in between, and the second half
      would be working from a list the first half already rearranged. */
-  swap(a, b){
-    if(!a || !b || a === b) return;
-    if(!P(a) || !P(b)) return;
-    const where = id =>{
+  /* Where a name is, asked of the list the chip was drawn from rather than of
+     the whole session. The three lists overlap: everybody waiting is in
+     `S.queue`, and a stack or a plan is a *selection from* that pool plus
+     whoever is still on court. So searching courts first — which is what this
+     did — made a plan chip for somebody mid-game resolve to their live court
+     seat, and a swap between two names in the queue silently changed who was
+     playing and then threw the plan away. */
+  spotOf(id, kind){
+    const courtSpot = () =>{
       const ci = S.courts.findIndex(c => c.teams.some(t => t.indexOf(id) >= 0));
-      if(ci >= 0){
-        const ti = S.courts[ci].teams.findIndex(t => t.indexOf(id) >= 0);
-        return { kind: 'court', ci, ti, at: S.courts[ci].teams[ti].indexOf(id) };
-      }
+      if(ci < 0) return null;
+      const ti = S.courts[ci].teams.findIndex(t => t.indexOf(id) >= 0);
+      return { kind: 'court', ci, ti, at: S.courts[ci].teams[ti].indexOf(id) };
+    };
+    const viewSpot = () =>{
       if(this.manual()){
         const si = (S.stacks || []).findIndex(st => (st || []).indexOf(id) >= 0);
-        if(si >= 0) return { kind: 'stack', si, at: S.stacks[si].indexOf(id) };
-      } else if(S.next && S.next.courts){
-        /* The plan the app made for this round. It is rebuilt only when the
-           round number moves on, so an edit here survives until the round
-           ends — which is exactly as long as it should. */
-        for(let ci = 0; ci < S.next.courts.length; ci++){
-          const teams = S.next.courts[ci] || [];
-          for(let ti = 0; ti < teams.length; ti++){
-            const at = (teams[ti] || []).indexOf(id);
-            if(at >= 0) return { kind: 'plan', ci, ti, at };
-          }
+        return si >= 0 ? { kind: 'stack', si, at: S.stacks[si].indexOf(id) } : null;
+      }
+      if(!S.next || !S.next.courts) return null;
+      for(let ci = 0; ci < S.next.courts.length; ci++){
+        const teams = S.next.courts[ci] || [];
+        for(let ti = 0; ti < teams.length; ti++){
+          const at = (teams[ti] || []).indexOf(id);
+          if(at >= 0) return { kind: 'plan', ci, ti, at };
         }
       }
-      const qi = S.queue.indexOf(id);
-      if(qi >= 0) return { kind: 'queue', at: qi };
       return null;
     };
-    const A = where(a), B = where(b);
-    if(!A || !B) return;
-    const put = (spot, id) =>{
-      if(spot.kind === 'court') S.courts[spot.ci].teams[spot.ti][spot.at] = id;
-      else if(spot.kind === 'stack') S.stacks[spot.si][spot.at] = id;
-      else if(spot.kind === 'plan') S.next.courts[spot.ci][spot.ti][spot.at] = id;
-      else S.queue[spot.at] = id;
+    const poolSpot = () =>{
+      const qi = S.queue.indexOf(id);
+      return qi >= 0 ? { kind: 'pool', at: qi } : null;
     };
-    put(A, b); put(B, a);
+    const order = kind === 'view'  ? [viewSpot, poolSpot, courtSpot]
+                : kind === 'court' ? [courtSpot, viewSpot, poolSpot]
+                :                    [poolSpot, courtSpot, viewSpot];
+    for(const f of order){ const r = f(); if(r) return r; }
+    return null;
+  },
+
+  /* Reading a name out of a spot and writing one into it. `clear` is the
+     other half of a replace: a seat in the queue view can simply lose its
+     occupant, because that person is still in the pool or still on court —
+     they have not gone anywhere, they are just no longer down for this. */
+  atSpot(sp){
+    if(sp.kind === 'court') return S.courts[sp.ci].teams[sp.ti][sp.at];
+    if(sp.kind === 'stack') return S.stacks[sp.si][sp.at];
+    if(sp.kind === 'plan')  return S.next.courts[sp.ci][sp.ti][sp.at];
+    return S.queue[sp.at];
+  },
+  putSpot(sp, id){
+    if(sp.kind === 'court') S.courts[sp.ci].teams[sp.ti][sp.at] = id;
+    else if(sp.kind === 'stack') S.stacks[sp.si][sp.at] = id;
+    else if(sp.kind === 'plan')  S.next.courts[sp.ci][sp.ti][sp.at] = id;
+    else S.queue[sp.at] = id;
+  },
+  dropSpot(sp){
+    if(sp.kind === 'stack') S.stacks[sp.si].splice(sp.at, 1);
+    else if(sp.kind === 'plan') S.next.courts[sp.ci][sp.ti].splice(sp.at, 1);
+  },
+
+  /* Trade two places. Either can be in a stack or the plan, in the pool of
+     people waiting, or on a court — and a swap with somebody on a court is
+     the useful one, because that is how you take a player off mid-round and
+     put the next one on. `ka`/`kb` say which list each chip was drawn from,
+     which is the whole of what makes this exact. */
+  /* Only a seat in the queue view, or nothing. Asked separately because
+     "is this person already down for the next round" is the question that
+     decides whether a drop is a trade or a replacement. */
+  viewOf(id){
+    if(this.manual()){
+      const si = (S.stacks || []).findIndex(st => (st || []).indexOf(id) >= 0);
+      return si >= 0 ? { kind: 'stack', si, at: S.stacks[si].indexOf(id) } : null;
+    }
+    if(!S.next || !S.next.courts) return null;
+    for(let ci = 0; ci < S.next.courts.length; ci++){
+      const teams = S.next.courts[ci] || [];
+      for(let ti = 0; ti < teams.length; ti++){
+        const at = (teams[ti] || []).indexOf(id);
+        if(at >= 0) return { kind: 'plan', ci, ti, at };
+      }
+    }
+    return null;
+  },
+
+  swap(a, b, ka, kb){
+    if(!a || !b || a === b) return;
+    if(!P(a) || !P(b)) return;
+    /* The plan has to exist before a swap can be written into it, for the
+       same reason a drop does: the screen draws from `nextLineups()` live. */
+    if(!this.manual() && !S.next) refreshPlan();
+
+    /* Somebody comes off court and somebody goes on. This is the only case
+       that touches a live game, and the hint is what identifies it — a chip
+       in the queue view can be somebody mid-game who is also down for the
+       next round, and resolving that to their court seat is what used to make
+       a swap between two waiting names change who was playing. */
+    if(ka === 'court' || kb === 'court'){
+      const onId  = ka === 'court' ? b : a;     /* going on */
+      const offId = ka === 'court' ? a : b;     /* coming off */
+      const C = this.spotOf(offId, 'court');
+      if(!C || C.kind !== 'court') return;
+      const O = this.viewOf(onId) || this.spotOf(onId, 'pool');
+      if(!O) return;
+      this.putSpot(C, onId);
+      if(O.kind === 'pool') S.queue[O.at] = offId;
+      else this.putSpot(O, offId);
+      /* The one walking on leaves the pool or they are playing and waiting at
+         once; the one coming off joins it or they are in no list at all,
+         which is the latecomer bug wearing a different hat. */
+      S.queue = S.queue.filter(x => x !== onId);
+      if(!S.queue.includes(offId)) S.queue.push(offId);
+      /* A court changed shape, so a plan built from it is no longer about
+         this round. This is the one case where throwing it away is right. */
+      invalidatePlan();
+      this.after(a, b);
+      return;
+    }
+
+    /* Both are down for the next round: an exact trade of the two seats, and
+       nothing else moves. This is the common case and it has to be asked
+       before the one below, because in a planned format everybody waiting has
+       a seat *and* is in the pool — resolving one of them to the pool made
+       the replacement put them in twice. */
+    const Av = this.viewOf(a), Bv = this.viewOf(b);
+    if(Av && Bv){ this.putSpot(Av, b); this.putSpot(Bv, a); this.after(a, b); return; }
+
+    /* One of them holds a seat and the other does not. The pool has no places
+       — everybody waiting is simply in it — so the seat changes hands and
+       whoever lost it stays exactly where they already were. */
+    if(Av){ this.putSpot(Av, b); this.after(a, b); return; }
+    if(Bv){ this.putSpot(Bv, a); this.after(a, b); return; }
+
+    /* Neither is in the queue view: two names waiting, so this is the call
+       order and trading their places in it is the whole of the change. */
+    const A = this.spotOf(a, 'pool'), B = this.spotOf(b, 'pool');
+    if(!A || !B || A.kind !== 'pool' || B.kind !== 'pool') return;
+    this.putSpot(A, b); this.putSpot(B, a);
+    this.after(a, b);
+  },
+
+  after(a, b){
     this.held = null;
-    /* Not invalidatePlan(): throwing the plan away is what would undo the
-       swap that was just made in it. The courts have not changed shape, so
-       there is nothing to replan — only to redraw. */
-    if(A.kind === 'court' || B.kind === 'court') invalidatePlan();
     renderStacks(); renderCourts(); renderRun(); TV.paint(); pushLive(); save();
     toast(nm(a) + ' and ' + nm(b) + ' have swapped.');
   },
@@ -12928,7 +13042,10 @@ const Stacks = {
        landing on somebody is a more specific thing to have meant than
        landing near them. */
     const onto = this.nameAt(ev.clientX, ev.clientY);
-    if(onto && onto !== g.id){ this.swap(g.id, onto); return; }
+    if(onto && onto !== g.id){
+      this.swap(g.id, onto, g.kind, this.kindAt(ev.clientX, ev.clientY));
+      return;
+    }
     const zone = this.zoneAt(ev.clientX, ev.clientY);
     const to = zone ? zone.getAttribute('data-drop') : null;
     if(to == null){ this.end(); return; }
