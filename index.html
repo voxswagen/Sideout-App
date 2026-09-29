@@ -7969,12 +7969,20 @@ const Live = {
   /* Leave a final card up rather than a session that just stops
      updating and looks broken. */
   async finish(){
-    if(!S.live || !this.code) return;
+    if(!S.live || !this.code) return true;
     clearTimeout(this._d);
     S.ended = true; S.endedAt = Date.now();
-    try{ await this.saveAll(); }catch(e){}
+    /* This used to swallow the failure, which is the rule this codebase keeps
+       relearning: a write that cannot say it failed invents a second bug.
+       Here the second bug is a host who has been told the night is over
+       looking at it on Sessions an hour later, still saying Playing now,
+       because the save never landed. */
+    let ok = true;
+    try{ await this.saveAll(); }
+    catch(e){ ok = false; }
     clearInterval(this.joinT); this.joinT = null;
     clearInterval(this.pullT); this.pullT = null;
+    return ok;
   },
   async goLive(){
     this.lastError = null;
@@ -8054,9 +8062,23 @@ const Live = {
     const mine = S.courts || [];
     const myOrder = (S.order || []).slice();
     const myPlayers = S.players || {};
+    /* Ending a night, or calling it off, is a decision about the whole night
+       rather than a score on one court — and this function replaces `S`
+       wholesale with the server's copy, on which it has not happened yet. So
+       an end that collided with a co-host's beat was quietly undone and then
+       written back as `ended: false`: the session stayed on Sessions, still
+       saying Playing now, and the host had watched it say it was over.
+
+       Carried the same way `live`, `liveCode` and `pin` are. Only in this
+       direction: a night this phone has not ended takes theirs, because the
+       other organizer may have ended it and that is news, not a conflict. */
+    const over = S.ended
+      ? { ended:true, endedAt:S.endedAt || Date.now(), active:false,
+          cancelled:!!S.cancelled, cancelNote:S.cancelNote || '' }
+      : null;
     if((theirs.round || 0) !== (S.round || 0)){
       if((theirs.round || 0) > (S.round || 0)){ S = Object.assign(blank(), theirs,
-        { live:true, liveCode:this.code, pin:S.pin }); return true; }
+        { live:true, liveCode:this.code, pin:S.pin }, over || {}); return true; }
       return false;   /* ours is the later round: our save stands as it is */
     }
     const keep = [];
@@ -8064,7 +8086,7 @@ const Live = {
       const mc = mine[i];
       if(mc && (mc.touched || 0) > (tc.touched || 0)) keep.push(i);
     });
-    S = Object.assign(blank(), theirs, { live:true, liveCode:this.code, pin:S.pin });
+    S = Object.assign(blank(), theirs, { live:true, liveCode:this.code, pin:S.pin }, over || {});
     keep.forEach(i =>{ S.courts[i] = mine[i]; });
     /* Anybody this phone put on the list who is not on theirs. Adding is
        additive and cannot conflict, so they are carried across rather than
@@ -11318,6 +11340,8 @@ function seed(ids, n){
   if(S.mode === 'queue'){
     S.courts = new Array(n).fill(0).map(()=> ({ teams:[[],[]], win:null }));
     S.queue = ids.slice();
+    S.stacks = null;                 /* a new night starts from this queue */
+    Stacks.fill();
     return;
   }
   /* Court Wars deals per court from its own pools, so it seeds itself
@@ -12900,6 +12924,41 @@ const Stacks = {
     renderStacks(); save();
   },
 
+  /* Open play hands the matchmaking to the organizer, and it used to hand it
+     over as four empty boxes and a roster — so the first thing anybody had to
+     do with the format was tap sixteen names into the order they were already
+     standing in. The queue *is* that order. This fills whatever is empty from
+     it, four at a time, and only what is empty: a stack somebody has arranged
+     is never rewritten, which is what lets it run on a switch, on a seed and
+     from the button without ever undoing a decision.
+
+     It is a starting point, not a plan. Everything about it can be dragged,
+     which is the difference between this and the planner the other formats
+     run — those deal, and this one just stops you typing out the obvious. */
+  fill(){
+    if(!this.manual()) return 0;
+    const st = this.all();
+    const spare = this.free().slice();
+    let put = 0;
+    st.forEach((s2, i) =>{
+      if(s2.length || !spare.length) return;
+      st[i] = spare.splice(0, 4);
+      put += st[i].length;
+    });
+    S.stacks = st;
+    return put;
+  },
+
+  /* The same thing, asked for. People leave and arrive all night, so the
+     stacks go stale and refilling by hand is the job this format was meant to
+     make easier. */
+  refill(){
+    const put = this.fill();
+    renderStacks(); save();
+    toast(put ? put + (put === 1 ? ' name off' : ' names off') + ' the queue.'
+              : 'Nobody spare to bring in \u2014 everybody is on court or in a stack.');
+  },
+
   /* Those four walk on. The first court that is free or already recorded
      takes them; whoever was standing on it goes back to the queue. */
   call(){
@@ -13393,6 +13452,7 @@ function renderStacks(){
                 + ' change who is up \u2014 drop one on another to swap them. It holds until'
                 + ' the round ends.')}</span>
           ${Stacks.manual() ? `
+          <button class="stk-add" onclick="Stacks.refill()">Fill from the queue</button>
           <button class="stk-add" onclick="Stacks.add()">Add a stack</button>
           <button class="stk-call${(st[0] || []).length === 4 ? ' go' : ''}"
             onclick="Stacks.call()">${(st[0] || []).length === 4
@@ -26685,9 +26745,17 @@ function applyFormat(m){
   if(m === 'queue'){
     const on = new Set(onCourtIds());
     S.queue = activeIds().filter(id => !on.has(id));
-    return;
+    /* Whoever is waiting, in the order they have been waiting, is the first
+       answer to "who is up next" — and it is the answer the organizer would
+       have typed in by hand. */
+    S.stacks = null;
+    Stacks.fill();
+    /* This used to return here, which skipped setMode, closeSheet, the
+       repaint, the save and the toast at the foot of this function — so
+       switching to Open play left the sheet open over a screen that had not
+       changed and a mode the rest of the app had not been told about. */
   }
-  if(m === 'levels'){ S.courtLevels = autoLevels(n); fillLevelCourts(); }
+  else if(m === 'levels'){ S.courtLevels = autoLevels(n); fillLevelCourts(); }
   else if(m === 'kotc'){ seedByRecord(n); }
   /* Court Wars deals from tiers, not from a shared plan. Switching into it
      mid-session used to fall through to planMix, which handed out a random
@@ -30155,7 +30223,8 @@ async function runReset(wipe){
   const keep = (Live.ready() && S.log.length && !S.cancelled)
     ? { rows: Club.rowsForArchive(), title: sessionTitle(), code: S.liveCode,
         games: Club.gamesForArchive(), rated: Club.rateNight() } : null;
-  if(S.live) await Live.finish();
+  let ended = true;
+  if(S.live) ended = await Live.finish();
   /* The waiting list goes with them. It was left behind, so a night cleared
      from an empty list still had people queueing on it — names nobody could
      see on the roster, counted in "N waiting", coming in the moment a place
@@ -30187,6 +30256,12 @@ async function runReset(wipe){
     Live.goLive().then(()=>{
       toast('Next one set for ' + longDate(sessionWhen()) + '. Same link.');
     }).catch(()=> toast('Next one set for ' + longDate(sessionWhen()) + ', but the link did not come back up.'));
+  } else if(!ended){
+    /* The results are banked and the sheet here is clear, but the server still
+       has the night open — so it is on Sessions saying Playing now and the
+       host is the only person who knows it is not. Say so, with what to do:
+       the row is put down by anybody opening it and ending it again. */
+    toast('Cleared here, but the server did not get the end \u2014 it may still show as on.');
   } else {
     toast(wipe ? 'Session and player list cleared.' : 'Session cleared \u2014 your players are still here.');
   }

@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v158`. Forgetting this means testers see last week's app and
+Currently `sideout-v159`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -1165,6 +1165,37 @@ is `#E0A93A` on a dark screen and `#9E6C13` on a light one, so a card built in
 daylight came out with brown medals on a navy ground. First place is not a
 theme colour. It reads `METAL[0]` now. Anything else pulled off a token for the
 canvas needs the same question asked of it.
+
+**Ending a night is not a court score, and the merge was treating it as one.**
+`mergeInto()` replaces `S` wholesale with the server's copy and keeps only the
+courts this phone touched more recently — which is right for rallies and wrong
+for "this night is over". A host who ended a night in the same few seconds as a
+co-host's beat had the end quietly undone and then written back as
+`ended: false`: the session stayed on Sessions saying **Playing now**, and the
+host had watched it say it was over.
+
+`ended`, `endedAt`, `cancelled` and `cancelNote` are carried across the merge
+the way `live`, `liveCode` and `pin` are, and `active:false` with them. Only in
+one direction: a night *this* phone has not ended takes theirs, because the
+other organizer may have ended it and that is news rather than a conflict.
+
+`Live.finish()` also swallowed its save error — the rule this file keeps
+relearning. It returns whether the write landed now, and clearing says so when
+it did not, because otherwise the only person who knows the night is still
+open is the one who just watched it close.
+
+**Open play arrives with the queue already in the stacks.** The format hands
+matchmaking to the organizer, and it used to hand it over as four empty boxes
+and a roster — so the first thing anybody did with it was tap sixteen names
+into the order they were already standing in. `Stacks.fill()` takes them off
+the queue in arrival order, four at a time, and **only fills what is empty**,
+which is what lets it run from `seed()`, from `applyFormat()` and from the
+"Fill from the queue" button without ever rewriting an arrangement somebody
+made. It is a starting point, not a plan: everything in it drags.
+
+`applyFormat('queue')` also used to `return` before `setMode`, `closeSheet`,
+the repaint, the save and the toast at the foot of that function — so switching
+to Open play left the sheet open over a screen that had not changed.
 
 **`Live.adopt()` replaces `S` wholesale** via `Object.assign(blank(), state,
 {live, liveCode, pin})`. Anything set on `S` before an adopt is lost. Set
