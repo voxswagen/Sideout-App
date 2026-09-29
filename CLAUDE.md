@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v154`. Forgetting this means testers see last week's app and
+Currently `sideout-v155`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -638,6 +638,28 @@ Nothing is lost that is not better covered — `Score.undo()` steps back a
 rally, `Score.unfinish()` un-records a game, the swap arrow fixes a wrong
 winner, and `removeAddedGame()` takes a hand-typed game back off and gives
 the four players exactly what it gave them.
+
+**"A round ends" is now the whole of the rule, and there used to be a second
+switch quietly overruling it.** `rolling()` was `!S.timed && S.instant`, and
+`S.instant` was a separate toggle — "Each court rotates on its own" — sitting
+underneath, **defaulting to off on the Manage screen**. So choosing "when the
+game's done" and then finding that finishing a court did nothing was the
+normal experience of it: two controls for one decision, and the one people
+found first was overruled by the one they did not. `rolling()` is
+`S.active && !S.timed` now and both toggles are gone.
+
+What each setting means is therefore what it says. **When the game's done**: a
+finished court arms `Spin` and refills from the queue on its own, the other
+courts carry on untouched and the round does not move. **On the clock**: no
+countdown, nothing refills, and `nextRound()`'s `allReported()` gate holds
+until every court is in.
+
+**Two buttons on a court card said Undo and the one people tried was the dead
+one.** `run-undo` steps back a rally, and `run-fin` reads "Undo" once a game is
+recorded — so a recorded card carried a greyed-out Undo beside a live one.
+The rally Undo is not drawn at all on a recorded card now, so whatever says
+Undo is the one that works. A *playing* card with no rally yet still shows it
+greyed, which is right: there is something to take back there, just not yet.
 
 **A score can be typed as well as tapped.** Tapping a rally at a time is
 right at the net; it is wrong when somebody walks over and says "we won

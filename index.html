@@ -6654,12 +6654,6 @@ body.casting{overflow:hidden}
         <div class="val">first to <span id="target-val">11</span></div>
         <button onclick="bumpTarget(1)" aria-label="Higher target">+</button>
       </div>
-      <hr class="rule">
-      <div class="switch">
-        <span class="txt"><b>Each court rotates on its own</b>
-          <span>A court refills the moment its game ends, instead of everyone waiting for the slowest court.</span></span>
-        <label class="toggle"><input type="checkbox" id="opt-instant" checked onchange="setInstant(this.checked)"><i></i></label>
-      </div>
       <p class="hint" id="instant-note" style="margin:10px 0 0">Winners move up to the court above and losers drop to the one below, joining the line for that court. Works best with four or more spare players.</p>
     </div>
     <hr class="rule">
@@ -6875,10 +6869,6 @@ body.casting{overflow:hidden}
         <button onclick="bumpTarget(-1)" aria-label="Lower target">−</button>
         <div class="val">first to <span id="target-val-live">11</span></div>
         <button onclick="bumpTarget(1)" aria-label="Higher target">+</button>
-      </div>
-      <div class="switch" style="margin-top:10px">
-        <span class="txt"><b>Each court rotates on its own</b><span>No waiting for the other courts.</span></span>
-        <label class="toggle"><input type="checkbox" id="opt-instant-live" onchange="setInstant(this.checked)"><i></i></label>
       </div>
     </div>
     <hr class="rule">
@@ -10355,7 +10345,8 @@ function setTimed(on){
   else Clock.setDefault(S.mins*60);
   if(!S.timed) armPending();
   syncRoundEndUI(); renderAll(); save();
-  toast(on ? 'Rounds run on the clock.' : 'Rounds end when the games do.');
+  toast(on ? 'Rounds run on the clock \u2014 every court waits for the whistle.'
+    : 'A court that finishes goes again \u2014 no waiting for the others.');
 }
 function bumpRest(d){
   S.restAfter = Math.max(0, Math.min(12, (S.restAfter||0) + d));
@@ -10403,10 +10394,6 @@ function syncRoundEndUI(){
   ['opt-scores','opt-scores-live'].forEach(id2=>{
     const e = document.getElementById(id2); if(e) e.checked = !!S.scores;
   });
-  const ci = document.getElementById('opt-instant');
-  if(ci) ci.checked = S.instant;
-  const cil = document.getElementById('opt-instant-live');
-  if(cil) cil.checked = S.instant;
   try{ paintSetupSummary(); }catch(e){}
   document.getElementById('clock-toggle').hidden = !S.timed;
   /* Nothing to nudge when the round ends on a score rather than a clock. */
@@ -11516,6 +11503,11 @@ function renderRun(){
     const p = Score.pts(c);
     const lead = Score.lead(c);
     const legal = Score.legal(c);
+    /* A recorded game has no last rally to step back to, so this button sat
+       there greyed out beside the Finish button — which itself says "Undo"
+       once a game is recorded. Two controls with the same word on them, and
+       the one that did nothing was the one people tried. It is not drawn at
+       all now, so whatever says Undo is the one that works. */
     const canUndo = !recorded && c.lastPt !== undefined && c.lastPt !== null;
 
     const side = k =>{
@@ -11561,10 +11553,11 @@ function renderRun(){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6"/></svg>
           Type it</button>
-        <button class="run-undo" onclick="Score.undo(${i})"${canUndo ? '' : ' disabled'}>
+        ${recorded ? '' : `<button class="run-undo" onclick="Score.undo(${i})"${
+          canUndo ? '' : ' disabled'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4.5V9h4.5"/></svg>
-          Undo</button>
+          Undo</button>`}
         <button class="run-fin${!recorded && legal ? ' go' : ''}"
           onclick="Score.${recorded ? 'unfinish' : 'finish'}(${i})"${
           recorded || legal ? '' : ' disabled'}>${recorded ? 'Undo' : 'Finish game'}</button>
@@ -14129,13 +14122,18 @@ function armPending(){
   });
   if(any) Spin.ensure();
 }
-function setInstant(on){
-  S.instant = !!on;
-  if(!S.instant){ S.courts.forEach((c,i)=> Spin.cancel(i)); Spin.stop(); flushPools(); }
-  else armPending();
-  syncRoundEndUI(); renderAll(); TV.paint(); save();
-}
-function rolling(){ return S.active && !S.timed && S.instant; }
+/* "A round ends" answers this on its own now. When the game's done, a court
+   that finishes refills from the queue there and then — waiting for three
+   other courts is exactly what that setting says you are not doing. On the
+   clock, every court runs to the same whistle, so `nextRound()`'s
+   `allReported()` gate is the right one and nothing rolls early.
+
+   There used to be a second switch, "Each court rotates on its own", sitting
+   underneath and defaulting to off on the Manage screen — so choosing "when
+   the game's done" and then finding that finishing a court did nothing was
+   the normal experience of it. Two controls for one decision, and the one
+   people found first was overruled by the one they did not. */
+function rolling(){ return S.active && !S.timed; }
 
 function paintDock(){
   if(!S.active) return;
