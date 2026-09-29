@@ -2346,9 +2346,6 @@ textarea:focus{border-color:var(--court)}
 .court-foot .go-down{color:var(--fault)}
 .court-foot .hold{color:var(--crown)}
 .court-foot .spacer{flex:1}
-.undo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px}
-.undo:hover{color:var(--court-ink)}
 
 /* ═════════ QUEUE ═════════ */
 .queue{display:flex;flex-wrap:wrap;gap:6px}
@@ -6985,7 +6982,7 @@ body.casting{overflow:hidden}
     <div class="kv"><span>Time on court</span><b id="st-elapsed">0m</b></div>
   </div>
   <div class="panel">
-    <h2>Results <button class="undo" onclick="undoLast()">Undo last</button></h2>
+    <h2>Results</h2>
     <div class="log" id="log"></div>
     <button class="btn btn-quiet btn-sm" style="width:100%;margin-top:10px"
       onclick="AddGame.open()">Add a game by hand</button>
@@ -8426,6 +8423,11 @@ function load(){
     const d = JSON.parse(raw);
     if(!d || d.v !== 3) return false;
     S = Object.assign(blank(), d);
+    /* A night saved before "Undo last" was removed carries its snapshot — a
+       JSON copy of the whole session taken at the last rotation. Nothing reads
+       it any more and it travels inside `sessions.state` on every save, so it
+       comes off on the way in rather than being carried around for ever. */
+    delete S.snap;
     return true;
   }catch(e){ return false; }
 }
@@ -11205,7 +11207,7 @@ function startSession(anyway, confirmed){
   if(n < S.nCourts) toast('Running ' + n + ' court' + (n>1?'s':'') + ' — that is what the numbers allow.');
 
   Object.values(S.players).forEach(p=>{ p.w=0; p.l=0; p.g=0; p.pf=0; p.pa=0; p.crowns=0; p.streak=0; p.sat=0; });
-  S.nCourts = n; S.round = 1; S.games = 0; S.log = []; S.snap = null; S.pool = [];
+  S.nCourts = n; S.round = 1; S.games = 0; S.log = []; S.pool = [];
   /* cleared for every format, so switching modes never leaves a stale
      set of tiers behind */
   S.tiers = null; S.tierStats = null;
@@ -13314,8 +13316,6 @@ function allReported(){
    ═══════════════════════════════════════════════════ */
 function nextRound(){
   if(!allReported()){ toast('Finish every court first.'); return; }
-  S.snap = JSON.stringify({ players:S.players, courts:S.courts, queue:S.queue,
-                            round:S.round, games:S.games, log:S.log });
 
   // bank the results
   S.courts.forEach((c,i)=>{
@@ -13769,16 +13769,6 @@ function fillGaps(){
       (c.teams[0].length < 2 ? c.teams[0] : c.teams[1]).push(next);
     }
   });
-}
-
-function undoLast(){
-  Auto.reset();
-  if(!S.snap){ toast('Nothing to undo yet.'); return; }
-  const d = JSON.parse(S.snap);
-  Object.assign(S, d);
-  S.snap = null; invalidatePlan();
-  renderAll(); TV.paint(); save();
-  toast('Back to round ' + S.round + '.');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -20644,45 +20634,34 @@ async function startOrganizing(){
   /* the role may not have been read yet on a cold open */
   if(!Auth.me) await Auth.whoami();
   if(canOrganize()){
-    /* Running one night does not stop you setting up another — an organizer
-       takes next Thursday's entries while tonight is still on court. What this
-       sheet is for is the screen, not the session: the app shows one night at
-       a time, so the new one takes this one's place in front of you.
+    /* No sheet when there is nothing to lose. A night that is on the server
+       carries on whatever this phone does next — it keeps its code, its link
+       and everyone on it, and any organizer can open it again from Sessions.
+       So asking "are you sure" about an action with no consequence is a modal
+       standing between an organizer and the thing they just asked for, twice
+       in a row, and the honest answer is to get out of the way and say after
+       the fact where the old one went.
 
-       It used to say that setting another one up "puts tonight down on this
-       phone", which is the device-ownership story the app no longer tells and
-       never should have. Nothing happens to the night. It is on the server,
-       every organizer can open it, and this phone was only ever the one
-       looking at it. */
-    if(S.active){
-      openSheet(`<h3>You are on ${esc(S.title || 'tonight')}</h3>
-        <p class="sub">Sideout shows one night at a time, so a new one takes its place on
-          screen. ${esc(S.title || 'Tonight')} carries on exactly as it is — same link, same
-          code <b>${esc(S.liveCode || '')}</b>, same people — and any organizer can open it
-          from Sessions, you included.</p>
-        <button class="btn btn-go" onclick="closeSheet();freshSession()">Set up another night</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('run')">
-          Stay on ${esc(S.title || 'tonight')}</button>`);
+       The one case that does warrant asking is a night running with no link
+       at all: that one exists nowhere but here, so leaving it really does end
+       it. That is the sheet below, and it is the only one left. */
+    const left = Object.keys(S.players || {}).length;
+    if(S.active && !S.liveCode){
+      openSheet(`<h3>${esc(S.title || 'Tonight')} is running here only</h3>
+        <p class="sub">It was never put online, so it is on this phone and nowhere else —
+          starting another one ends it, and the games already played go with it.
+          Take it online first and it keeps its own link and code.</p>
+        <button class="btn btn-quiet" onclick="closeSheet();go('run')">
+          Back to ${esc(S.title || 'tonight')}</button>
+        <button class="btn btn-risk" style="margin-top:8px" onclick="closeSheet();freshSession()">
+          End it and start another</button>`);
       return;
     }
-    /* Last night's roster is still sitting in the setup screen. Offer
-       a clean sheet rather than making somebody delete eight players. */
-    /* Two different situations wear the same face here. Either a session that
-       exists on the server is the one open on screen, or the compose screen
-       simply still has last night's roster sitting in it. Say which, because
-       the reassurance somebody needs is different — and the first one is not
-       about this device either. */
-    const left = Object.keys(S.players || {}).length;
-    if(S.liveCode){
-      openSheet(`<h3>Start a new open play?</h3>
-        <p class="sub">You have <b>${esc(sessionTitle())}</b> open${
-          left ? ` with <b>${left}</b> player${left === 1 ? '' : 's'} on the list` : ''}.
-          Starting a new one leaves it exactly as it is — same link, same code
-          <b>${esc(S.liveCode)}</b>, everyone who joined still on it — and it is there on
-          Sessions whenever you want it back.</p>
-        <button class="btn btn-go" onclick="closeSheet();freshSession()">Start a new one</button>
-        <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet();go('new')">
-          Go back to ${esc(sessionTitle())}</button>`);
+    if(S.active || S.liveCode){
+      const was = sessionTitle(), code = S.liveCode;
+      freshSession();
+      toast(esc(was) + ' is still on \u2014 open it again from Sessions'
+        + (code ? ' or with ' + code : '') + '.');
       return;
     }
     if(left || (S.title || '').trim()){
@@ -26794,11 +26773,15 @@ function logRow(e, k){
     </div>`;
 }
 
-/* Only for games put in by hand. Undo last steps back to the previous
-   round, which is the right instrument for a round that went wrong and the
-   wrong one for a line typed in error twenty minutes ago \u2014 it would take
-   everything since with it. A game added by hand can simply be taken back
-   off, and the four players get back exactly what it gave them. */
+/* Only for games put in by hand. There is no "undo the last round" any more:
+   it restored a JSON copy of the whole session taken at the last rotation, so
+   it worked once, only immediately afterwards, and it knew nothing about the
+   plan, the stacks or another organizer's writes \u2014 which since co-hosting
+   landed means it could throw away somebody else's rallies. Everything before
+   a round is banked is on the Score screen (a rally at a time, or Undo on a
+   recorded game), a wrong winner is the swap arrow, and a game typed in by
+   hand can simply be taken back off, which gives the four players back exactly
+   what it gave them. */
 function removeAddedGame(k){
   const e = S.log[k];
   if(!e || !e.added) return;
@@ -29986,7 +29969,7 @@ async function runReset(wipe){
      before it had even been given a date. */
   S.live = false; S.ended = false; S.endedAt = null; S.liveCode = null; S.pin = null;
   S.cancelled = false; S.cancelNote = '';
-  S.courts=[]; S.queue=[]; S.pool=[]; S.bracket=null; S.round=0; S.games=0; S.log=[]; S.active=false; S.snap=null; S.started=null;
+  S.courts=[]; S.queue=[]; S.pool=[]; S.bracket=null; S.round=0; S.games=0; S.log=[]; S.active=false; S.started=null;
   Spin.stop();
   /* Today, not the editor. The night is over: what somebody wants next is
      the results and the feed, not a blank form. (This used to say 'setup',

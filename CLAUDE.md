@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v153`. Forgetting this means testers see last week's app and
+Currently `sideout-v154`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -623,6 +623,22 @@ a tap, which is why both gestures can live on one handler.
 moves the page instead of the name. The ghost is `pointer-events:none`, or
 it becomes the thing under the cursor when we ask what is.
 
+**There were two Undos and the second one was a round rollback in disguise.**
+The Stats screen's Results panel carried "Undo last", which read as "undo that
+last result" and was not: `undoLast()` restored `S.snap`, a JSON copy of the
+whole session taken by `nextRound()`. So it worked once, only immediately
+after a rotation, and said "Nothing to undo yet" every other time — and it
+knew nothing about `S.next`, `S.stacks` or another organizer's writes, which
+since co-hosting landed means it could throw away somebody else's rallies.
+
+Gone, with the snapshot that fed it: a full stringify of the session every
+round, travelling inside `sessions.state` on every save. `load()` deletes a
+`snap` left on an older saved night rather than carrying it around for ever.
+Nothing is lost that is not better covered — `Score.undo()` steps back a
+rally, `Score.unfinish()` un-records a game, the swap arrow fixes a wrong
+winner, and `removeAddedGame()` takes a hand-typed game back off and gives
+the four players exactly what it gave them.
+
 **A score can be typed as well as tapped.** Tapping a rally at a time is
 right at the net; it is wrong when somebody walks over and says "we won
 11-7", which is one fact and eighteen taps. `Score.type()` writes the same
@@ -1191,6 +1207,20 @@ into at most two entries — whoever it is today, and whoever it is inside the
 week — so there is nothing to post, nothing to post twice and nothing to go
 stale. Neither carries an actions bar: a heart on something the app worked
 out this morning would have nowhere to be kept.
+
+**A confirmation whose "yes" branch costs nothing is a modal in the way.**
+`startOrganizing()` put a sheet in front of an organizer who had just asked
+for a new night, twice over — once when one was running and once when one was
+merely open. Neither had anything to warn about: a night that is on the server
+keeps its code, its link and everyone on it whatever this phone does next, and
+any organizer can open it again from Sessions. Rewriting the copy did not fix
+that, because the copy was not the problem. It goes straight through now and
+says afterwards where the old one went.
+
+Two sheets are left and both are about something that would really be lost: a
+night **running with no link**, which exists nowhere but this phone, and a
+half-filled draft, which has not been published anywhere. That is the test for
+any sheet added here — name what is destroyed, or do not ask.
 
 **Groups have been taken off every path into them except Club settings.**
 The clubs list on the profile, "A group" in the Start something sheet, and
