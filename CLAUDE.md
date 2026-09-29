@@ -47,7 +47,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v149`. Forgetting this means testers see last week's app and
+Currently `sideout-v151`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -515,6 +515,34 @@ Gauntlet asked somebody to do a job the app had already done, and read as a
 broken screen rather than as a screen with nothing to say. A format with no
 honest preview (River, Court Wars) returns nulls and gets an empty stack,
 which is correct: those rebuild from standings nobody has tapped in yet.
+
+**"That court is full" over a stack of three came from counting a different
+list from the one on screen.** `Stacks.planned()` filtered out anybody
+currently on court, so a court with four names pencilled in drew two of them
+and two dashed "Empty" boxes, said 2/4, and then refused the drop as full
+because `planMove()` counted the raw `S.next.courts`. Three separate halves of
+that, all worth keeping written down:
+
+* **Somebody mid-game is very often in the next round.** That is the whole of
+  Gauntlet — the winners move up a court. `planned()` no longer hides them; the
+  chip is dashed and says "on" instead of a games count, so 4/4 reads as "four
+  down for this, two still out there" rather than as a half-empty court.
+* **The count comes off `planned()`**, the list the screen draws, so the two
+  cannot disagree again.
+* **The screen draws from `nextLineups()` live; a change has to go into
+  `S.next`,** which `refreshPlan()` may not have built yet — so a full plan
+  could be on screen with nothing behind it and every drop was refused.
+  `planMove()` calls `refreshPlan()` first.
+
+**Showable and droppable are two different questions**, and conflating them
+drew four Empty boxes over a court nothing could be dropped into.
+`PLANLESS_MODES` is now the one list of the formats that keep no `S.next`
+(`queue` is manual, and `kotc`, `river`, `wars`, `mlp` rebuild the next round
+from results nobody has tapped in) — `refreshPlan()` and the Queue screen both
+read it, so what the screen offers as a target and what the app is willing to
+store cannot drift. King of the Court has an honest preview it will not honour
+an override of, so its stacks show their names, carry no `data-drop` and are
+never padded out to four. A column only pads to four if it takes a name.
 
 **An empty seat takes a name, in every format that has one.** `move()` used
 to refuse any drop in a planned format and offer the swap instead, which was
