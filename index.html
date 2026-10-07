@@ -10958,7 +10958,13 @@ function renderSession(){
       ${S.live && S.liveCode
         ? `<button class="sos-btn sos-btn-go ses-go" onclick="liveSheet()">Share this night</button>`
         : ''}
-      <button class="ses-quiet" onclick="go('comments')">Comments</button>
+      ${/* `go('comments')` on its own opened the screen without telling it
+            which thread, so `Comments.at` stayed null, `load()` returned at
+            its first line and the screen said "Reading…" for ever. A night
+            has its own post — `kind:'night'`, keyed on the code — so ask for
+            that. */''}
+      <button class="ses-quiet"
+        onclick="Comments.forCode('${esc(S.liveCode || S.code || '')}')">Comments</button>
     </div>
 
     <h2 class="sos-t-grp ses-grp">ON COURT</h2>
@@ -21740,6 +21746,28 @@ const PTR = {
 const Comments = {
   at: null, post: null, rows: null, failed: false, from: 'home',
 
+  /* The conversation about a night, reached from the night rather than from
+     its post. A night only has a post once `sideout_post_night` has written
+     one, which happens when the results are banked — so before that there is
+     genuinely nothing to open, and this says so rather than opening an empty
+     thread that can never be posted to. Today's feed may not have been read
+     yet on this route, so it loads first if it has to. */
+  async forCode(code){
+    if(!code){ toast('This night has no thread yet.'); return; }
+    if(!Auth.signedIn()){ AuthUI.open(()=> Comments.forCode(code), 'in'); return; }
+    const find = ()=> (Posts.list || []).find(x => x.code === code && x.kind === 'night');
+    let post = find();
+    if(!post && !Posts.absent){
+      try{ await Posts.load(); }catch(e){}
+      post = find();
+    }
+    if(!post){
+      toast('Nothing has been written about this night yet.');
+      return;
+    }
+    this.open(post.id);
+  },
+
   open(id){
     if(!Auth.signedIn()){ AuthUI.open(()=> Comments.open(id), 'in'); return; }
     this.at = id;
@@ -21808,7 +21836,10 @@ const Comments = {
         ${p.body ? `<p class="pst-b">${esc(p.body)}</p>` : ''}
       </article>` : ''}
       <div class="cmt-list">${
-        this.failed && !(rows || []).length
+        !this.at
+          ? `<p class="pst-none pad">No thread open. Pick a post on Today to
+              read what people said about it.</p>`
+        : this.failed && !(rows || []).length
           ? `<p class="pst-none pad">Could not read the thread.
               <button class="sos-again" onclick="Comments.load()">Try again</button></p>`
           : rows === null
@@ -21827,14 +21858,17 @@ const Comments = {
               : `<p class="pst-none pad">Nothing said yet. Be the first.</p>`
       }</div>
       <div class="sos-tail cmt-tail"></div>
-      <div class="cmt-say">
+      ${/* No thread, no composer. A box that says "Say something" over a
+            screen with nothing to say it about can only fail on send, and
+            failing is a worse answer than not asking. */''}
+      ${this.at ? `<div class="cmt-say">
         <input type="text" id="cmt-in" placeholder="Say something" maxlength="500"
           onkeydown="if(event.key==='Enter')Comments.send()">
         <button onclick="Comments.send()" aria-label="Send">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
         </button>
-      </div>`;
+      </div>` : ''}`;
   }
 };
 

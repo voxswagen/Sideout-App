@@ -219,7 +219,7 @@ would be open to the internet.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v175`. Forgetting this means testers see last week's app and
+Currently `sideout-v176`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -850,6 +850,30 @@ screen anybody can reach — as opposed to one that only exists inside a
 session — needs one, or `go()` rewrites its name to `'setup'` when no
 session is running and a comment thread opens the old editor. That rule has
 now caught `setup`, `new` and `comments`; assume it will catch the next one.
+
+**The Session screen's Comments button opened a screen that said
+"Reading…" for ever.** It called `go('comments')` and nothing else — so
+`Comments.at` was never set, `load()` returned at its first line because of
+it, `rows` stayed null, and the one branch that draws for null rows is the
+loading state. Nothing threw and nothing logged. From Today the same screen
+works perfectly, because `Comments.open(id)` sets `at` before routing: this is
+exactly the shape these notes already name, **a screen that is only correct
+because of who happens to call it**, and the second caller is what finds it.
+
+Two halves, and both were needed:
+
+* **`Comments.forCode(code)`** is the door from a night. A night's post is
+  `kind:'night'` keyed on the code, written by `sideout_post_night` when the
+  results are banked — so before that there is genuinely nothing to open, and
+  it says so rather than opening a thread nobody can post to. It loads Today's
+  feed first if this route reached the screen without it.
+* **`paint()` no longer claims to be reading when nothing asked it to open.**
+  `!this.at` draws an honest empty state, and **the composer is gone with it**
+  — a box saying "Say something" over a screen with no post can only fail on
+  send, and failing is a worse answer than not asking.
+
+Checked four ways: the bare route, a night with a post, a night with none, and
+an empty code.
 
 **Pull to refresh is a spacer, not a spinner.** `PTR` accumulates a distance
 and the indicator's *height is that distance*, so the page moves with the
