@@ -2016,6 +2016,15 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
   text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
 .vw-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--edge);font-size:14px}
 .vw-row:first-of-type{border-top:0}
+/* A place in the queue, in front of the name. The number is the point of the
+   chip — a name on its own says somebody is waiting and not how long for. */
+.chip.q i{font-style:normal;font-variant-numeric:tabular-nums;font-size:11px;
+  font-weight:700;color:var(--ink-3);margin-right:5px}
+.chip.q.up i{color:inherit}
+.vw-qmore{display:block;width:100%;margin-top:10px;min-height:38px;border-radius:10px;
+  border:1px solid var(--edge-2);background:none;font-family:inherit;font-size:13px;
+  font-weight:600;color:var(--ink-2);cursor:pointer}
+.vw-qmore:hover{border-color:var(--court);color:var(--court)}
 .vw-row .rk{width:26px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--ink-3)}
 .vw-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vw-row .rec{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:var(--ink-2)}
@@ -22998,24 +23007,22 @@ function copySessionLink(code, btn){
 const MANAGER_URL = 'https://sosqueue.netlify.app';
 
 function managerLink(code){
-  let url = MANAGER_URL + '/#run/' + encodeURIComponent(code);
-  /* The session is carried across as further path segments, not as query
-     parameters, and the reason is the route it has to survive. A hash router
-     that splits on "/" reads the code at parts[1]; append
-     `&access_token=…` and that code becomes the night's name with a JWT
-     stuck to the end of it. This way parts[1] is untouched and an app that
-     knows nothing about `at` simply never looks past it.
+  /* Nothing may be appended to this. The manager's router is
+     `hash.slice(4).toUpperCase().replace(/[^A-Z0-9]/g,'')` — it takes
+     *everything* after `run/`, uppercases it and strips every character that
+     is not a letter or a digit. So a token added after the code is not
+     separated from it by anything; it is concatenated into it.
+     `#run/ABC123/at/eyJhbGci…` arrives as the code `ABC123ATEYJHBGCI…`,
+     and "no such session in this club" is the correct answer to that.
 
-     A fragment never reaches a server log, which is why Supabase hands its
-     own sessions over the same way. It does land in that window's address
-     bar and in its history, so the receiving app should read it and then
-     drop it with replaceState rather than leave it sitting there. */
-  const se = (typeof Auth !== 'undefined') ? Auth.session : null;
-  if(se && se.access_token){
-    url += '/at/' + encodeURIComponent(se.access_token);
-    if(se.refresh_token) url += '/rt/' + encodeURIComponent(se.refresh_token);
-  }
-  return url;
+     The sign-in does not travel in the URL and does not need to. The manager
+     reads this app's own `sideout_session` key straight out of localStorage
+     — it calls this app "the desk" and has a `takeDeskSignIn()` that does
+     exactly that — so an organizer is already signed in there the moment the
+     two are served from one origin. On separate origins localStorage cannot
+     cross and nothing in a link can make it; the manager has its own Staff
+     sign in for that, once per device. */
+  return MANAGER_URL + '/#run/' + encodeURIComponent(code);
 }
 
 function openManager(code){
@@ -26284,6 +26291,12 @@ function leaveRecap(){ location.href = location.origin + '/'; }
    ═══════════════════════════════════════════════════ */
 const View = {
   code: null, t: null, snap: null, misses: 0,
+  /* How much of the waiting list is drawn before it is folded. Eight is two
+     rounds on four courts — far enough to see whether you are nearly up and
+     short enough that the panel is still a panel. */
+  Q_SHOWN: 8,
+  allQ: false,
+  moreQ(){ this.allQ = !this.allQ; if(this.snap) this.paint(); },
   me(){ try{ return JSON.parse(localStorage.getItem('sideout_me') || 'null'); }catch(e){ return null; } },
   setMe(v){ localStorage.setItem('sideout_me', JSON.stringify(v)); },
 
@@ -26524,8 +26537,20 @@ const View = {
     this.paintPeople(s2);
     const facts = this.factsHTML(s2);
 
-    const queue = s2.queue.length ? `<div class="vw-panel"><h3>Waiting</h3>
-      <div class="chips">${s2.queue.map((n2,i)=>`<span class="chip${i<2?' up':''}">${esc(n2)}</span>`).join('')}</div></div>` : '';
+    /* Sixty people drawn as sixty chips is fifteen screens of scrolling, and
+       the thing somebody opens this page to find out — how far off am I — is
+       the one thing a flat cloud of names cannot tell them. It is a queue, so
+       it is numbered and it is folded: the next few, then a count.
+
+       Not deleted. On a night this size the waiting list is most of who is
+       there, and the people reading it are the ones not playing yet. */
+    const qn = s2.queue.length;
+    const shown = this.allQ ? qn : Math.min(qn, View.Q_SHOWN);
+    const queue = qn ? `<div class="vw-panel"><h3>Waiting · ${qn}</h3>
+      <div class="chips">${s2.queue.slice(0, shown).map((n2,i)=>
+        `<span class="chip q${i<2?' up':''}"><i>${i+1}</i>${esc(n2)}</span>`).join('')}</div>
+      ${qn > View.Q_SHOWN ? `<button class="vw-qmore" onclick="View.moreQ()">${this.allQ
+          ? 'Show fewer' : 'Show all ' + qn}</button>` : ''}</div>` : '';
 
     /* Checked before "ended", because a called-off night is technically
        ended and somebody reading "Session ended" will assume they simply

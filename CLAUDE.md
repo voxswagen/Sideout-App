@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v173`. Forgetting this means testers see last week's app and
+Currently `sideout-v175`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -350,37 +350,70 @@ Four things changed with it, and three are worth arguing about:
   what the box was set to, so behaviour is unchanged — the screen just stops
   asking a question almost nobody wants put.
 
-**There is a way across to the manager app now, and the session rides in the
-path.** An organizer could see a night here and not run it, which is a dead
-end on the one screen they most need not to hit. Every upcoming night carries
-**Open the session manager** under it for `canOrganize()`, going to
-`sosqueue.netlify.app/#run/CODE`.
+**There is a way across to the manager app now.** An organizer could see a
+night here and not run it, which is a dead end on the one screen they most
+need not to hit. Every upcoming night carries **Open the session manager**
+under it for `canOrganize()`, going to `sosqueue.netlify.app/#run/CODE`.
 
-Three things about it are deliberate:
+**Nothing may be appended to that URL, and finding that out the hard way is
+the note.** The first version carried the signed-in session as further path
+segments — `#run/CODE/at/<token>/rt/<token>` — on the reasoning that a hash
+router splitting on `/` would still read a clean code at `parts[1]`. The
+manager does not split on anything. Its router is:
 
-* **The tokens are extra path segments, not query parameters.**
-  `#run/CODE/at/<access_token>/rt/<refresh_token>`. A hash router that splits
-  on `/` reads the code at `parts[1]`; append `&access_token=…` the way
-  Supabase does and that code becomes the night's name with a JWT stuck to it.
-  This way `parts[1]` is untouched and an app that knows nothing about `at`
-  never looks past it — so the link works whether or not the other side has
-  been taught to read it.
-* **The receiving app has to do its half, and it is not written here.** It
-  calls `setSession({access_token, refresh_token})` and then
-  `history.replaceState(null,'','#run/'+code)`. A fragment never reaches a
-  server log, which is why Supabase hands its own sessions over this way, but
-  it does sit in that window's address bar and history until something drops
-  it.
-* **A new window, not a navigation.** An organizer scoring a night is in it
-  for two hours and should not have to find their way back; and on an
-  installed phone a same-tab navigation to another origin walks out of the
-  PWA. A blocked pop-up is silent, so `openManager()` notices and copies the
-  address — the same answer `BoardCast.away()` gives.
+```js
+if (hash.startsWith("run/")) {
+  const code = hash.slice(4).toUpperCase().replace(/[^A-Z0-9]/g, "");
+```
 
-`.gm-card` is a `<button>`, so the row cannot live inside it: a button inside
-a button is markup the browser takes apart. `.gm-item` is the card now and
+Everything after `run/`, uppercased, with every non-alphanumeric character
+*removed* — so the token is not separated from the code, it is **concatenated
+into it**. `#run/ABC123/at/eyJhbGci…` arrives as `ABC123ATEYJHBGCI…` and the
+manager says "no such session in this club", which is the correct answer to
+the question it was asked. No appended scheme of any shape survives that line.
+
+The lesson is the cheap one: **the receiving app's parser is readable.** It is
+a public static page; `curl` it and `grep` for the route. Two minutes of that
+beats any amount of reasoning about what a hash router probably does.
+
+**And the sign-in never needed the URL.** The manager already reads this app's
+own `Auth.KEY` — `sideout_session` — straight out of `localStorage`, in a
+`takeDeskSignIn()` that calls this app "the desk" and takes its copy when it is
+the newer one. `giveDeskSignIn()` does the reverse and clears `sideout_whoami`,
+which is this app's key too. **The two were built to be served from one
+origin**, and on one origin an organizer is simply already signed in. Across
+origins `localStorage` cannot cross and no link can make it; the manager has
+its own **Staff sign in** for that, once per device. Worth knowing before
+anybody tries to solve this in a URL again.
+
+A new window rather than a navigation, because an organizer scoring a night is
+in it for two hours and on an installed phone a same-tab navigation to another
+origin walks out of the PWA. A blocked pop-up is silent, so `openManager()`
+notices and copies the address — the same answer `BoardCast.away()` gives.
+
+`.gm-card` is a `<button>`, so the row cannot live inside it: a button inside a
+button is markup the browser takes apart. `.gm-item` is the card now and
 carries the background, radius and shadow the card used to; `.gm-card` carries
 none of them. A night with no manager row looks exactly as it did.
+
+**The waiting list is a queue and was drawn as a cloud.** `View.paint()`
+mapped the whole of `s2.queue` into chips with no bound, so a 60-player night
+was fifteen screens of names — and the question somebody opens the watch page
+to answer, *how far off am I*, is the one thing an unordered cloud cannot say.
+The order is the call order and it was invisible.
+
+Numbered, and folded to `View.Q_SHOWN` (8, which is two rounds on four courts)
+with `Show all N` behind it. The heading carries the count. **Not deleted**: on
+a night that size the waiting list is most of who is in the room, and the
+people reading it are the ones not playing yet. Checked at 60, 1 and 0 — one
+waiter draws no toggle and none draws no panel.
+
+The same wall exists in the **manager app's desk**
+(`sosqueue.netlify.app/desk/index.html`), which is a different repository and
+cannot be edited from here. There it should also say where *the viewer* is
+("you are 14th, about 3 rounds off"), because unlike the watch page the desk
+knows who is looking — `s2.queue` here is names, not ids, so this app cannot
+honestly pick anybody out of it.
 
 **The club signs its posts with the club's icon, and `clubAvatar()` is the one
 copy of it.** It was the letters "SS" in four places — a night, a crown, the
