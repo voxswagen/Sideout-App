@@ -34,6 +34,30 @@ turns off the Score/Queue/Manage/Stats strip and the clock dock without
 than being chased to a dozen call sites, and `manageSession()` redirects to the
 watch view so a stale cache or an old notification still lands somewhere.
 
+**The session brand bar was on screen from the first paint, over everything.**
+`<header class="top">` — back button, club badge, the format underneath, the
+Live pill, the big-screen button — had **no `hidden` in its markup**, so it was
+visible until something thought to take it away. `showOnly()` hid it for every
+screen, but anything that landed before that ran, or never called it, left a
+navy band saying "Sideout Society / Gauntlet" across the top of the app. All of
+it was about running a night, so it is deleted rather than hidden.
+
+**And deleting it took the whole app down, for a reason worth writing down.**
+Three unguarded top-level statements —
+`document.getElementById('brand-badge').src = BADGE` and two neighbours — ran
+at the top level of the script block. `#brand-badge` was in that header, so one
+of them threw `Cannot set properties of null`, the script stopped there, and
+**every `const` below it never initialised**: `Auth`, `Club`, `Score`, the lot.
+The app booted into a page with no app on it and the only clue was one
+TypeError. Function declarations still worked, because they hoist, which is
+what made it look like a scoping puzzle rather than a dead script.
+
+They go through a guarded `setSrc()` now. Nothing in this file may assume an
+element exists at parse time: the harness catches it because it reports a FATAL
+when `Auth` is undefined, and that is the symptom to recognise — `typeof Live`
+is `object` and `typeof Auth` is `undefined` means a top-level throw between
+the two declarations, not a missing file.
+
 **`gateScreens()` had an organizer branch, and it is what made the app look
 like it had no front page.** Every launch, an organizer with a night still
 loaded on the phone hit `else if(S.active) go('play')` — which now redirects —
@@ -132,7 +156,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v162`. Forgetting this means testers see last week's app and
+Currently `sideout-v163`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 

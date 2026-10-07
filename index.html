@@ -5800,33 +5800,6 @@ body.casting{overflow:hidden}
      they both claimed top:0 and rode over each other on the way up the
      page. -->
 <div class="topstack">
-<header class="top"><div class="top-in">
-  <button class="icon-btn back-btn" id="back-btn" onclick="leaveToHome()"
-    aria-label="Back to your home page" title="Back to your home page">←</button>
-  <!-- One mark, one name. This carried the club badge, a wordmark image of
-       the club name, and the format underneath — three brand-ish things
-       stacked in a bar 42px tall, which is what made a session look like it
-       belonged to two different products. -->
-  <img class="badge" id="brand-badge" alt="">
-  <span class="badge brand-mark" id="brand-mark" hidden></span>
-  <div class="brand">
-    <b id="brand-name">Sideout Society</b>
-    <span id="brand-sub">King of the Court</span>
-  </div>
-  <!-- The Live pill is drawn only once a session is actually running. On the
-       setup screen it repeated what the Online row says a few centimetres
-       below, in a bar that is already carrying a badge and a name. -->
-  <button class="live-pill" id="live-pill" onclick="liveSheet()" title="Show the join code" hidden><i></i>Live</button>
-  <button class="icon-btn" id="tv-btn" onclick="TV.open()" title="Show on the big screen" hidden><span class="lic" data-ic="tv"></span></button>
-  <!-- The folder is gone from this bar. Picking up a session from another
-       device is a once-in-a-while thing and it still lives in the menu under
-       "Open a session"; it does not need a permanent seat above the courts,
-       where the only things worth having are to do with the night in hand. -->
-  <!-- Day/night moved out of here. It lives in Preferences, which is where
-       somebody looks for it, and it was one more thing to read past on a bar
-       above a form. -->
-  <button class="acct-btn" id="acct-btn" onclick="accountMenu()" aria-label="Your account" hidden></button>
-</div></header>
 
 <nav class="stabs" id="stabs" hidden>
   <!-- Play and Score were two names for tapping who won. Play was the old
@@ -7685,9 +7658,16 @@ function sosMark(px, opts){
 /* The sign-in screen wears the club's own mark as an image now, cropped in
    the markup, so there is nothing here to draw. sosMark() still renders
    the old mark for the screens that have not been redesigned yet. */
-document.getElementById('tv-mark').src = LOGO_LIGHT;
-document.getElementById('brand-badge').src = BADGE;
-document.getElementById('tv-badge').src = BADGE;
+/* Guarded, because these run at the top level of the script: one of them
+   finding nothing throws, and everything below — `Auth`, `Club`, `Score`,
+   every `const` in the file — never initialises. That is exactly what
+   happened when the session brand bar went and `#brand-badge` with it: the
+   app booted into a page with no app on it, and the only clue was a single
+   TypeError about setting `src` on null. Nothing else in this file may assume
+   an element exists at parse time either. */
+const setSrc = (id, url) =>{ const e = document.getElementById(id); if(e) e.src = url; };
+setSrc('tv-mark', LOGO_LIGHT);
+setSrc('tv-badge', BADGE);
 
 /* ═══════════════════════════════════════════════════
    STATE
@@ -13123,13 +13103,11 @@ function fillGaps(){
    `renderLive` is the only one with an element left (`#live-pill`), and the
    two syncs below are about the shell rather than a session. */
 function renderAll(){
-  renderLive();
+  /* Down to the shell. `renderLive()` painted the Live pill and the cancel
+     button, both of which lived on the session brand bar, and that bar has
+     gone with the rest of the night-running chrome. */
   syncNav(currentScreen());
   syncDocks();
-  /* The big screen button lived on the organizer's chrome. It may not be
-     there at all now, so it is asked for rather than assumed. */
-  const tv = document.getElementById('tv-btn');
-  if(tv) tv.hidden = !(S.active || S.bracket);
 }
 
 /* Two ways to look at the courts, remembered on the device.
@@ -19657,9 +19635,6 @@ function syncNav(name){
 }
 /* Step out of the session without ending it \u2014 it keeps running and
    the tabs are waiting when you come back. */
-function leaveToHome(){
-  go('home');
-}
 
 function showOnly(name){
   /* The pinned chat frame covers the screen, so it has to come off whenever
@@ -19687,10 +19662,12 @@ function showOnly(name){
      under the fold and made a two-field form scroll. */
   document.body.classList.toggle('nodock', name === 'landing' || name === 'auth');
   if(name === 'landing') paintLandingFacts();
-  const top = document.querySelector('header.top');
-  /* The format name and the session controls belong to the session.
-     Everywhere else they are just noise above the real bar. */
-  if(top) top.hidden = bare || ['play','players','stats','playoff','setup'].indexOf(name) < 0;
+  /* The session brand bar is gone. It carried a back button, the club badge,
+     the format underneath, the Live pill and the big-screen button — all of
+     it about running a night, none of it about the club. And it had no
+     `hidden` in its markup, so it was on screen from the first paint until
+     something thought to take it away: which is how a navy band saying
+     "Sideout Society / Gauntlet" ended up over the top of the app. */
   syncNav(name);
   syncDocks();
   /* After the classes are switched, not before. currentScreen() reads them,
@@ -24817,23 +24794,6 @@ function paintAcctBtn(){
    The sheet is kept for the one thing the profile cannot answer: a device
    running a session with nobody signed in on it. There is no profile to send
    that to, and it still needs a way in. */
-function accountMenu(){
-  if(Auth.signedIn()){ go('me'); return; }
-  const me = Auth.me || {};
-  const signedIn = Auth.signedIn();
-  const running = !!(S.active || S.live);
-  openSheet(`<h3>${signedIn ? esc(me.name || Auth.email()) : 'This device'}</h3>
-    <p class="sub">${signedIn
-      ? esc(Auth.email()) + (me.role === 'organizer' ? ' \u00b7 organizer' : '')
-      : 'Not signed in. This device is running a session, so it keeps the organizer screens.'}</p>
-    ${signedIn ? `<button class="btn btn-quiet" onclick="profileSheet()">Your profile and ID</button>` : ''}
-    ${running ? `<p class="hint tight" style="margin:12px 0 0">A session is running here.
-      Signing out leaves it alone \u2014 the link keeps working and the board stays put.</p>` : ''}
-    ${signedIn
-      ? `<button class="btn btn-risk" style="margin-top:8px" onclick="AuthUI.confirmOut()">Sign out</button>`
-      : `<button class="btn btn-go" style="margin-top:8px" onclick="closeSheet();AuthUI.open(null,'in')">Sign in</button>`}
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
-}
 
 function paintAccount(){
   const box = document.getElementById('account-box');
