@@ -6693,6 +6693,7 @@ body.casting{overflow:hidden}
 
     <footer class="ah-foot">
       <span class="c">&copy; Sideout Society</span>
+      <button onclick="AuthUI.about()">What is Sideout?</button>
       <button onclick="AuthUI.soonPage('Privacy')">Privacy</button>
       <button onclick="AuthUI.soonPage('Terms')">Terms</button>
       <button onclick="AuthUI.soonPage('Help')">Help</button>
@@ -17018,6 +17019,15 @@ const AuthUI = {
   },
 
   soon(which){ toast(which + ' sign-in is under development.'); },
+
+  /* The marketing page, for somebody who arrived without knowing what this
+     is. Its own Sign in and Join a night come back here. */
+  about(){
+    this.unpitch();
+    this.shown = false;
+    showOnly('landing');
+    try{ paintLandingFacts(); }catch(e){}
+  },
   soonPage(what){ toast(what + ' has not been written yet.'); },
 
   /* ── the pitch ────────────────────────────────────────────────────────
@@ -17206,7 +17216,7 @@ const AuthUI = {
     await Auth.signOut();
     leaveSession();
     closeSheet(); paintAccount(); paintAcctBtn(); renderAll();
-    showOnly('landing');
+    gateScreens();
     toast('Signed out.');
   }
 };
@@ -19899,10 +19909,18 @@ function gateScreens(){
     go('home');
     return;
   }
-  /* Signed out, or a token that has run out: the front page, not the app with
-     the tabs still along the bottom and a "sign in" button in the middle of
-     it. Somebody looking at a shell they cannot use assumes it is broken. */
-  showOnly('landing');
+  /* Signed out, or a token that has run out: the front door — sign in or
+     create an account, with the pitch beside it. Not the app with the tabs
+     still along the bottom and a "sign in" button in the middle of it:
+     somebody looking at a shell they cannot use assumes it is broken.
+
+     This used to be the marketing page. The front door does that job better
+     for somebody who already knows what this is, which at a one-club link is
+     nearly everybody — and the marketing page is one tap away on "What is
+     Sideout?" for whoever does not. With no accounts configured there is
+     nothing to sign in to, so that case still gets the page. */
+  if(Auth.on()) AuthUI.open(null, 'in');
+  else showOnly('landing');
 }
 /* The landing CTA. Local mode goes straight in; with accounts on you
    need to be signed in, and an organizer, before there is anything

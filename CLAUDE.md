@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v166`. Forgetting this means testers see last week's app and
+Currently `sideout-v167`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -295,6 +295,16 @@ old hard delete.
 where somebody attaches an existing record to their account. Anything
 reading that table needs an explicit kind filter — treating "not a leave"
 as a join announced claims as new players arriving.
+
+**`/` is the front door, not the marketing page.** `gateScreens()` sent a
+signed-out visitor to `screen-landing`; it opens the sign-in screen now. Both
+designs in the handoff claim the same address — Landing v2 says it "replaces
+the home page" and Home says it "is the app's front door" — and for a one-club
+link the front door is the better answer, because nearly everybody arriving
+already knows what this is. The marketing page is one tap away on **What is
+Sideout?** in the front door's footer, and its own Sign in and Join a night
+come straight back. With no accounts configured there is nothing to sign in
+to, so that case still gets the landing page.
 
 **The front door is one screen, and the multi-step signup is gone.** The old
 auth screen asked for eight things across three steps, which was the right
