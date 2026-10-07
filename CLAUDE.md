@@ -90,7 +90,7 @@ like it had no front page.** Every launch, an organizer with a night still
 loaded on the phone hit `else if(S.active) go('play')` — which now redirects —
 so the app opened on a session rather than on Today. Its `inApp` list named
 `setup`, `play`, `players`, `stats` and `playoff`, all five of them deleted
-screens. There is no organizer branch now: signed out goes to the landing page,
+screens. There is no organizer branch now: signed out goes to the front door,
 and everybody signed in carries on where they were or lands on Today. Checked
 five ways, including an organizer with a live night.
 
@@ -126,9 +126,9 @@ and the honest fix is for the function to do only what is still real.
 `MLP`, `Wars`, `Climb`, `Lineup`, `NewFlow`, `People`, `Tour`, `Draft`,
 `Points` and `CourtView` are all inert — nothing routes to them — but none is
 *unreachable* by static test: each is still named from live code or from each
-other. The landing page's hero board genuinely calls `Score.legal()`, and
-`renderSession()` uses `Score.pts()` to draw the read-only court cards, so
-`Score` is live. Computing the closure (candidate set, minus anything
+other. `renderSession()` uses `Score.pts()` to draw the read-only court cards,
+so `Score` is live — the landing's hero board was the other caller of it
+(`Score.legal()`) and went with the page. Computing the closure (candidate set, minus anything
 referenced outside it, repeat) left exactly one object that could go safely:
 `AddGame`. Pulling the rest out means hand-editing live references for a
 file-size win on code that already does nothing — worth doing deliberately, not
@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v168`. Forgetting this means testers see last week's app and
+Currently `sideout-v169`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -350,6 +350,43 @@ Four things changed with it, and three are worth arguing about:
   what the box was set to, so behaviour is unchanged — the screen just stops
   asking a question almost nobody wants put.
 
+**The front door opened half way down itself, and `focus()` was the cause.**
+`AuthUI.open()` focused the email field 80ms after showing the screen, and
+focusing a field scrolls it into view. Stacked, the card sat under the whole
+pitch — headline, court demo, queue notification — so the browser scrolled the
+document 514 of its 1272 pixels and the app loaded with the pitch above the
+viewport and nothing on screen saying what it was. Measured, not guessed:
+`#screen-auth` reported `top=-514` at 500px wide.
+
+Two things were wrong and they hid each other, which is why the page looked
+like a layout bug rather than a focus one:
+
+* `focus({preventScroll:true})` keeps the cursor and the view separate, and
+  **narrow screens focus nothing at all** — the first thing a phone did with
+  that focus was put a keyboard over a form nobody had read. `open()` also
+  scrolls to 0 itself rather than trusting whatever it inherited.
+* **Stacked, the card is first and the pitch reads underneath it.** Somebody
+  at the door came to open it. This is the one place on the screen with a
+  stated width rather than an `auto-fit`, and deliberately so: two rules have
+  to agree on the same moment — when the columns stop being columns, and when
+  the card stops being the second of them. Inferred separately they disagreed
+  by about forty pixels, and on that band the grid had wrapped while the order
+  had not.
+
+The lesson generalises past this screen: **anything that calls `focus()` on an
+element below the fold has moved the page**, and on a screen that is taller
+than the viewport that is indistinguishable from the screen being drawn in the
+wrong place.
+
+**The Staff button is gone from the front door.** It signed you in here and
+then toasted that running a night is in the manager app, which is a button
+whose entire function is to explain that it is not the button you want — and
+the manager app's address was never wired in, so it could not have been one.
+`staffApp()` went with it, along with `.ah-staff` and the `.sp` spacer that
+only existed to push it to the right of the bar. The bar is the wordmark now.
+An organizer signs in through the same door as everybody else; what they can
+do is decided by their role, which is where it was always decided.
+
 **Apple and Google are drawn and not wired.** Tapping either says it is under
 development, which is the honest version of a button that cannot work yet. The
 marks are inline SVG rather than the official brand assets.
@@ -358,68 +395,24 @@ The old `.au2-*` rules have no reader now and are left in place, the same way
 the `.au-*` set before them was: deleting ~140 lines of CSS is its own change
 and easier to review on its own.
 
-**The front page is Landing v2, and `sos-logo-white.png` is the asset that
-made it possible.** The club finally supplied a tightly-cropped transparent
-wordmark (4425×627, ~7.06:1), so the logo is an `<img>` at a width rather than
-the canvas-cropping window the old untrimmed 5000×5000 export needed — the
-`height = W × band-height, margin-top = -(W × band-start)` trick in the old
-handoff is dead. It is in the service worker's `SHELL`: it is the first thing
-on the page and in its footer, and a phone opening off the cache should not
-wait on the network to see whose app this is.
+**The whole of the Landing v2 note has been cut, because the page it described
+is deleted.** What survives of it is one asset and one rule:
 
-The page states its own palette (`--l-*` on `.lp2`) rather than reading
-`--sos-*`, for the same reason the TV board does: those follow the club's
-accent and this page is the product's, not a club's.
+* `sos-logo-white.png` — the tightly-cropped transparent wordmark (4425×627,
+  ~7.06:1) the club finally supplied. It is the front door's header and it is
+  in the service worker's `SHELL`, because a phone opening off the cache should
+  not wait on the network to see whose app this is. The old untrimmed 5000×5000
+  export needed a canvas-cropping window (`height = W × band-height,
+  margin-top = -(W × band-start)`); that trick is dead and should not come back.
+* **No figure on a page of this product may be invented.** The landing's
+  counted facts came from `members`, `sideout_upcoming` and `sideout_groups`,
+  and its "longest sit of 2, nobody back-to-back" figures were the output of
+  the simulation these notes record. Sample *names* and sample *posts* read as
+  flavour and are fine; a number does not.
 
-**Three things on it are real and must stay real.** The counted facts
-(players / sessions coming up / clubs) come from `members`, `sideout_upcoming`
-and `sideout_groups`; "On this week" is the club's actual next three nights,
-and the whole block hides when there are none. And the three figures under
-"Fair by arithmetic" — longest sit of 2, nobody back-to-back, games unchanged
-at 7–8 — are the result of the simulation these notes already record, not
-illustrative numbers. That is the only reason they are allowed on the page.
-The marquee posts and the board's names are sample content and read as
-flavour; **no figure on this page may be.**
-
-**The hero board still runs the real rule** — first to eleven, win by two,
-then the four come off and the next four walk on, which is what the queue
-actually does. Sixteen chips are positioned over the board and moved by
-`transform` to the centre of named slot elements, re-measured on resize; a
-chip whose slot cannot be found stays hidden rather than parking itself at
-0,0. One of them is **You**, and the line under the queue and the iOS-style
-notification both key off where You is.
-
-**Two CTAs had to change for the two-app split.** The design's "Run a night"
-and "Start your own night" are the one thing this app no longer does. They are
-"See a night run" and "Join the club"; the nav's **Staff** button is the way to
-the manager app and currently signs you in here and says so, because a button
-that goes nowhere is worse. **Wire it to the manager's URL when there is one.**
-
-**The install card had no slot in the new design and could not simply go.**
-Its only home was the old front page, and an iPhone cannot be told a session
-has gone up unless the app is on the Home Screen — dropping it would have
-quietly taken notifications off every iOS phone that had not installed yet. It
-sits under the CTA, whose copy is already about not needing an app store, and
-`Install.paint()` hides it on a device that has installed. Its old `.get-*`
-rules are mapped onto this page's palette rather than rewritten, the same move
-the shop's and Manage's old rules got.
-
-**The front page has no media queries and no fixed widths.** `clamp()` for
-type, `repeat(auto-fit, minmax(min(100%, N), 1fr))` for every grid, 16px
-gutters. A breakpoint is a guess about a screen size; this has none to get
-wrong, and it was checked at 500px and 1100px.
-
-**The front page is authored visible.** `LP.reveal()` hides the `[data-rv]`
-elements a frame after mount and then reveals them on scroll — the markup
-never starts blank, so if that script fails the page still reads its own
-words. Same reason nothing there re-renders: `LP` writes straight to the DOM
-through three loops, because a repaint would throw away the reveal styles
-the observer has just written and flicker the board.
-
-**The hero board runs the real rule.** First to eleven, win by two, then the
-court resets and the round ticks — the same arithmetic `Score.legal()` uses.
-A page that animated a fake score could drift from what the product does;
-this one cannot.
+The front door states its own palette (`--a-*` on `#screen-auth.ah`) for the
+reason the landing did and the TV board still does: those tokens follow the
+club's accent, and this page is the product's, not a club's.
 
 **The old name is gone, including from the identifiers.** `picksilog()`,
 `picksilogSrc()` and `picksilogURI()` are `sosMark()`, `sosMarkSrc()` and

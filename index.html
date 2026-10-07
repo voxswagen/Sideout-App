@@ -4074,17 +4074,9 @@ body.casting{overflow:hidden}
   padding:calc(16px + env(safe-area-inset-top,0px)) 18px 0;display:flex;align-items:center;gap:12px;
   animation:ahFade .6s ease-out backwards}
 .ah-bar img{display:block;width:150px;max-width:46vw;height:auto}
-.ah-bar .sp{flex:1}
-.ah-staff{flex:none;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;
-  border-radius:11px;border:1px solid rgba(255,255,255,.16);background:none;font-family:inherit;
-  font-size:14px;font-weight:600;color:#C9D7E1;white-space:nowrap;cursor:pointer;
-  transition:background .2s,color .2s;-webkit-tap-highlight-color:transparent}
-.ah-staff:hover{background:rgba(255,255,255,.08);color:#fff}
-.ah-staff svg{width:14px;height:14px}
 
 .ah-grid{position:relative;flex:1;width:100%;max-width:1080px;margin:0 auto;box-sizing:border-box;
-  padding:clamp(24px,6vw,64px) 18px 24px;display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));
+  padding:clamp(24px,6vw,64px) 18px 24px;display:grid;grid-template-columns:1fr;
   gap:clamp(28px,5vw,64px);align-items:center}
 
 /* ── the pitch ───────────────────────────────────────────────────────── */
@@ -4243,6 +4235,19 @@ body.casting{overflow:hidden}
 .ah-foot button{border:0;background:none;font-family:inherit;font-size:13px;color:var(--a-mute);
   cursor:pointer;padding:0}
 .ah-foot button:hover{color:#fff}
+
+/* Stacked, the card comes first and the pitch reads underneath it. This is
+   the one place on this screen that wants a stated width rather than an
+   auto-fit: two things have to agree on the same moment — when the columns
+   stop being columns, and when the card stops being the second of them. Worked
+   out separately they disagreed by about forty pixels, and on that band the
+   page had wrapped while the order had not, so the only thing above the fold
+   was an advert for the app you were already trying to open. */
+.ah-card{order:-1}
+@media (min-width:900px){
+  .ah-grid{grid-template-columns:1fr 1fr}
+  .ah-card{order:0}
+}
 
 /* Which fields each mode shows. One screen, two shapes. */
 #screen-auth[data-mode="in"] .ah-up{display:none}
@@ -6116,10 +6121,6 @@ body.casting{overflow:hidden}
 
     <header class="ah-bar">
       <img src="sos-logo-white.png" alt="Sideout Society">
-      <span class="sp"></span>
-      <button class="ah-staff" onclick="staffApp()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/></svg>Staff</button>
     </header>
 
     <div class="ah-grid">
@@ -16491,9 +16492,20 @@ const AuthUI = {
        who is new has the tab and the line under the card. */
     this.mode2(mode === 'up' ? 'up' : 'in');
     this.pitch();
-    setTimeout(()=>{
+    /* Open at the top of the door rather than wherever focusing a field
+       happened to drag the page to. A bare focus() scrolls its field into
+       view, and stacked that field is most of a screen below the fold — so
+       the front door opened half way down itself, pitch above the viewport
+       and nothing explaining what you were looking at. preventScroll keeps
+       the cursor and the view separate; and narrow, nothing is focused at
+       all, because the first thing a phone does with that focus is put a
+       keyboard over the form nobody has read yet. */
+    try{ window.scrollTo(0, 0); }catch(e){}
+    const roomy = !window.matchMedia || window.matchMedia('(min-width:900px)').matches;
+    if(roomy) setTimeout(()=>{
       const e = document.getElementById(this.mode === 'up' ? 'au-name' : 'au-email');
-      if(e) e.focus();
+      if(!e) return;
+      try{ e.focus({ preventScroll: true }); }catch(err){ e.focus(); }
     }, 80);
   },
 
@@ -23489,14 +23501,6 @@ function leaveWatching(){
    rule — first to eleven, win by two — so the page cannot drift from what the
    app does, and the four coming off go to the back of the queue exactly as
    they would on a court. */
-
-/* The manager app is where nights are set up and scored. Until its address is
-   wired in, signing in here is the first half of getting there either way —
-   and it is the honest thing to do rather than a button that goes nowhere. */
-function staffApp(){
-  AuthUI.open(()=>{ gateScreens(); }, 'in');
-  toast('Running a night is in the Sideout manager app.');
-}
 
 /* "See a night run" shows a night that was actually run, where there is one —
    the board above is the product moving, but a finished night is the thing
