@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v164`. Forgetting this means testers see last week's app and
+Currently `sideout-v165`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -295,6 +295,52 @@ old hard delete.
 where somebody attaches an existing record to their account. Anything
 reading that table needs an explicit kind filter — treating "not a leave"
 as a join announced claims as new players arriving.
+
+**The front page is Landing v2, and `sos-logo-white.png` is the asset that
+made it possible.** The club finally supplied a tightly-cropped transparent
+wordmark (4425×627, ~7.06:1), so the logo is an `<img>` at a width rather than
+the canvas-cropping window the old untrimmed 5000×5000 export needed — the
+`height = W × band-height, margin-top = -(W × band-start)` trick in the old
+handoff is dead. It is in the service worker's `SHELL`: it is the first thing
+on the page and in its footer, and a phone opening off the cache should not
+wait on the network to see whose app this is.
+
+The page states its own palette (`--l-*` on `.lp2`) rather than reading
+`--sos-*`, for the same reason the TV board does: those follow the club's
+accent and this page is the product's, not a club's.
+
+**Three things on it are real and must stay real.** The counted facts
+(players / sessions coming up / clubs) come from `members`, `sideout_upcoming`
+and `sideout_groups`; "On this week" is the club's actual next three nights,
+and the whole block hides when there are none. And the three figures under
+"Fair by arithmetic" — longest sit of 2, nobody back-to-back, games unchanged
+at 7–8 — are the result of the simulation these notes already record, not
+illustrative numbers. That is the only reason they are allowed on the page.
+The marquee posts and the board's names are sample content and read as
+flavour; **no figure on this page may be.**
+
+**The hero board still runs the real rule** — first to eleven, win by two,
+then the four come off and the next four walk on, which is what the queue
+actually does. Sixteen chips are positioned over the board and moved by
+`transform` to the centre of named slot elements, re-measured on resize; a
+chip whose slot cannot be found stays hidden rather than parking itself at
+0,0. One of them is **You**, and the line under the queue and the iOS-style
+notification both key off where You is.
+
+**Two CTAs had to change for the two-app split.** The design's "Run a night"
+and "Start your own night" are the one thing this app no longer does. They are
+"See a night run" and "Join the club"; the nav's **Staff** button is the way to
+the manager app and currently signs you in here and says so, because a button
+that goes nowhere is worse. **Wire it to the manager's URL when there is one.**
+
+**The install card had no slot in the new design and could not simply go.**
+Its only home was the old front page, and an iPhone cannot be told a session
+has gone up unless the app is on the Home Screen — dropping it would have
+quietly taken notifications off every iOS phone that had not installed yet. It
+sits under the CTA, whose copy is already about not needing an app store, and
+`Install.paint()` hides it on a device that has installed. Its old `.get-*`
+rules are mapped onto this page's palette rather than rewritten, the same move
+the shop's and Manage's old rules got.
 
 **The front page has no media queries and no fixed widths.** `clamp()` for
 type, `repeat(auto-fit, minmax(min(100%, N), 1fr))` for every grid, 16px

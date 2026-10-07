@@ -5389,240 +5389,312 @@ body.casting{overflow:hidden}
 }
 
 /* ══════════════ THE FRONT PAGE ══════════════
-   Fluid at every width and no media queries: clamp() for type, auto-fit
-   minmax(min(100%,N)) for every grid, 16px gutters, nothing with a fixed
-   width. A breakpoint is a guess about a screen size; this has none to get
-   wrong. */
+   Landing v2. Fluid at every width and no media queries: clamp() for type,
+   auto-fit minmax(min(100%,N)) for every grid, 16px gutters, nothing with a
+   fixed width. A breakpoint is a guess about a screen size; this has none to
+   get wrong.
+
+   It is its own dark surface, like the TV board, so it states its palette
+   rather than reading --sos-* — those follow the club's accent and this page
+   is the product's, not a club's. */
 #screen-landing.full.lp2{padding:0}
-.lp2{min-height:100%;display:flex;flex-direction:column;background:var(--sos-bg)}
+.lp2{--l-bg:#0B161D;--l-panel:#0F1D26;--l-sunk:#14232C;--l-court:#1D5670;
+  --l-accent:#7FC4DE;--l-accent-2:#B5E0EF;--l-teal:#2D6A85;--l-green:#5FBF8A;
+  --l-body:#AFC3D2;--l-mute:#8FA8B9;--l-faint:#7FA3BA;--l-dim:#56707F;
+  --l-ink:#17242B;--l-ink-2:#43525B;--l-ink-3:#5A646E;--l-light:#F4F4F6;
+  min-height:100%;display:flex;flex-direction:column;background:var(--l-bg)}
 .lp2-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
+/* ── the bar ─────────────────────────────────────────────────────────── */
 .lp2-bar{flex:none;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;
-  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
-  background:rgba(244,244,246,.88);backdrop-filter:saturate(1.6) blur(14px);
-  -webkit-backdrop-filter:saturate(1.6) blur(14px);
-  border-bottom:1px solid var(--sos-sep)}
-.lp2-mark{flex:1;min-width:0;max-width:118px;height:26px}
-.lp2-mark img{width:118px;height:118px;margin-top:-46px}
-.lp2-quiet{flex:none;min-height:40px;display:flex;align-items:center;padding:0 12px;
-  border:0;background:none;border-radius:12px;cursor:pointer;font-family:inherit;
-  font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--sos-ink-2)}
-.lp2-go{flex:none;min-height:40px;display:flex;align-items:center;padding:0 16px;
-  border:0;border-radius:12px;background:var(--sos-accent);color:var(--sos-on-accent);
-  cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;letter-spacing:-.01em;
-  white-space:nowrap}
-.lp2-go.big{min-height:52px;padding:0 22px;font-size:17px;border-radius:14px}
+  max-width:1120px;margin:0 auto;width:100%;box-sizing:border-box;padding:10px 16px;
+  background:rgba(11,22,29,.78);backdrop-filter:saturate(1.5) blur(14px);
+  -webkit-backdrop-filter:saturate(1.5) blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.07)}
+.lp2-wrap{position:sticky;top:0;z-index:50;background:rgba(11,22,29,.78);
+  backdrop-filter:saturate(1.5) blur(14px);-webkit-backdrop-filter:saturate(1.5) blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.07)}
+.lp2-wrap .lp2-bar{position:static;background:none;backdrop-filter:none;
+  -webkit-backdrop-filter:none;border:0}
+.lp2-logo{flex:1;min-width:0;display:flex;align-items:center}
+/* The wordmark is a tightly cropped transparent PNG now, so it is just an
+   image at a width — no canvas-cropping window, which is what the old
+   untrimmed export needed. */
+.lp2-logo img{display:block;width:100%;max-width:178px;height:auto}
+.lp2-staff,.lp2-signin,.lp2-join{flex:none;min-height:40px;display:inline-flex;align-items:center;
+  gap:6px;border-radius:11px;font-family:inherit;font-size:14px;font-weight:600;
+  letter-spacing:-.01em;cursor:pointer;white-space:nowrap;border:0;
+  -webkit-tap-highlight-color:transparent;transition:background .18s,border-color .18s,transform .18s}
+.lp2-staff{padding:0 11px;border:1px solid rgba(255,255,255,.16);background:none;color:#C9D7E1}
+.lp2-staff:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3)}
+.lp2-staff svg{width:15px;height:15px}
+.lp2-signin{padding:0 10px;background:none;color:#C9D7E1;font-size:15px}
+.lp2-signin:hover{background:rgba(255,255,255,.08)}
+.lp2-join{padding:0 16px;background:#fff;color:var(--l-bg);font-size:15px}
+.lp2-join:hover{transform:translateY(-1px)}
 
-/* ── the hero ── */
-.lp2-hero{position:relative;overflow:hidden;background:#0B161D;color:#fff}
-.lp2-in{position:relative;max-width:1060px;margin:0 auto;
-  padding:clamp(36px,7vw,80px) 16px clamp(32px,5vw,64px)}
+/* ── the hero ────────────────────────────────────────────────────────── */
+.lp2-hero{position:relative;overflow:hidden;color:#fff}
 .lp2-ring{position:absolute;border-radius:99px;pointer-events:none}
-.lp2-ring.a{top:-260px;right:-180px;width:760px;height:760px;
-  border:2px solid rgba(74,132,172,.12);animation:lpDrift 22s ease-in-out infinite}
-.lp2-ring.b{bottom:-340px;left:-220px;width:820px;height:820px;
-  border:2px solid rgba(74,132,172,.07);animation:lpDrift 28s ease-in-out infinite reverse}
-@keyframes lpDrift{0%{transform:translate(0,0)}50%{transform:translate(-18px,14px)}100%{transform:translate(0,0)}}
-.lp2-eyebrow{display:flex;align-items:center;gap:9px}
-.lp2-live{color:#5FBF8A}
-.lp2-eyebrow span:last-child{font-size:12px;font-weight:700;letter-spacing:.18em;
-  text-transform:uppercase;color:#8FA8B9}
-.lp2-h1{margin:16px 0 0;font-size:clamp(34px,7.4vw,64px);font-weight:700;letter-spacing:-.035em;
-  line-height:1.03;max-width:15ch;color:#fff;text-wrap:balance}
-.lp2-p{margin:16px 0 0;font-size:clamp(16.5px,2.2vw,20px);line-height:1.5;max-width:52ch;
-  color:#AFC3D2;text-wrap:pretty}
-.lp2-cta{margin-top:26px;display:flex;flex-wrap:wrap;gap:9px}
-.lp2-cta.mid{justify-content:center}
-.lp2-white,.lp2-ghost,.lp2-soft{flex:1;min-width:150px;min-height:52px;display:flex;
-  align-items:center;justify-content:center;padding:0 22px;border-radius:14px;cursor:pointer;
-  font-family:inherit;font-size:17px;font-weight:600;letter-spacing:-.01em;border:0;
-  transition:transform .2s,box-shadow .2s,background .2s,border-color .2s}
-.lp2-white{background:#fff;color:#0B161D}
-.lp2-white:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.34)}
-.lp2-ghost{background:transparent;border:1px solid rgba(255,255,255,.26);color:#fff}
-.lp2-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.45)}
-.lp2-soft{background:var(--sos-bg);color:var(--sos-ink-2)}
-.lp2-soft:hover{background:var(--sos-fill-2)}
+.lp2-ring.a{top:-280px;right:-220px;width:820px;height:820px;
+  border:2px solid rgba(74,132,172,.13);animation:lpDrift 24s ease-in-out infinite}
+.lp2-ring.b{bottom:-380px;left:-260px;width:900px;height:900px;
+  border:2px solid rgba(74,132,172,.07);animation:lpDrift 30s ease-in-out infinite reverse}
+@keyframes lpDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-22px,16px)}}
+.lp2-in{position:relative;max-width:1120px;margin:0 auto;
+  padding:clamp(40px,7vw,88px) 16px clamp(36px,5vw,64px)}
+.lp2-eye{display:flex;align-items:center;gap:9px}
+.lp2-dot{position:relative;width:7px;height:7px;flex:none}
+.lp2-dot i,.lp2-dot u{position:absolute;inset:0;border-radius:99px;background:var(--l-green)}
+.lp2-dot u{text-decoration:none;animation:lpPulse 2.2s ease-out infinite}
+@keyframes lpPulse{0%{transform:scale(1);opacity:.85}70%{transform:scale(2.6);opacity:0}100%{opacity:0}}
+.lp2-eye span{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--l-mute)}
+.lp2-h1{margin:16px 0 0;font-family:inherit;font-size:clamp(40px,9vw,84px);font-weight:800;
+  letter-spacing:-.045em;line-height:.98;max-width:13ch;color:#fff;text-wrap:balance}
+.lp2-h1 i{font-style:normal;color:var(--l-accent)}
+.lp2-sub{margin:18px 0 0;font-size:clamp(16.5px,2.2vw,20px);line-height:1.5;max-width:50ch;
+  color:var(--l-body);text-wrap:pretty}
+.lp2-ctas{margin-top:26px;display:flex;flex-wrap:wrap;gap:9px;max-width:460px}
+.lp2-go,.lp2-ghost{flex:1;min-width:160px;min-height:54px;display:inline-flex;align-items:center;
+  justify-content:center;border-radius:15px;font-family:inherit;font-size:17px;font-weight:600;
+  letter-spacing:-.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:transform .2s,box-shadow .2s,background .2s}
+.lp2-go{background:#fff;border:0;color:var(--l-bg)}
+.lp2-go:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,0,0,.4)}
+.lp2-ghost{background:none;border:1px solid rgba(255,255,255,.24);color:#fff}
+.lp2-ghost:hover{background:rgba(255,255,255,.08)}
 
-/* the board */
-.lp2-board{margin-top:clamp(30px,4.5vw,48px);border-radius:18px;overflow:hidden;
-  background:#101D25;border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 30px 70px rgba(0,0,0,.4)}
-.lp2-bh{padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.07);
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.lp2-bl{flex:none;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:#5FBF8A}
-.lp2-bm{flex:1;min-width:110px;font-size:14.5px;color:#AFC3D2}
-.lp2-bc{flex:none;font-size:21px;font-weight:700;letter-spacing:-.02em;color:#fff;
+/* ── the live board ──────────────────────────────────────────────────── */
+.lp2-board{position:relative;margin-top:clamp(32px,5vw,56px);border-radius:22px;
+  background:var(--l-panel);border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 40px 90px rgba(0,0,0,.45);padding:14px;overflow:hidden}
+.lp2-bh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 4px 12px}
+.lp2-bh .lv{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--l-green)}
+.lp2-bh .wh{flex:1;min-width:120px;font-size:14.5px;color:var(--l-body)}
+.lp2-bh .ck{font-size:20px;font-weight:700;letter-spacing:-.02em;color:#fff;
   font-variant-numeric:tabular-nums}
-.lp2-courts{padding:13px;display:grid;gap:11px;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
-.lp2-court{background:#14232C;border:1px solid rgba(74,132,172,.18);border-radius:13px;
-  padding:13px 14px}
-.lp2-ch{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.lp2-cnm{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4A84AC}
-.lp2-cst{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#5FBF8A}
-.lp2-side{margin-top:11px;display:flex;align-items:center;gap:10px}
-.lp2-side + .lp2-rule{margin-top:7px}
-.lp2-rule{height:1px;background:rgba(255,255,255,.07)}
-.lp2-rule + .lp2-side{margin-top:7px}
-.lp2-tm{flex:1;min-width:0;font-size:14.5px;font-weight:500;color:#9DB2C0;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;transition:color .25s,font-weight .25s}
-.lp2-sc{flex:none;font-size:25px;font-weight:700;letter-spacing:-.03em;color:#61798A;
-  font-variant-numeric:tabular-nums;transition:color .25s}
-@keyframes lpFlash{0%{transform:scale(1)}30%{transform:scale(1.22)}100%{transform:scale(1)}}
-
-.lp2-facts{margin-top:clamp(22px,3vw,30px);display:flex;flex-wrap:wrap;
-  align-items:baseline;gap:8px 22px}
-.lp2-facts div{display:flex;align-items:baseline;gap:7px}
-.lp2-facts b{font-size:clamp(24px,3.4vw,32px);font-weight:700;letter-spacing:-.03em;color:#fff}
-.lp2-facts span{font-size:14px;color:#8FA8B9}
-.lp2-facts s{display:none}
-
-/* ── the club ── */
-.lp2-sec{max-width:1060px;margin:0 auto;padding:clamp(44px,7vw,84px) 16px}
-.lp2-two{display:grid;gap:clamp(24px,4vw,48px);align-items:center;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
-.lp2-k{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--sos-accent)}
-.lp2-k.dark{color:var(--sos-ink-3)}
-.lp2-k.blue{color:#4A84AC}
-.lp2-h2{margin:12px 0 0;font-size:clamp(26px,4.6vw,40px);font-weight:700;letter-spacing:-.033em;
-  line-height:1.1;color:var(--sos-ink);text-wrap:balance}
-.lp2-b{margin:14px 0 0;font-size:17px;line-height:1.55;color:var(--sos-ink-2);max-width:46ch;
-  text-wrap:pretty}
-.lp2-b.mid{margin-left:auto;margin-right:auto;text-align:center;max-width:44ch}
-.lp2-chips{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
-.lp2-chips span{min-height:38px;display:flex;align-items:center;padding:0 13px;border-radius:99px;
-  background:var(--sos-card);border:1px solid var(--sos-hair);font-size:14.5px;font-weight:600;
-  letter-spacing:-.01em;color:var(--sos-ink-2);transition:transform .2s,border-color .2s}
-.lp2-chips span:hover{transform:translateY(-2px);border-color:rgba(45,106,133,.45)}
-
-.lp2-feed{display:flex;flex-direction:column;gap:11px}
-.lp2-post{background:var(--sos-card);border-radius:16px;overflow:hidden;padding:13px 14px 6px;
-  box-shadow:0 1px 3px rgba(23,36,43,.06),0 14px 34px rgba(23,36,43,.05);
-  transition:transform .25s,box-shadow .25s}
-.lp2-post:hover{transform:translateY(-3px);
-  box-shadow:0 1px 3px rgba(23,36,43,.06),0 22px 46px rgba(23,36,43,.1)}
-.lp2-pa{display:flex;align-items:center;gap:10px}
-.lp2-av{flex:none;width:34px;height:34px;border-radius:99px;display:grid;place-items:center;
-  font-size:13px;font-weight:600;color:#fff}
-.lp2-av.sys{background:var(--sos-ink)}
-.lp2-pn{flex:1;min-width:0}
-.lp2-pn b{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;
-  letter-spacing:-.01em;color:var(--sos-ink)}
-.lp2-tag{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--sos-accent);background:var(--sos-accent-tint);
-  border-radius:5px;padding:2px 6px 1px}
-.lp2-pn span{display:block;margin-top:1px;font-size:12.5px;color:var(--sos-dim)}
-.lp2-pt{margin:9px 0 0;font-size:15px;line-height:1.48;color:var(--sos-ink);text-wrap:pretty}
-.lp2-crown{margin:11px 0 0;border-radius:12px;background:var(--sos-crown-bg);
-  border:1px solid #EADFC2;padding:12px 13px}
-[data-theme="night"] .lp2-crown{border-color:rgba(201,162,39,.3)}
-.lp2-ck{margin:0;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--sos-gold)}
-.lp2-cn{margin:4px 0 0;font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--sos-ink)}
-.lp2-cm{margin:2px 0 0;font-size:13px;color:var(--sos-ink-3)}
-.lp2-acts{margin-top:11px;padding:0 6px;display:flex;border-top:1px solid var(--sos-sep)}
-.lp2-acts span{flex:1;min-height:42px;display:flex;align-items:center;justify-content:center;
-  gap:7px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--sos-ink-3);
-  transition:background .18s}
-.lp2-acts span:hover{background:var(--sos-bg)}
-.lp2-acts svg{width:18px;height:18px}
-.lp2-acts span.on{color:var(--sos-red)}
-.lp2-acts span.gold{color:var(--sos-gold)}
-
-/* ── how a night runs ── */
-.lp2-steps{margin-top:clamp(18px,3vw,26px);display:grid;gap:clamp(14px,2.4vw,20px);
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
-.lp2-step{background:var(--sos-card);border-radius:18px;padding:22px;
-  box-shadow:0 1px 3px rgba(23,36,43,.06);transition:transform .25s,box-shadow .25s}
-.lp2-step:hover{transform:translateY(-4px);
-  box-shadow:0 1px 3px rgba(23,36,43,.06),0 18px 40px rgba(23,36,43,.1)}
-.lp2-n{width:40px;height:40px;border-radius:12px;background:var(--sos-accent-tint);
-  display:grid;place-items:center;font-size:16px;font-weight:700;color:var(--sos-accent)}
-.lp2-sh{margin:14px 0 0;font-size:19px;font-weight:600;letter-spacing:-.02em;color:var(--sos-ink)}
-.lp2-sb{margin:7px 0 0;font-size:15.5px;line-height:1.5;color:var(--sos-ink-2);text-wrap:pretty}
-
-/* ── why it is fair ── */
-.lp2-fair{background:#14232C;color:#fff}
-.lp2-fair .lp2-in{padding:clamp(40px,6.5vw,76px) 16px}
-.lp2-h3{margin:12px 0 0;font-size:clamp(25px,4.2vw,36px);font-weight:700;letter-spacing:-.03em;
-  line-height:1.14;max-width:24ch;color:#fff;text-wrap:balance}
-.lp2-stats{margin-top:clamp(24px,3.5vw,36px);display:grid;gap:14px;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
-.lp2-stat{background:#0F1D26;border:1px solid rgba(255,255,255,.08);border-radius:16px;
-  padding:20px;transition:transform .25s,border-color .25s}
-.lp2-stat:hover{transform:translateY(-4px);border-color:rgba(74,132,172,.4)}
-.lp2-stat b{display:block;font-size:clamp(30px,5vw,42px);font-weight:700;letter-spacing:-.035em;
-  line-height:1;color:#fff}
-.lp2-stat b.green{color:#5FBF8A}
-.lp2-stat span{display:block;margin-top:9px;font-size:15px;line-height:1.45;color:#AFC3D2;
-  text-wrap:pretty}
-
-/* ── the ask ── */
-.lp2-ask{background:var(--sos-card);border-radius:22px;padding:clamp(28px,5vw,56px);
-  text-align:center;box-shadow:0 1px 3px rgba(23,36,43,.06),0 20px 48px rgba(23,36,43,.07)}
-.lp2-h4{margin:0 auto;font-size:clamp(26px,5.2vw,42px);font-weight:700;letter-spacing:-.035em;
-  line-height:1.08;max-width:17ch;color:var(--sos-ink);text-wrap:balance}
-.lp2-note{margin:14px 0 0;font-size:13.5px;line-height:1.45;color:var(--sos-dim);text-wrap:pretty}
-
-.lp2-get{max-width:1060px;margin:0 auto;padding:0 16px}
-.lp2-foot{border-top:1px solid var(--sos-sep);max-width:1060px;margin:0 auto;width:100%;
-  box-sizing:border-box;padding:24px 16px calc(36px + env(safe-area-inset-bottom));
-  display:flex;flex-wrap:wrap;align-items:center;gap:14px}
-.lp2-fmark{flex:none;width:106px;height:23px}
-.lp2-fmark img{width:106px;height:106px;margin-top:-41px}
-.lp2-ft{flex:1;min-width:130px;font-size:13.5px;color:var(--sos-ink-3)}
-.lp2-fl{display:flex;flex-wrap:wrap;gap:16px}
-.lp2-fl a{font-size:13.5px;color:var(--sos-ink-3)}
-
-[data-theme="night"] .lp2-bar{background:rgba(11,22,29,.88)}
-[data-theme="night"] .lp2-mark img,[data-theme="night"] .lp2-fmark img{
-  filter:brightness(0) invert(1);opacity:.92}
-
-/* Everything the reveal and the board do is motion, and all of it stops
-   here. The reveal also checks matchMedia and never hides anything, so a
-   reduced-motion visitor gets the page at rest rather than the page blank. */
-@media(prefers-reduced-motion:reduce){
-  .lp2-ring{animation:none}
-  .lp2 *{transition:none !important}
-}
-
-/* ── what is genuinely on ──
-   Filled by paintLandingFacts() from sideout_upcoming, with the old page's
-   markup — `.lp-live` and its rows. Restyled here rather than rewritten,
-   because the thing it does is the honest part: it lists nights that exist
-   and says nothing at all when there are none. */
-#screen-landing .lp-live{max-width:1060px;margin:0 auto;padding:clamp(28px,4vw,44px) 16px 0;
-  background:none;border:0;border-radius:0}
-#screen-landing .lp-live h3{margin:0 0 12px;font-family:inherit;font-size:12.5px;
-  font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--sos-ink-3)}
-#screen-landing .lp-row{display:flex;align-items:center;gap:12px;width:100%;
-  min-height:64px;padding:11px 14px;background:var(--sos-card);border:0;border-radius:14px;
-  cursor:pointer;text-align:left;font-family:inherit;
-  box-shadow:0 1px 3px rgba(23,36,43,.06);transition:transform .2s,box-shadow .2s}
-#screen-landing .lp-row + .lp-row{margin-top:8px}
-#screen-landing .lp-row:hover{transform:translateY(-2px);
-  box-shadow:0 1px 3px rgba(23,36,43,.06),0 14px 30px rgba(23,36,43,.08)}
-#screen-landing .lp-row s{display:none}
-#screen-landing .lp-row .t{flex:none;width:50px;border-radius:12px;background:var(--sos-fill);
-  padding:7px 0;text-align:center}
-#screen-landing .lp-row .t b{display:block;font-family:inherit;font-size:21px;font-weight:700;
-  letter-spacing:-.02em;line-height:1.05;color:var(--sos-ink)}
-#screen-landing .lp-row .t span{display:block;font-family:inherit;font-size:10.5px;
-  font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sos-dim)}
-#screen-landing .lp-row .n{flex:1;min-width:0}
-#screen-landing .lp-row .n b{display:block;font-family:inherit;font-size:17px;font-weight:600;
-  letter-spacing:-.01em;color:var(--sos-ink);white-space:nowrap;overflow:hidden;
+.lp2-bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
+  gap:14px;align-items:start}
+.lp2-cts{display:flex;flex-direction:column;gap:12px}
+.lp2-ch{display:flex;align-items:center;justify-content:space-between;padding:0 2px 7px}
+.lp2-ch b{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--l-faint)}
+.lp2-ch i{font-style:normal;font-size:16px;font-weight:700;letter-spacing:-.01em;color:#fff;
+  font-variant-numeric:tabular-nums}
+.lp2-court{position:relative;aspect-ratio:2/1;border-radius:12px;background:var(--l-court);
+  border:2px solid rgba(255,255,255,.55);transition:box-shadow .4s}
+.lp2-court s{position:absolute;text-decoration:none;background:rgba(255,255,255,.4)}
+.lp2-court s.net{left:50%;top:-2px;bottom:-2px;width:3px;margin-left:-1.5px;
+  background:rgba(255,255,255,.85)}
+.lp2-court s.k1{left:34%;top:0;bottom:0;width:2px}
+.lp2-court s.k2{left:66%;top:0;bottom:0;width:2px}
+.lp2-court s.m1{left:0;width:34%;top:50%;height:2px}
+.lp2-court s.m2{right:0;width:34%;top:50%;height:2px}
+.lp2-slot{position:absolute;width:1px;height:1px}
+.lp2-q{background:var(--l-sunk);border-radius:16px;padding:13px 14px}
+.lp2-qh{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.lp2-qh b{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--l-faint)}
+.lp2-qh span{font-size:12px;color:#7E97A8}
+.lp2-qrows{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.lp2-qrow{display:flex;align-items:center;gap:10px;height:38px}
+.lp2-qrow b{flex:none;width:18px;font-size:13px;font-weight:700}
+.lp2-qrow .sl{flex:none;width:96px;height:30px;position:relative}
+.lp2-qrow s{flex:1;height:1px;text-decoration:none}
+.lp2-you{margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:9px}
+.lp2-you i{flex:none;width:9px;height:9px;border-radius:99px;background:var(--l-accent)}
+.lp2-you span{flex:1;font-size:15px;font-weight:600;color:#fff}
+/* A chip is positioned over the board and moved by transform to the centre of
+   a named slot. A chip whose slot cannot be found stays hidden rather than
+   parking itself at the corner. */
+.lp2-chip{position:absolute;left:0;top:0;width:92px;height:30px;border-radius:99px;
+  display:flex;align-items:center;gap:6px;padding:0 9px 0 4px;box-sizing:border-box;z-index:3;
+  background:rgba(11,22,29,.92);border:1px solid rgba(255,255,255,.14);
+  transition:transform .95s cubic-bezier(.65,0,.25,1),opacity .5s;will-change:transform}
+.lp2-chip.me{background:var(--l-accent);border-color:var(--l-accent-2);
+  animation:lpGlow 1.8s ease-out infinite}
+@keyframes lpGlow{0%{box-shadow:0 0 0 0 rgba(127,196,222,.55)}100%{box-shadow:0 0 0 18px rgba(127,196,222,0)}}
+.lp2-chip u{flex:none;width:22px;height:22px;border-radius:99px;display:flex;align-items:center;
+  justify-content:center;font-size:9.5px;font-weight:700;color:#fff;text-decoration:none}
+.lp2-chip.me u{background:var(--l-bg)}
+.lp2-chip b{font-size:12.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
-#screen-landing .lp-row .n span{display:block;margin-top:2px;font-family:inherit;
-  font-size:13.5px;letter-spacing:0;text-transform:none;color:var(--sos-dim)}
-#screen-landing .lp-row .s{flex:none;font-family:inherit;font-size:11px;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:4px 10px 3px;
-  color:var(--sos-green);background:var(--sos-green-bg)}
-#screen-landing .lp-row .s.few{color:var(--sos-warn);background:rgba(185,118,42,.12)}
-#screen-landing .lp-row .s.full{color:var(--sos-ink-3);background:var(--sos-fill)}
+.lp2-chip.me b{font-weight:800;color:var(--l-bg)}
+@keyframes lpPop{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
+/* The notification is the product talking to you, so it is drawn as the
+   phone's own rather than as a banner of ours. */
+.lp2-toast{position:absolute;left:50%;top:12px;width:min(340px,calc(100% - 28px));
+  transform:translate(-50%,-160%);transition:transform .55s cubic-bezier(.2,.9,.25,1.15);
+  z-index:5;background:rgba(244,246,248,.97);border-radius:16px;padding:11px 13px;
+  display:flex;align-items:center;gap:11px;box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.lp2-toast i{flex:none;width:34px;height:34px;border-radius:9px;background:var(--l-teal);
+  display:flex;align-items:center;justify-content:center}
+.lp2-toast i svg{width:18px;height:18px}
+.lp2-toast .tx{flex:1;min-width:0}
+.lp2-toast .tx span{display:block;font-size:12px;font-weight:600;color:#5A646E}
+.lp2-toast .tx b{display:block;margin-top:1px;font-size:14.5px;font-weight:600;
+  letter-spacing:-.01em;color:var(--l-ink)}
+
+/* ── counted facts ───────────────────────────────────────────────────── */
+.lp2-nums{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(18px,4vw,34px);
+  margin-top:clamp(26px,4vw,40px)}
+.lp2-nums div{display:flex;align-items:baseline;gap:7px}
+.lp2-nums b{font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-.04em;color:#fff}
+.lp2-nums span{font-size:14.5px;color:var(--l-body)}
+.lp2-nums s{width:1px;height:28px;background:rgba(255,255,255,.12);text-decoration:none}
+
+/* ── the community band ──────────────────────────────────────────────── */
+.lp2-light{background:var(--l-light);color:var(--l-ink)}
+.lp2-lin{max-width:1120px;margin:0 auto;padding:clamp(52px,8vw,96px) 16px clamp(28px,4vw,40px)}
+.lp2-kick{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--l-teal)}
+.lp2-h2{margin:12px 0 0;font-family:inherit;font-size:clamp(30px,5.4vw,52px);font-weight:800;
+  letter-spacing:-.04em;line-height:1.02;max-width:16ch;text-wrap:balance;color:var(--l-ink)}
+.lp2-p{margin:14px 0 0;font-size:17px;line-height:1.55;color:var(--l-ink-2);max-width:50ch;
+  text-wrap:pretty}
+.lp2-rows{padding:0 0 clamp(52px,8vw,96px);display:flex;flex-direction:column;gap:14px;
+  overflow:hidden}
+.lp2-mq{overflow:hidden}
+.lp2-mqin{display:flex;gap:14px;width:max-content;padding-left:16px}
+@keyframes lpMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* No backwards fill on purpose: if the animation never runs — a hidden tab, a
+   screenshot, a prerender — the element simply sits where it belongs rather
+   than starting invisible and staying that way. */
+@keyframes lpRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.lp2-post{flex:none;width:300px;box-sizing:border-box;background:#fff;border-radius:18px;
+  padding:15px 16px;box-shadow:0 1px 3px rgba(23,36,43,.06),0 14px 30px rgba(23,36,43,.06)}
+.lp2-pwho{display:flex;align-items:center;gap:10px}
+.lp2-pwho u{flex:none;width:34px;height:34px;border-radius:99px;display:flex;align-items:center;
+  justify-content:center;font-size:12.5px;font-weight:600;color:#fff;text-decoration:none}
+.lp2-pwho div{flex:1;min-width:0}
+.lp2-pwho b{display:block;font-size:14.5px;font-weight:600;color:var(--l-ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp2-pwho span{display:block;font-size:12px;color:#66707A}
+.lp2-ptx{margin-top:10px;font-size:14.5px;line-height:1.45;color:var(--l-ink);text-wrap:pretty}
+.lp2-pacts{margin-top:12px;display:flex;gap:16px;font-size:13px;font-weight:600}
+.lp2-pacts .lk{color:#B23D33}
+.lp2-pacts .kd{color:#8A6712}
+.lp2-pacts .cm{color:#5A646E}
+.lp2-pill{flex:none;display:flex;align-items:center;gap:12px;border-radius:16px;
+  padding:12px 16px 12px 12px;box-sizing:border-box}
+.lp2-pill u{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;font-weight:800;text-decoration:none}
+.lp2-pill b{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase}
+.lp2-pill span{display:block;margin-top:2px;font-size:15px;font-weight:700;letter-spacing:-.01em;
+  color:var(--l-ink);white-space:nowrap}
+
+/* ── fair by arithmetic ──────────────────────────────────────────────── */
+.lp2-dark{background:var(--l-sunk);color:#fff}
+.lp2-dark .lp2-kick{color:var(--l-accent)}
+.lp2-dark .lp2-h2{color:#fff;max-width:18ch;font-size:clamp(28px,5vw,46px);line-height:1.04}
+.lp2-stats{margin-top:clamp(28px,4vw,44px);display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px}
+.lp2-stat{background:var(--l-panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;
+  padding:22px;transition:transform .25s,border-color .25s}
+.lp2-stat:hover{transform:translateY(-4px);border-color:rgba(127,196,222,.4)}
+.lp2-stat b{display:block;font-size:clamp(40px,6vw,58px);font-weight:800;letter-spacing:-.045em;
+  line-height:1;color:#fff}
+.lp2-stat.green b{color:var(--l-green)}
+.lp2-stat span{display:block;margin-top:10px;font-size:15px;line-height:1.45;color:var(--l-body);
+  text-wrap:pretty}
+
+/* ── three steps ─────────────────────────────────────────────────────── */
+.lp2-steps{margin-top:clamp(20px,3vw,30px);display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px}
+.lp2-step{position:relative;background:#fff;border-radius:20px;padding:24px 22px;
+  box-shadow:0 1px 3px rgba(23,36,43,.06);overflow:hidden;
+  transition:transform .25s,box-shadow .25s}
+.lp2-step:hover{transform:translateY(-4px);
+  box-shadow:0 1px 3px rgba(23,36,43,.06),0 20px 44px rgba(23,36,43,.1)}
+.lp2-step u{position:absolute;right:-6px;top:-22px;font-size:120px;font-weight:800;
+  letter-spacing:-.06em;line-height:1;color:#EEF2F5;text-decoration:none}
+.lp2-step b{position:relative;display:block;font-size:21px;font-weight:700;letter-spacing:-.025em;
+  color:var(--l-ink)}
+.lp2-step span{position:relative;display:block;margin-top:8px;font-size:15.5px;line-height:1.5;
+  color:var(--l-ink-2);text-wrap:pretty}
+
+/* ── on this week ────────────────────────────────────────────────────── */
+.lp2-week{max-width:1120px;margin:0 auto;padding:0 16px clamp(52px,8vw,96px)}
+.lp2-wrow{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;
+  padding:11px 14px;margin-top:8px;background:#fff;border:0;border-radius:14px;cursor:pointer;
+  text-align:left;font-family:inherit;box-shadow:0 1px 3px rgba(23,36,43,.06);
+  transition:transform .2s,box-shadow .2s}
+.lp2-wrow:hover{transform:translateY(-2px);
+  box-shadow:0 1px 3px rgba(23,36,43,.06),0 14px 30px rgba(23,36,43,.08)}
+.lp2-wrow .t{flex:none;width:50px;border-radius:12px;background:#EEF0F2;padding:7px 0;
+  text-align:center}
+.lp2-wrow .t b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#66707A}
+.lp2-wrow .t i{display:block;font-style:normal;font-size:21px;font-weight:700;
+  letter-spacing:-.02em;line-height:1.05;color:var(--l-ink)}
+.lp2-wrow .n{flex:1;min-width:0}
+.lp2-wrow .n b{display:block;font-size:17px;font-weight:600;letter-spacing:-.01em;
+  color:var(--l-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp2-wrow .n span{display:block;margin-top:2px;font-size:13.5px;color:#66707A;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp2-wrow .s{flex:none;font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;border-radius:99px;padding:4px 10px 3px;
+  color:#2A7049;background:#E9F3EC}
+.lp2-wrow .s.few{color:#B9762A;background:rgba(185,118,42,.12)}
+.lp2-wrow .s.full{color:var(--l-ink-3);background:#EEF0F2}
+
+/* ── the code ────────────────────────────────────────────────────────── */
+.lp2-cta{position:relative;overflow:hidden;color:#fff}
+.lp2-cta .lp2-ring{top:-240px;left:50%;width:760px;height:760px;margin-left:-380px;
+  border:2px solid rgba(74,132,172,.12);animation:none}
+.lp2-ctain{position:relative;max-width:1120px;margin:0 auto;
+  padding:clamp(60px,9vw,112px) 16px;text-align:center}
+.lp2-cta h2{margin:0 auto;font-family:inherit;font-size:clamp(32px,6vw,60px);font-weight:800;
+  letter-spacing:-.045em;line-height:1;max-width:14ch;text-wrap:balance;color:#fff}
+.lp2-code{margin:28px auto 0;display:flex;justify-content:center;gap:clamp(6px,1.4vw,10px);
+  perspective:600px}
+.lp2-code i{width:clamp(48px,11vw,72px);height:clamp(60px,14vw,90px);border-radius:14px;
+  background:#1B2E39;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;
+  justify-content:center;font-style:normal;font-size:clamp(28px,6.4vw,44px);font-weight:800;
+  color:#fff}
+@keyframes lpFlip{0%{transform:rotateX(90deg);opacity:0}100%{transform:rotateX(0);opacity:1}}
+.lp2-cta p{margin:20px auto 0;font-size:17px;line-height:1.5;color:var(--l-body);max-width:42ch;
+  text-wrap:pretty}
+.lp2-cta .lp2-ctas{margin:26px auto 0;justify-content:center}
+/* The install card keeps its markup and gets this page's palette, rather than
+   being rewritten — the same move the shop's and Manage's old rules got. */
+.lp2-get{max-width:460px;margin:22px auto 0;padding:18px;border-radius:18px;text-align:left;
+  background:var(--l-panel);border:1px solid rgba(255,255,255,.08)}
+.lp2-get .get-top{display:flex;gap:13px;align-items:flex-start}
+.lp2-get .get-mark{flex:none;width:46px;height:46px;border-radius:14px;display:grid;
+  place-items:center;background:rgba(255,255,255,.08);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13)}
+.lp2-get .get-tx{flex:1;min-width:0}
+.lp2-get .get-tx b{display:block;font-family:inherit;font-size:16px;font-weight:700;
+  letter-spacing:-.02em;color:#fff}
+.lp2-get .get-tx span{display:block;margin-top:4px;font-family:inherit;font-size:13.5px;
+  line-height:1.45;letter-spacing:0;text-transform:none;color:var(--l-body);text-wrap:pretty}
+.lp2-get .get-go{width:100%;margin-top:14px;min-height:48px;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;
+  background:#fff;color:var(--l-bg);font-family:inherit;font-size:16px;font-weight:600;
+  letter-spacing:-.01em;cursor:pointer}
+.lp2-get .get-foot{margin:10px 0 0;font-family:inherit;font-size:12.5px;letter-spacing:0;
+  text-transform:none;color:#7E97A8;text-align:center}
+
+/* ── the footer ──────────────────────────────────────────────────────── */
+.lp2-foot{border-top:1px solid rgba(255,255,255,.07)}
+.lp2-footin{max-width:1120px;margin:0 auto;padding:24px 16px calc(36px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.lp2-footin img{flex:none;display:block;width:170px;max-width:100%;height:auto;opacity:.85}
+.lp2-footin .tag{flex:1;min-width:130px;font-size:13.5px;color:var(--l-mute)}
+.lp2-links{display:flex;gap:16px;flex-wrap:wrap}
+.lp2-links a{font-size:13.5px;color:var(--l-mute);text-decoration:none}
+.lp2-links a:hover{color:#fff}
+
+/* The page is authored visible: reveal only ever *adds* the final state, so
+   if the script never runs the page still reads its own words. */
+@media (prefers-reduced-motion:reduce){
+  .lp2 *{animation:none !important;transition:none !important}
+}
 
 /* ══════════════ THE QUEUE, AS STACKS ══════════════
    Wide on purpose. It collapses to one column on a phone so it is never
@@ -5959,201 +6031,191 @@ body.casting{overflow:hidden}
        Everything below is authored VISIBLE. The reveal is applied by JS on
        mount, so if that script never runs the page still reads — a front page
        that depends on JavaScript to show its own words is a front page that
-       sometimes shows none. -->
-  <section id="screen-landing" class="screen full sos">
-    <div class="lp2">
+<!-- ══════════════ THE FRONT PAGE ══════════════
+     Landing v2. Authored visible: `LP.reveal()` hides the [data-rv] elements a
+     frame after mount and brings them back on scroll, so if that script never
+     runs the page still reads its own words. Everything that moves is driven
+     straight against the DOM from one mount — a repaint would throw away the
+     reveal styles the observer has just written and flicker the board. -->
+<section class="screen full lp2" id="screen-landing">
+<div class="lp2-scroll" id="lp2-scroll">
 
-      <header class="lp2-bar">
-        <span class="lp2-mark sos-mark"><img src="/sos-mark.png" alt="Sideout Society"></span>
-        <button class="lp2-quiet" onclick="AuthUI.open(()=>{ gateScreens(); }, 'in')">Sign in</button>
-        <button class="lp2-go" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
-      </header>
-
-      <div class="lp2-scroll">
-
-      <!-- ── the night running ── -->
-      <div class="lp2-hero">
-        <span class="lp2-ring a"></span>
-        <span class="lp2-ring b"></span>
-        <div class="lp2-in">
-          <div data-rv="1" class="lp2-eyebrow">
-            <span class="sos-dot lp2-live"><i></i><b></b></span>
-            <span>Pickleball open play</span>
-          </div>
-          <h1 data-rv="2" class="lp2-h1">Open play, and the club around it.</h1>
-          <p data-rv="3" class="lp2-p">A club, not a spreadsheet. Sideout runs the night —
-            who is up, what the score is, who won — and keeps everybody talking about it
-            afterwards.</p>
-          <div data-rv="4" class="lp2-cta">
-            <!-- "Start a night" was the promise this page led with, and
-                 setting one up is in the manager app now. What this one offers
-                 is the club: what is on, who is playing, the table and the
-                 talk. An HTML comment, not ${''} — this is static markup, not
-                 a template literal, and the notes have caught that twice. -->
-            <button class="lp2-white" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
-            <button class="lp2-ghost" onclick="lpDemo()">See a night run</button>
-          </div>
-
-          <!-- The board is the product running, not a screenshot of it. A
-               rally lands on a random court every few seconds and the rules
-               are the real ones, so the page cannot lie about what it does. -->
-          <div data-rv="5" class="lp2-board">
-            <div class="lp2-bh">
-              <span class="lp2-bl">Live</span>
-              <span class="lp2-bm">Putlaan · round <b data-lp-round>7</b></span>
-              <span class="lp2-bc" data-lp-clock>7:42</span>
-            </div>
-            <div class="lp2-courts" id="lp2-courts"></div>
-          </div>
-
-          <!-- What is genuinely on, and the club's real size. Counted, never
-               quoted: a front page that claims a number it cannot count is
-               the first thing somebody finds out you were wrong about. -->
-          <div class="lp2-facts" id="lp-nums" hidden></div>
-        </div>
-      </div>
-
-      <div class="lp2-live" id="lp-live" hidden></div>
-
-      <!-- ── the club around it ── -->
-      <div class="lp2-sec lp2-club">
-        <div class="lp2-two">
-          <div data-rv="1">
-            <p class="lp2-k">A club, not a tool</p>
-            <h2 class="lp2-h2">The night does not end when you leave the court.</h2>
-            <p class="lp2-b">Results land in a feed the club actually reads. People post,
-              give kudos for a run nobody saw coming, and argue about it in the thread
-              until Thursday.</p>
-            <div class="lp2-chips">
-              <span>A feed, not a group chat</span>
-              <span>Kudos and comments</span>
-              <span>Threads per session</span>
-              <span>Birthdays and shout-outs</span>
-            </div>
-          </div>
-          <div class="lp2-feed">
-            <div data-rv="1" class="lp2-post">
-              <div class="lp2-pa">
-                <span class="lp2-av sys">SS</span>
-                <span class="lp2-pn"><b>Sideout Society<i class="lp2-tag">Club</i></b>
-                  <span>an hour ago</span></span>
-              </div>
-              <p class="lp2-pt">Lorenzo took the night outright. Third crown of the season,
-                which is more than everybody else put together.</p>
-              <div class="lp2-crown">
-                <p class="lp2-ck">Crown</p>
-                <p class="lp2-cn">Lorenzo Bautista</p>
-                <p class="lp2-cm">Won OG Bardagulan · 5–1</p>
-              </div>
-              <div class="lp2-acts">
-                <span class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 19.5S4.5 14.8 4.5 9.9A3.9 3.9 0 0 1 12 8.2a3.9 3.9 0 0 1 7.5 1.7c0 4.9-7.5 9.6-7.5 9.6z"/></svg><b data-count="31">31</b></span>
-                <span class="gold"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.8 14.5 9l5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4L9.5 9z"/></svg><b data-count="28">28</b></span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20.5 11.8c0 4-3.8 7.2-8.5 7.2a9.8 9.8 0 0 1-2.6-.35L4.5 20l1.2-3.3A6.9 6.9 0 0 1 3.5 11.8c0-4 3.8-7.2 8.5-7.2s8.5 3.2 8.5 7.2z"/></svg><b>9</b></span>
-              </div>
-            </div>
-            <div data-rv="2" class="lp2-post">
-              <div class="lp2-pa">
-                <span class="lp2-av" style="background:#3A3F45">KR</span>
-                <span class="lp2-pn"><b>Kuya Ramon</b><span>yesterday</span></span>
-              </div>
-              <p class="lp2-pt">Two years ago I could not serve. Tonight I beat Lorenzo.
-                I am retiring at the top.</p>
-              <div class="lp2-acts">
-                <span class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 19.5S4.5 14.8 4.5 9.9A3.9 3.9 0 0 1 12 8.2a3.9 3.9 0 0 1 7.5 1.7c0 4.9-7.5 9.6-7.5 9.6z"/></svg><b data-count="44">44</b></span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.8 14.5 9l5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4L9.5 9z"/></svg><b>19</b></span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20.5 11.8c0 4-3.8 7.2-8.5 7.2a9.8 9.8 0 0 1-2.6-.35L4.5 20l1.2-3.3A6.9 6.9 0 0 1 3.5 11.8c0-4 3.8-7.2 8.5-7.2s8.5 3.2 8.5 7.2z"/></svg><b>12</b></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── how a night runs ── -->
-      <div class="lp2-sec">
-        <p data-rv="1" class="lp2-k dark">How a night runs</p>
-        <div class="lp2-steps">
-          <div data-rv="1" class="lp2-step">
-            <span class="lp2-n">1</span>
-            <p class="lp2-sh">Post the night</p>
-            <p class="lp2-sb">Courts, format, fee. Share a link and the club puts its own
-              names down.</p>
-          </div>
-          <div data-rv="2" class="lp2-step">
-            <span class="lp2-n">2</span>
-            <p class="lp2-sh">Run it from the net</p>
-            <p class="lp2-sb">Tap whoever wins the rally, and cast the board to the
-              television.</p>
-          </div>
-          <div data-rv="3" class="lp2-step">
-            <span class="lp2-n">3</span>
-            <p class="lp2-sh">Bank it</p>
-            <p class="lp2-sb">Results go to the ladder and everybody's record, and the
-              write-up posts itself.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── why it is fair ──
-           These three are not marketing figures. They are what the matchmaker
-           measured over twenty simulated rounds of forty-three players across
-           four courts, which is the same test that put `sat` into the
-           tie-break in the first place. -->
-      <div class="lp2-fair">
-        <div class="lp2-in">
-          <p data-rv="1" class="lp2-k blue">Fair by arithmetic</p>
-          <h2 data-rv="2" class="lp2-h3">Equal games is not equal rest, so we break the tie
-            on who has waited longest.</h2>
-          <div class="lp2-stats">
-            <div data-rv="1" class="lp2-stat">
-              <b data-count="2">2</b>
-              <span>Longest anybody sits out, on a night of forty-three across four
-                courts.</span>
-            </div>
-            <div data-rv="2" class="lp2-stat">
-              <b class="green">0</b>
-              <span>Players made to sit two rounds back to back.</span>
-            </div>
-            <div data-rv="3" class="lp2-stat">
-              <b>7–8</b>
-              <span>Games each, unchanged — the fairness costs nobody a game.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── the ask ── -->
-      <div class="lp2-sec">
-        <div data-rv="1" class="lp2-ask">
-          <h2 class="lp2-h4">Run Thursday properly.</h2>
-          <p class="lp2-b mid">Set a night up in a minute, share the link, and let the
-            board do the arguing.</p>
-          <div class="lp2-cta mid">
-            <button class="lp2-go big" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
-            <button class="lp2-soft" onclick="AuthUI.open(()=>{ gateScreens(); }, 'in')">I have an account</button>
-          </div>
-          <p class="lp2-note">Been sent a link? Just open it — you do not need an account
-            to watch a session.</p>
-        </div>
-      </div>
-
-      <!-- Add-to-home-screen. Not decoration: on an iPhone push only works
-           from an installed app, so this is the difference between being told
-           a session is on and not. -->
-      <div class="lp2-get" id="lp-get" hidden></div>
-
-      <footer class="lp2-foot">
-        <span class="lp2-fmark sos-mark"><img src="/sos-mark.png" alt="Sideout Society"></span>
-        <span class="lp2-ft">Open play, run properly.</span>
-        <span class="lp2-fl">
-          <a href="#privacy">Privacy</a>
-          <a href="#terms">Terms</a>
-          <a href="#contact">Contact</a>
-        </span>
-      </footer>
-
-      </div><!-- /lp2-scroll -->
+  <div class="lp2-wrap">
+    <div class="lp2-bar">
+      <span class="lp2-logo"><img src="sos-logo-white.png" alt="Sideout Society"></span>
+      <!-- Staff is the way to the manager app, where nights are set up and
+           scored. Until that address is wired in it signs you in here, which
+           is the first half of getting there either way. -->
+      <button class="lp2-staff" onclick="lpStaff()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/></svg>Staff</button>
+      <button class="lp2-signin" onclick="AuthUI.open(()=>{ gateScreens(); }, 'in')">Sign in</button>
+      <button class="lp2-join" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join a night</button>
     </div>
-  </section>
+  </div>
+
+  <div class="lp2-hero">
+    <div class="lp2-ring a"></div>
+    <div class="lp2-ring b"></div>
+    <div class="lp2-in">
+      <div class="lp2-eye" data-rv="1">
+        <span class="lp2-dot"><i></i><u></u></span>
+        <span>Sideout Society · open play</span>
+      </div>
+      <h1 class="lp2-h1" data-rv="2">Never ask who&rsquo;s <i>next again.</i></h1>
+      <p class="lp2-sub" data-rv="3">A fair queue, live courts, and your spot in line on your
+        phone. Sideout runs the night so the organiser can actually play.</p>
+      <div class="lp2-ctas" data-rv="4">
+        <button class="lp2-go" onclick="findSession()">Join tonight&rsquo;s queue</button>
+        <button class="lp2-ghost" onclick="lpDemo()">See a night run</button>
+      </div>
+
+      <!-- The board is the product running, not a screenshot: the real rule,
+           first to eleven and win by two, then the four come off and the next
+           four walk on. A page that animated a fake score could drift from
+           what the product does; this one cannot. -->
+      <div class="lp2-board" id="lp2-board" data-rv="5">
+        <div class="lp2-bh">
+          <span class="lv">Live</span>
+          <span class="wh" id="lp2-when">Thursday Open Play · Pickleturf</span>
+          <span class="ck" id="lp2-clock">7:42</span>
+        </div>
+        <div class="lp2-bgrid">
+          <div class="lp2-cts">
+            <div>
+              <div class="lp2-ch"><b>Court 1</b><i data-cs="0">0 &ndash; 0</i></div>
+              <div class="lp2-court" data-ct="0">
+                <s class="net"></s><s class="k1"></s><s class="k2"></s><s class="m1"></s><s class="m2"></s>
+                <span class="lp2-slot" data-slot="c0-0" style="left:17%;top:27%"></span>
+                <span class="lp2-slot" data-slot="c0-1" style="left:17%;top:73%"></span>
+                <span class="lp2-slot" data-slot="c0-2" style="left:83%;top:27%"></span>
+                <span class="lp2-slot" data-slot="c0-3" style="left:83%;top:73%"></span>
+              </div>
+            </div>
+            <div>
+              <div class="lp2-ch"><b>Court 2</b><i data-cs="1">0 &ndash; 0</i></div>
+              <div class="lp2-court" data-ct="1">
+                <s class="net"></s><s class="k1"></s><s class="k2"></s><s class="m1"></s><s class="m2"></s>
+                <span class="lp2-slot" data-slot="c1-0" style="left:17%;top:27%"></span>
+                <span class="lp2-slot" data-slot="c1-1" style="left:17%;top:73%"></span>
+                <span class="lp2-slot" data-slot="c1-2" style="left:83%;top:27%"></span>
+                <span class="lp2-slot" data-slot="c1-3" style="left:83%;top:73%"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lp2-q">
+            <div class="lp2-qh"><b>Up next</b><span>Longest wait goes first</span></div>
+            <div class="lp2-qrows">
+              <div class="lp2-qrow"><b style="color:#7FC4DE">1</b><span class="sl"><span class="lp2-slot" data-slot="q0" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
+              <div class="lp2-qrow"><b style="color:#7FC4DE">2</b><span class="sl"><span class="lp2-slot" data-slot="q1" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
+              <div class="lp2-qrow"><b style="color:#7FC4DE">3</b><span class="sl"><span class="lp2-slot" data-slot="q2" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
+              <div class="lp2-qrow"><b style="color:#7FC4DE">4</b><span class="sl"><span class="lp2-slot" data-slot="q3" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
+              <div class="lp2-qrow"><b style="color:#56707F">5</b><span class="sl"><span class="lp2-slot" data-slot="q4" style="left:50%;top:50%"></span></span><s style="background:rgba(255,255,255,.06)"></s></div>
+              <div class="lp2-qrow"><b style="color:#56707F">6</b><span class="sl"><span class="lp2-slot" data-slot="q5" style="left:50%;top:50%"></span></span><s style="background:rgba(255,255,255,.06)"></s></div>
+            </div>
+            <div class="lp2-you"><i></i><span id="lp2-you">You are 4th in line</span></div>
+          </div>
+        </div>
+
+        <div class="lp2-toast" id="lp2-toast">
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15.5 6 9.5z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg></i>
+          <span class="tx"><span>Sideout · now</span><b id="lp2-toast-tx">You&rsquo;re up next. Grab your paddle.</b></span>
+        </div>
+      </div>
+
+      <!-- Counted, never quoted. A front page that says "1,240 players" when
+           the club has 85 is the first thing somebody finds out you were
+           wrong about. A figure that cannot be counted is left out. -->
+      <div class="lp2-nums" id="lp-nums" data-rv="6" hidden></div>
+    </div>
+  </div>
+
+  <div class="lp2-light">
+    <div class="lp2-lin">
+      <div class="lp2-kick" data-rv="1">The club in your pocket</div>
+      <h2 class="lp2-h2" data-rv="2">The night doesn&rsquo;t end at the last point.</h2>
+      <p class="lp2-p" data-rv="3">Results post themselves to the club feed. People give kudos
+        for the run nobody saw coming, and argue about it in the thread until next week.</p>
+    </div>
+    <div class="lp2-rows">
+      <div class="lp2-mq"><div class="lp2-mqin" data-mq="48" id="lp2-mq-a"></div></div>
+      <div class="lp2-mq"><div class="lp2-mqin" data-mq="-56" id="lp2-mq-b"></div></div>
+    </div>
+  </div>
+
+  <div class="lp2-dark">
+    <div class="lp2-lin">
+      <div class="lp2-kick" data-rv="1">Fair by arithmetic</div>
+      <h2 class="lp2-h2" data-rv="2">Nobody sits twice while someone plays three in a row.</h2>
+      <!-- These three are the result of the simulation in CLAUDE.md — forty-three
+           players across four courts over twenty rounds — not illustrative
+           figures. That is the only reason they are allowed on this page. -->
+      <div class="lp2-stats">
+        <div class="lp2-stat" data-rv="1"><b data-count="2">2</b><span>The longest anybody sits
+          out, on a night of forty-three across four courts.</span></div>
+        <div class="lp2-stat green" data-rv="2"><b data-count="0">0</b><span>Players made to sit
+          two rounds back to back.</span></div>
+        <div class="lp2-stat" data-rv="3"><b>7&ndash;8</b><span>Games each, unchanged. The
+          fairness costs nobody a game.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lp2-light">
+    <div class="lp2-lin">
+      <div class="lp2-kick" data-rv="1">Three taps from your sofa to a court</div>
+      <div class="lp2-steps">
+        <div class="lp2-step" data-rv="1"><u>1</u><b>Enter the code</b><span>It is on the board at
+          the venue. You are in the line before you have found your shoes.</span></div>
+        <div class="lp2-step" data-rv="2"><u>2</u><b>Watch your spot</b><span>Your phone shows
+          where you are and buzzes when you are up. No more hovering by the courts.</span></div>
+        <div class="lp2-step" data-rv="3"><u>3</u><b>Play, then brag</b><span>Scores bank to your
+          record and the night posts to the club feed by itself.</span></div>
+      </div>
+    </div>
+    <!-- Real nights, read from the server. The whole block disappears when
+         there is nothing: an empty "on this week" says the product is dead
+         far louder than no block at all. -->
+    <div class="lp2-week" id="lp-live" hidden></div>
+  </div>
+
+  <div class="lp2-cta">
+    <div class="lp2-ring"></div>
+    <div class="lp2-ctain">
+      <h2 data-rv="1">Tonight&rsquo;s code is on the board.</h2>
+      <div class="lp2-code" id="lp2-code"><i>P</i><i>T</i><i>L</i><i>A</i><i>N</i></div>
+      <p data-rv="2">Type it in and you are in the line. No app store, and nothing to set up.</p>
+      <div class="lp2-ctas" data-rv="3">
+        <button class="lp2-go" onclick="findSession()">Enter a code</button>
+        <button class="lp2-ghost" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
+      </div>
+      <!-- The install card. Its only home was the old front page, and the
+           redesign has no slot for one — but an iPhone cannot be told a
+           session has gone up unless the app is on the Home Screen, so
+           dropping it would have quietly taken notifications off every iOS
+           phone that had not installed yet. It sits under the line that is
+           already about not needing an app store. `Install.paint()` hides it
+           on a device that has already installed. -->
+      <div class="lp2-get" id="lp-get" hidden></div>
+    </div>
+  </div>
+
+  <div class="lp2-foot">
+    <div class="lp2-footin">
+      <img src="sos-logo-white.png" alt="Sideout Society">
+      <span class="tag">Open play, run properly.</span>
+      <span class="lp2-links">
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+        <a href="#contact">Contact</a>
+      </span>
+    </div>
+  </div>
+
+</div>
+</section>
 
   <!-- A night that has finished is a place, not a pop-up. It has three tabs
        like a live session does, and the results underneath are the whole
@@ -23783,137 +23845,297 @@ function leaveWatching(){
    a frame after mount rather than the markup starting
    blank. If this whole file fails to run, the front page
    still reads.
-   ═══════════════════════════════════════════════════ */
+/* ── the front page ────────────────────────────────────────────────────
+   Everything that moves is driven straight against the DOM from one mount.
+   Nothing here re-renders: a repaint every half-second would throw away the
+   reveal styles the observer has just written and flicker the board.
+
+   The board is the product running rather than a screenshot. It uses the real
+   rule — first to eleven, win by two — so the page cannot drift from what the
+   app does, and the four coming off go to the back of the queue exactly as
+   they would on a court. */
 const LP = {
-  on: false, reduce: false,
-  io: null, clockT: null, rallyT: null,
-  /* Two courts, and the rules are the real ones: first to eleven, win by two,
-     and then the court resets and the round moves on. The page cannot lie
-     about what the product does if it is running the product's own rule. */
-  courts: [
-    { name: 'Court 1', a: 'Lorenzo / Mika', b: 'AJ / Kat', pa: 9,  pb: 7 },
-    { name: 'Court 2', a: 'Vox / Teara',    b: 'Kuya / Sol', pa: 11, pb: 6 }
-  ],
-  secs: 462, round: 7,
+  COL: {
+    You:'#2D6A85', Lorenzo:'#1F4F65', Mika:'#A05A6B', AJ:'#3F7397', Kat:'#9A6340',
+    Teara:'#6D6A9C', Kuya:'#3A3F45', Sol:'#3D7A6E', Jasmine:'#8E5572', Ry:'#3F7397',
+    CJ:'#4E6C7C', Bea:'#8E5572', Shai:'#6D6A9C', Nico:'#3D7A6E', Dee:'#9A6340', Sam:'#1F4F65'
+  },
+  W: 92, H: 30,
+  timers: [], built: false,
+
+  reduced(){
+    try{ return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch(e){ return false; }
+  },
 
   start(){
-    if(this.on) return;
-    const box = document.getElementById('lp2-courts');
-    if(!box) return;
-    this.on = true;
-    try{ this.reduce = !!(window.matchMedia
-      && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
-
-    box.innerHTML = this.courts.map((c, i) => `<div class="lp2-court">
-        <div class="lp2-ch"><span class="lp2-cnm">${esc(c.name)}</span>
-          <span class="lp2-cst">Playing</span></div>
-        <div class="lp2-side">
-          <span class="lp2-tm" data-tm="${i}a">${esc(c.a)}</span>
-          <span class="lp2-sc" data-sc="${i}a">${c.pa}</span>
-        </div>
-        <div class="lp2-rule"></div>
-        <div class="lp2-side">
-          <span class="lp2-tm" data-tm="${i}b">${esc(c.b)}</span>
-          <span class="lp2-sc" data-sc="${i}b">${c.pb}</span>
-        </div>
-      </div>`).join('');
-    this.paint();
-    this.reveal();
-    if(this.reduce) return;
-
-    this.clockT = setInterval(()=>{
-      this.secs++;
-      const el = document.querySelector('[data-lp-clock]');
-      if(el) el.textContent = Math.floor(this.secs / 60) + ':'
-        + String(this.secs % 60).padStart(2, '0');
-    }, 1000);
-
-    this.rallyT = setInterval(()=> this.rally(), 2600);
+    this.stop();
+    this.reduce = this.reduced();
+    [this.marquees, this.reveal, this.rows, this.board].forEach(f =>{
+      try{ f.call(this); }catch(e){ try{ console.error('[landing]', e); }catch(_){} }
+    });
   },
 
   stop(){
-    this.on = false;
-    clearInterval(this.clockT); this.clockT = null;
-    clearInterval(this.rallyT); this.rallyT = null;
-    if(this.io){ try{ this.io.disconnect(); }catch(e){} this.io = null; }
+    (this.timers || []).forEach(t =>{ clearInterval(t); clearTimeout(t); });
+    this.timers = [];
+    if(this.io) { try{ this.io.disconnect(); }catch(e){} this.io = null; }
+    if(this.ro) { try{ this.ro.disconnect(); }catch(e){} this.ro = null; }
+    if(this.onSize){ window.removeEventListener('resize', this.onSize); this.onSize = null; }
+    this.built = false;
+    const b = document.getElementById('lp2-board');
+    if(b) b.querySelectorAll('.lp2-chip').forEach(c => c.remove());
   },
 
-  /* The side that is ahead takes the ink and the weight; the other dims. The
-     same rule the big screen uses, which is the point — it is the product's
-     own board, not a picture of one. */
-  paint(){
-    this.courts.forEach((c, i) =>{
-      [['a', c.pa, c.pb], ['b', c.pb, c.pa]].forEach(([k, me, them]) =>{
-        const s = document.querySelector('[data-sc="' + i + k + '"]');
-        const t = document.querySelector('[data-tm="' + i + k + '"]');
-        if(!s || !t) return;
-        s.textContent = String(me);
-        s.style.color = me > them ? '#fff' : '#61798A';
-        t.style.color = me >= them ? '#fff' : '#9DB2C0';
-        t.style.fontWeight = me > them ? '700' : '500';
-      });
-    });
-  },
-
-  rally(){
-    const i = Math.floor(Math.random() * this.courts.length);
-    const c = this.courts[i];
-    const hi = Math.max(c.pa, c.pb), lo = Math.min(c.pa, c.pb);
-    if(hi >= 11 && hi - lo >= 2){
-      c.pa = 0; c.pb = 0;
-      this.round++;
-      const r = document.querySelector('[data-lp-round]');
-      if(r) r.textContent = String(this.round);
-    } else {
-      const k = Math.random() < .5 ? 'a' : 'b';
-      c[k === 'a' ? 'pa' : 'pb']++;
-      const el = document.querySelector('[data-sc="' + i + k + '"]');
-      if(el){ el.style.animation = 'none'; void el.offsetWidth;
-        el.style.animation = 'lpFlash .45s ease-out'; }
-    }
-    this.paint();
-  },
-
-  /* Hidden here rather than in the markup, so the page reads without this.
-     Staggered by the element's own index, which is what makes a section
-     arrive as a section rather than as six things at once. */
+  /* ── reveal ───────────────────────────────────────────────────────────
+     Never hide anything the observer might fail to bring back. What is
+     already on screen at mount rises in on a keyframe with no backwards
+     fill, so if the animation never runs (a hidden tab, a screenshot) the
+     element simply sits where it belongs. Only what is below the fold is
+     hidden, and a safety timer shows anything the observer has not
+     reported by then. */
   reveal(){
-    const els = [...document.querySelectorAll('#screen-landing [data-rv]')];
-    if(this.reduce || !('IntersectionObserver' in window)) return;
+    const els = [].slice.call(document.querySelectorAll('#screen-landing [data-rv]'));
+    if(!els.length || this.reduce) return;
+    if(document.visibilityState === 'hidden' || !('IntersectionObserver' in window)) return;
+    const vh = window.innerHeight || 800;
+    const later = [];
     els.forEach(el =>{
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(18px)';
-      el.style.transition = 'opacity .7s cubic-bezier(.22,.8,.3,1),'
-        + ' transform .7s cubic-bezier(.22,.8,.3,1)';
+      const d = ((Number(el.getAttribute('data-rv')) || 1) - 1) * 90;
+      if(el.getBoundingClientRect().top < vh){
+        el.__rv = true;
+        el.style.animation = 'lpRise .8s cubic-bezier(.22,.8,.3,1) ' + d + 'ms';
+        this.count(el);
+      } else {
+        el.style.transition = 'opacity .8s cubic-bezier(.22,.8,.3,1), transform .8s cubic-bezier(.22,.8,.3,1)';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(22px)';
+        later.push(el);
+      }
     });
-    this.io = new IntersectionObserver(entries =>{
-      entries.forEach(e =>{
-        if(!e.isIntersecting) return;
-        const el = e.target;
-        el.style.transitionDelay = ((Number(el.getAttribute('data-rv')) || 1) - 1) * 90 + 'ms';
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-        const n = el.matches('[data-count]') ? el : el.querySelector('[data-count]');
-        if(n) LP.countUp(n);
-        this.io.unobserve(el);
-      });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: .12 });
-    els.forEach(el => this.io.observe(el));
+    const show = el =>{
+      if(el.__rv) return;
+      el.__rv = true;
+      el.style.transitionDelay = ((Number(el.getAttribute('data-rv')) || 1) - 1) * 90 + 'ms';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      this.count(el);
+    };
+    this.io = new IntersectionObserver(es => es.forEach(e =>{
+      if(!e.isIntersecting) return;
+      show(e.target); this.io.unobserve(e.target);
+    }), { rootMargin:'0px 0px -8% 0px', threshold:.05 });
+    later.forEach(el => this.io.observe(el));
+    this.timers.push(setTimeout(()=> later.forEach(show), 1400));
+
+    /* The code flips in once, when it is reached. */
+    const code = document.getElementById('lp2-code');
+    if(code && 'IntersectionObserver' in window){
+      const flip = new IntersectionObserver(es => es.forEach(e =>{
+        if(!e.isIntersecting || code.__f) return;
+        code.__f = true;
+        [].slice.call(code.children).forEach((t, i) =>{
+          t.style.animation = 'lpFlip .6s cubic-bezier(.2,.9,.3,1.2) ' + (i * 110) + 'ms';
+        });
+        flip.disconnect();
+      }), { threshold:.3 });
+      flip.observe(code);
+    }
   },
 
-  countUp(el){
-    const raw = el.getAttribute('data-count') || el.textContent;
-    const target = parseInt(String(raw).replace(/\D/g, ''), 10);
+  /* A figure counts up to what it already says, so the number in the markup
+     is the number either way. */
+  count(el){
+    const n = el.matches('[data-count]') ? el : el.querySelector('[data-count]');
+    if(!n || n.__c) return;
+    n.__c = true;
+    const target = parseInt(n.getAttribute('data-count'), 10);
     if(!isFinite(target) || target === 0) return;
-    const t0 = performance.now(), dur = 900;
+    const t0 = performance.now();
     const step = now =>{
-      const p = Math.min(1, (now - t0) / dur);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      const p = Math.min(1, (now - t0) / 1000);
+      n.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
       if(p < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
+  },
+
+  marquees(){
+    if(this.reduce) return;
+    document.querySelectorAll('#screen-landing [data-mq]').forEach(el =>{
+      const s = Number(el.getAttribute('data-mq'));
+      el.style.animation = 'lpMarq ' + Math.abs(s) + 's linear infinite' + (s < 0 ? ' reverse' : '');
+    });
+  },
+
+  /* The two marquee rows. Duplicated so the loop has no seam. */
+  rows(){
+    const a = document.getElementById('lp2-mq-a'), b = document.getElementById('lp2-mq-b');
+    if(!a || !b) return;
+    const ini = w => String(w).split(' ').map(x => x[0]).join('').slice(0, 2);
+    const posts = [
+      ['Sideout Society','an hour ago','Lorenzo took the night outright. Third crown of the season.',31,28,9],
+      ['Kuya Ramon','yesterday','Two years ago I could not serve. Tonight I beat Lorenzo. Retiring at the top.',44,19,12],
+      ['Mika Santos','3 hours ago','Whoever left a grey Selkirk by court three, I have it. Describe the grip tape.',12,0,4],
+      ['Jasmine Delgado','Tuesday','7am Sunday is a personal attack and I will be there.',22,6,8],
+      ['CJ Mercado','Monday','Every week somebody leaves a paddle and every week it is never mine.',17,3,5]
+    ].map(([who, when, tx, lk, kd, cm]) =>{
+      const sys = who === 'Sideout Society';
+      return `<div class="lp2-post"><div class="lp2-pwho">
+        <u style="background:${sys ? '#17242B' : (this.COL[who.split(' ')[0]] || '#4E6C7C')}">${sys ? 'SS' : esc(ini(who))}</u>
+        <div><b>${esc(who)}</b><span>${esc(when)}</span></div></div>
+        <div class="lp2-ptx">${esc(tx)}</div>
+        <div class="lp2-pacts"><span class="lk">&#9829; ${lk}</span>
+          <span class="kd">&#9733; ${kd}</span><span class="cm">${cm} replies</span></div></div>`;
+    }).join('');
+
+    const tones = {
+      gold:  ['#FBF7EC','#EADFC2','#F1E4BF','#8A6712'],
+      green: ['#EEF6F1','#CFE5D7','#D7EBDF','#2A7049'],
+      teal:  ['#ffffff','rgba(60,60,67,.12)','#E7F0F4','#2D6A85']
+    };
+    const pills = [
+      ['Crown','Lorenzo takes the night','gold','♛'],
+      ['Session full','Wednesday Regular · 24 of 24','teal','S'],
+      ['Kudos','Kuya beat the champ','gold','★'],
+      ['New member','Shai joined the club','green','N'],
+      ['Podium','AJ, 2nd · 5–2','teal','P'],
+      ['Birthday','Happy birthday, Bea','green','✦']
+    ].map(([kind, title, tone, mark]) =>{
+      const [bg, br, tile, fg] = tones[tone];
+      return `<div class="lp2-pill" style="background:${bg};border:1px solid ${br}">
+        <u style="background:${tile};color:${fg}">${mark}</u>
+        <div><b style="color:${fg}">${esc(kind)}</b><span>${esc(title)}</span></div></div>`;
+    }).join('');
+
+    a.innerHTML = posts + posts;
+    b.innerHTML = pills + pills;
+  },
+
+  /* ── the board ────────────────────────────────────────────────────── */
+  board(){
+    const stage = document.getElementById('lp2-board');
+    if(!stage || this.built) return;
+    if(stage.querySelectorAll('[data-slot]').length < 14) return;
+    this.built = true;
+    this.stage = stage;
+    this.courts = [['Lorenzo','Mika','AJ','Kat'], ['Teara','Kuya','Sol','Jasmine']];
+    this.queue  = ['Ry','CJ','Bea','You','Shai','Nico','Dee','Sam'];
+    this.score  = [[3,2],[5,6]];
+    this.busy   = [false,false];
+    this.chips  = {};
+
+    Object.keys(this.COL).forEach(n =>{
+      const me = n === 'You';
+      const d = document.createElement('div');
+      d.className = 'lp2-chip' + (me ? ' me' : '');
+      d.innerHTML = '<u style="background:' + (me ? '' : this.COL[n]) + '">'
+        + esc(n.slice(0, 2).toUpperCase()) + '</u><b>' + esc(n) + '</b>';
+      d.style.opacity = '0';
+      stage.appendChild(d);
+      this.chips[n] = d;
+    });
+
+    this.paintScores();
+    this.layout();
+    this.timers.push(setTimeout(()=> this.layout(), 60));
+    if(window.ResizeObserver){
+      this.ro = new ResizeObserver(()=> this.layout());
+      this.ro.observe(stage);
+    }
+    this.onSize = ()=> this.layout();
+    window.addEventListener('resize', this.onSize);
+    if(this.reduce) return;
+
+    let secs = 462;
+    this.timers.push(setInterval(()=>{
+      secs++;
+      const c = document.getElementById('lp2-clock');
+      if(c) c.textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+    }, 1000));
+    this.timers.push(setInterval(()=> this.rally(), 560));
+  },
+
+  rally(){
+    const open = [0,1].filter(i => !this.busy[i]);
+    if(!open.length) return;
+    const ci = open[Math.floor(Math.random() * open.length)];
+    this.score[ci][Math.random() < .5 ? 0 : 1]++;
+    const el = this.stage.querySelector('[data-cs="' + ci + '"]');
+    if(el){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'lpPop .4s ease-out'; }
+    this.paintScores();
+    const [a, b] = this.score[ci];
+    /* The real rule, so the page cannot say something the product does not. */
+    if(Math.max(a, b) >= 11 && Math.abs(a - b) >= 2) this.finish(ci);
+  },
+
+  finish(ci){
+    this.busy[ci] = true;
+    const court = this.stage.querySelector('[data-ct="' + ci + '"]');
+    if(court) court.style.boxShadow = '0 0 0 4px rgba(95,191,138,.7)';
+    this.timers.push(setTimeout(()=>{
+      if(court) court.style.boxShadow = 'none';
+      const off = this.courts[ci];
+      this.courts[ci] = this.queue.splice(0, 4);
+      this.queue = this.queue.concat(off);
+      this.score[ci] = [0, 0];
+      this.paintScores();
+      this.layout();
+      this.timers.push(setTimeout(()=>{ this.busy[ci] = false; }, 1100));
+    }, 900));
+  },
+
+  paintScores(){
+    [0,1].forEach(i =>{
+      const el = this.stage && this.stage.querySelector('[data-cs="' + i + '"]');
+      if(el) el.textContent = this.score[i][0] + ' – ' + this.score[i][1];
+    });
+  },
+
+  /* Chips are moved to the centre of a named slot, measured each time so a
+     resize cannot leave them behind. A chip whose slot is not there stays
+     hidden rather than parking itself at 0,0. */
+  layout(){
+    if(!this.stage || !this.chips) return;
+    const st = this.stage.getBoundingClientRect();
+    const at = key =>{
+      const s = this.stage.querySelector('[data-slot="' + key + '"]');
+      if(!s) return null;
+      const r = s.getBoundingClientRect();
+      return [r.left - st.left + r.width / 2, r.top - st.top + r.height / 2];
+    };
+    const place = (n, p, o) =>{
+      const el = this.chips[n];
+      if(!el) return;
+      if(!p){ el.style.opacity = '0'; return; }
+      el.style.transform = 'translate(' + (p[0] - this.W / 2) + 'px,' + (p[1] - this.H / 2) + 'px)';
+      el.style.opacity = String(o);
+    };
+    this.courts.forEach((c, ci) => c.forEach((n, i) => place(n, at('c' + ci + '-' + i), 1)));
+    this.queue.forEach((n, i) => place(n, at('q' + Math.min(i, 5)), i < 6 ? 1 : 0));
+
+    const ord = k => k + (k % 10 === 1 && k !== 11 ? 'st' : k % 10 === 2 && k !== 12 ? 'nd'
+      : k % 10 === 3 && k !== 13 ? 'rd' : 'th');
+    const qi = this.queue.indexOf('You');
+    const ci = this.courts.findIndex(c => c.indexOf('You') >= 0);
+    const set = (id, s) =>{ const e = document.getElementById(id); if(e && e.textContent !== s) e.textContent = s; };
+    set('lp2-you', ci >= 0 ? 'You are on Court ' + (ci + 1) + '. Go.' : 'You are ' + ord(qi + 1) + ' in line');
+    let show = false;
+    if(ci >= 0){ show = true; set('lp2-toast-tx', 'Court ' + (ci + 1) + ' is yours. Go play.'); }
+    else if(qi >= 0 && qi < 4){ show = true; set('lp2-toast-tx', 'You’re up next. Grab your paddle.'); }
+    const t = document.getElementById('lp2-toast');
+    const tf = show ? 'translate(-50%,0)' : 'translate(-50%,-160%)';
+    if(t && t.style.transform !== tf) t.style.transform = tf;
   }
 };
+
+/* The manager app is where nights are set up and scored. Until its address is
+   wired in, signing in here is the first half of getting there either way —
+   and it is the honest thing to do rather than a button that goes nowhere. */
+function lpStaff(){
+  AuthUI.open(()=>{ gateScreens(); }, 'in');
+  toast('Running a night is in the Sideout manager app.');
+}
 
 /* "See a night run" shows a night that was actually run, where there is one —
    the board above is the product moving, but a finished night is the thing
@@ -23947,7 +24169,7 @@ async function paintLandingFacts(){
   const live = document.getElementById('lp-live');
   const put = (members, sessions, clubs) =>{
     if(!nums) return;
-    const cell = (n, w) => `<div><b>${n}</b><span>${w}</span></div>`;
+    const cell = (n, w) => `<div><b>${n}</b><span>${esc(w)}</span></div>`;
     const bits = [];
     if(members) bits.push(cell(members, members === 1 ? 'player' : 'players'));
     if(sessions) bits.push(cell(sessions, sessions === 1 ? 'session coming up' : 'sessions coming up'));
@@ -23984,7 +24206,7 @@ async function paintLandingFacts(){
     .sort((x, y) => (Feed.ms(x.starts_at) || 0) - (Feed.ms(y.starts_at) || 0))
     .slice(0, 3);
   if(!soon.length){ live.hidden = true; return; }
-  live.innerHTML = `<h3>On this week</h3>` + soon.map(r =>{
+  live.innerHTML = `<div class="lp2-kick">On this week</div>` + soon.map(r =>{
     const t = Feed.ms(r.starts_at);
     const d = t ? new Date(t) : null;
     /* 12-hour, or the 9pm session reads "21 PM". The line under it is the
@@ -23998,11 +24220,11 @@ async function paintLandingFacts(){
     const tag = left === null ? `${r.joined || 0} in`
               : (left === 0 ? 'Full' : left + ' spot' + (left === 1 ? '' : 's'));
     const cls = left === 0 ? 'full' : (left !== null && left <= 4 ? 'few' : '');
-    return `<button class="lp-row" onclick="openSession('${esc(r.code)}')">
-      <span class="t"><b>${hh}</b><span>${ap}</span></span><s></s>
+    return `<button class="lp2-wrow" onclick="openSession('${esc(r.code)}')">
+      <span class="t"><b>${ap}</b><i>${hh}</i></span>
       <span class="n"><b>${esc(r.title || 'Open play')}</b>
         <span>${esc(r.venue ? (parseVenue(r.venue) || {}).name || r.venue : (d ? longDate(t) : ''))}</span></span>
-      <span class="s ${cls}">${tag}</span></button>`;
+      <span class="s ${cls}">${esc(tag)}</span></button>`;
   }).join('');
   live.hidden = false;
 }
