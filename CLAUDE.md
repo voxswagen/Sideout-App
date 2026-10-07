@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v165`. Forgetting this means testers see last week's app and
+Currently `sideout-v166`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -295,6 +295,43 @@ old hard delete.
 where somebody attaches an existing record to their account. Anything
 reading that table needs an explicit kind filter — treating "not a leave"
 as a join announced claims as new players arriving.
+
+**The front door is one screen, and the multi-step signup is gone.** The old
+auth screen asked for eight things across three steps, which was the right
+answer to eight fields. The handoff asks for five — name, gender, birthday,
+email, password — and five fit on one screen, so `paintStep`, `go`, `back`,
+`stepOk` and `focusStep` went with the wall they were solving. `data-mode` on
+`#screen-auth` is the whole of the switch: the markup is static and the two
+shapes are CSS, which is what lets the pill slide between the tabs instead of
+the card being rebuilt under it. **It always opens on Sign in.**
+
+Four things changed with it, and three are worth arguing about:
+
+* **Birthday is a native date input, and only the month and the day are
+  sent.** `members` has `birth_month` and `birth_day` and no year — that is a
+  promise this app has made since it started asking, and the schema is shared
+  with the manager app so it could not change anyway. The whole date is the
+  easiest thing to type; the year is thrown away on submit.
+* **Gender is now required to create an account.** It was optional before and
+  said so ("Leave it blank if you would rather not say"). The handoff makes it
+  required with the reason stated — "Pick a gender. It keeps mixed doubles
+  fair" — and mixed doubles genuinely cannot balance without it. **Worth a
+  second look: it is the one field here somebody might not want to answer,
+  and the old copy existed because of that.**
+* **Nickname and mobile are no longer asked at signup.** Neither was required
+  and both live on the profile; the roster already falls back to `name` when
+  there is no `alias`. Nothing reads a phone number that is never set.
+* **"Keep me signed in" is gone.** `Auth.keep` is `true` by default, which is
+  what the box was set to, so behaviour is unchanged — the screen just stops
+  asking a question almost nobody wants put.
+
+**Apple and Google are drawn and not wired.** Tapping either says it is under
+development, which is the honest version of a button that cannot work yet. The
+marks are inline SVG rather than the official brand assets.
+
+The old `.au2-*` rules have no reader now and are left in place, the same way
+the `.au-*` set before them was: deleting ~140 lines of CSS is its own change
+and easier to review on its own.
 
 **The front page is Landing v2, and `sos-logo-white.png` is the asset that
 made it possible.** The club finally supplied a tightly-cropped transparent

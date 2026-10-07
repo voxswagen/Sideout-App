@@ -4022,6 +4022,216 @@ body.casting{overflow:hidden}
   color:var(--sos-dim);text-wrap:pretty}
 .au2 .sos-field .hint.tight{margin-top:7px}
 
+/* ══════════════ THE FRONT DOOR ══════════════
+   Sign in or create an account on one short screen. It states its own palette
+   for the same reason the landing and the TV board do: those follow the club's
+   accent and this is the product's own page.
+
+   Two columns from about 840px and stacked below it, by auto-fit rather than
+   a breakpoint — the pitch goes above the card on a phone, which is the order
+   somebody reads it in anyway. */
+#screen-auth.ah{--a-bg:#0B161D;--a-card:rgba(15,29,38,.92);--a-sunk:#14232C;
+  --a-accent:#7FC4DE;--a-accent-2:#B5E0EF;--a-teal:#2D6A85;--a-green:#5FBF8A;
+  --a-court:#1D5670;--a-ball:#E4EE6B;--a-body:#AFC3D2;--a-mute:#8FA8B9;
+  --a-ph:#7E97A8;--a-err:#F0A39B;--a-ink:#17242B;
+  position:relative;overflow:hidden;padding:0;color:#fff;background:var(--a-bg);
+  display:flex;flex-direction:column}
+.ah-orb,.ah-ring{position:absolute;border-radius:999px;pointer-events:none}
+.ah-orb.a{top:-140px;left:-120px;width:420px;height:420px;
+  background:radial-gradient(circle,rgba(45,106,133,.45),rgba(45,106,133,0) 70%);
+  animation:ahOrb 16s ease-in-out infinite}
+.ah-orb.b{bottom:-160px;right:-120px;width:480px;height:480px;
+  background:radial-gradient(circle,rgba(127,196,222,.22),rgba(127,196,222,0) 70%);
+  animation:ahOrb 20s ease-in-out infinite reverse}
+.ah-ring.a{top:-260px;right:-240px;width:680px;height:680px;
+  border:2px solid rgba(74,132,172,.14);animation:ahDrift 24s ease-in-out infinite}
+.ah-ring.b{bottom:-320px;left:-260px;width:720px;height:720px;
+  border:2px solid rgba(74,132,172,.08);animation:ahDrift 30s ease-in-out infinite reverse}
+@keyframes ahOrb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-30px) scale(1.12)}}
+@keyframes ahDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-26px,18px)}}
+
+.ah-bar{position:relative;width:100%;max-width:1080px;margin:0 auto;box-sizing:border-box;
+  padding:calc(16px + env(safe-area-inset-top,0px)) 18px 0;display:flex;align-items:center;gap:12px;
+  animation:ahFade .6s ease-out backwards}
+.ah-bar img{display:block;width:150px;max-width:46vw;height:auto}
+.ah-bar .sp{flex:1}
+.ah-staff{flex:none;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;
+  border-radius:11px;border:1px solid rgba(255,255,255,.16);background:none;font-family:inherit;
+  font-size:14px;font-weight:600;color:#C9D7E1;white-space:nowrap;cursor:pointer;
+  transition:background .2s,color .2s;-webkit-tap-highlight-color:transparent}
+.ah-staff:hover{background:rgba(255,255,255,.08);color:#fff}
+.ah-staff svg{width:14px;height:14px}
+
+.ah-grid{position:relative;flex:1;width:100%;max-width:1080px;margin:0 auto;box-sizing:border-box;
+  padding:clamp(24px,6vw,64px) 18px 24px;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));
+  gap:clamp(28px,5vw,64px);align-items:center}
+
+/* ── the pitch ───────────────────────────────────────────────────────── */
+.ah-eye{display:flex;align-items:center;gap:9px;
+  animation:ahRise .7s cubic-bezier(.22,.8,.3,1) .05s backwards}
+.ah-dot{position:relative;width:7px;height:7px;flex:none}
+.ah-dot i,.ah-dot u{position:absolute;inset:0;border-radius:99px;background:var(--a-green)}
+.ah-dot u{text-decoration:none;animation:ahPulse 2.2s ease-out infinite}
+@keyframes ahPulse{0%{transform:scale(1);opacity:.85}70%{transform:scale(2.6);opacity:0}100%{opacity:0}}
+.ah-eye span{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--a-mute)}
+.ah-h1{margin:14px 0 0;font-family:inherit;font-size:clamp(38px,10vw,68px);font-weight:800;
+  letter-spacing:-.045em;line-height:.98;max-width:11ch;color:#fff;text-wrap:balance;
+  animation:ahRise .8s cubic-bezier(.22,.8,.3,1) .15s backwards}
+.ah-h1 i{font-style:normal;color:var(--a-accent)}
+.ah-p{margin:14px 0 0;font-size:clamp(16px,4.2vw,18.5px);line-height:1.5;color:var(--a-body);
+  max-width:42ch;text-wrap:pretty;animation:ahRise .8s cubic-bezier(.22,.8,.3,1) .25s backwards}
+@keyframes ahRise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes ahFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.ah-mini{margin-top:22px;max-width:380px;
+  animation:ahRise .8s cubic-bezier(.22,.8,.3,1) .35s backwards}
+.ah-mh{display:flex;align-items:center;justify-content:space-between;padding:0 2px 7px}
+.ah-mh b{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:#7FA3BA}
+.ah-mh i{font-style:normal;font-size:15px;font-weight:700;color:#fff;
+  font-variant-numeric:tabular-nums}
+.ah-court{position:relative;aspect-ratio:2.3/1;border-radius:12px;background:var(--a-court);
+  border:2px solid rgba(255,255,255,.55);overflow:hidden}
+.ah-court s{position:absolute;text-decoration:none;background:rgba(255,255,255,.4)}
+.ah-court s.net{left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:rgba(255,255,255,.85)}
+.ah-court s.k1{left:34%;top:0;bottom:0;width:2px}
+.ah-court s.k2{left:66%;top:0;bottom:0;width:2px}
+.ah-court s.m1{left:0;width:34%;top:50%;height:2px}
+.ah-court s.m2{right:0;width:34%;top:50%;height:2px}
+.ah-pl{position:absolute;width:30px;height:30px;border-radius:99px;display:flex;
+  align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;
+  border:2px solid rgba(255,255,255,.35);transform:translate(-50%,-50%);
+  animation:ahBob 1.6s ease-in-out infinite;
+  transition:background .5s,border-color .5s,color .5s}
+.ah-pl.me{background:var(--a-accent);border-color:#fff;color:var(--a-bg)}
+@keyframes ahBob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 4px))}}
+/* The ball reaches all four, and grows at mid-flight so it reads as height
+   rather than as a dot sliding along the floor. The shadow stays flat. */
+.ah-ball{position:absolute;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:99px;
+  background:var(--a-ball);box-shadow:0 0 10px rgba(228,238,107,.7);
+  animation:ahBall 4s linear infinite}
+.ah-shadow{position:absolute;width:12px;height:5px;margin:-2px 0 0 -6px;border-radius:99px;
+  background:rgba(0,0,0,.28);animation:ahShadow 4s linear infinite}
+@keyframes ahBall{0%{left:23%;top:30%;transform:scale(1)}12.5%{transform:scale(1.7)}
+  25%{left:77%;top:70%;transform:scale(1)}37.5%{transform:scale(1.7)}
+  50%{left:23%;top:70%;transform:scale(1)}62.5%{transform:scale(1.7)}
+  75%{left:77%;top:30%;transform:scale(1)}87.5%{transform:scale(1.7)}
+  100%{left:23%;top:30%;transform:scale(1)}}
+@keyframes ahShadow{0%{left:23%;top:36%}25%{left:77%;top:76%}50%{left:23%;top:76%}
+  75%{left:77%;top:36%}100%{left:23%;top:36%}}
+
+.ah-notif{margin-top:12px;background:rgba(244,246,248,.97);border-radius:18px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;box-shadow:0 18px 40px rgba(0,0,0,.35);
+  color:var(--a-ink)}
+.ah-notif .ic{flex:none;width:38px;height:38px;border-radius:10px;background:var(--a-teal);
+  display:flex;align-items:center;justify-content:center}
+.ah-notif .ic svg{width:19px;height:19px}
+.ah-notif .tx{flex:1;min-width:0}
+.ah-notif .tx .hd{display:flex;justify-content:space-between;gap:8px;font-size:12px;
+  font-weight:600;color:#5A646E}
+.ah-notif .tx b{display:block;margin-top:2px;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.ah-dots{flex:none;display:flex;gap:4px}
+.ah-dots i{width:7px;height:7px;border-radius:99px;background:#D5DBE0;transition:background .4s}
+/* One-shot animations restart by alternating two identical keyframe names —
+   the element is never re-created, so there is nothing to key off instead. */
+@keyframes ahNotif{0%{transform:translateY(-14px) scale(.96);opacity:0}
+  60%{transform:translateY(3px) scale(1.01);opacity:1}100%{transform:none;opacity:1}}
+@keyframes ahNotifB{0%{transform:translateY(-14px) scale(.96);opacity:0}
+  60%{transform:translateY(3px) scale(1.01);opacity:1}100%{transform:none;opacity:1}}
+
+/* ── the card ────────────────────────────────────────────────────────── */
+.ah-card{width:100%;max-width:420px;justify-self:center;box-sizing:border-box;
+  background:var(--a-card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:clamp(18px,5vw,26px);
+  box-shadow:0 40px 90px rgba(0,0,0,.45);
+  animation:ahCard .9s cubic-bezier(.2,.9,.25,1) .3s backwards}
+@keyframes ahCard{from{opacity:0;transform:translateY(40px) scale(.97)}to{opacity:1;transform:none}}
+.ah-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:3px;
+  border-radius:13px;background:var(--a-sunk)}
+.ah-pill{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:10px;
+  background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);
+  transition:transform .38s cubic-bezier(.3,1.3,.5,1)}
+#screen-auth[data-mode="up"] .ah-pill{transform:translateX(100%)}
+.ah-seg button{position:relative;min-height:42px;display:flex;align-items:center;
+  justify-content:center;border:0;background:none;font-family:inherit;font-size:15px;
+  font-weight:600;cursor:pointer;transition:color .3s;color:var(--a-body);
+  -webkit-tap-highlight-color:transparent}
+#screen-auth[data-mode="in"] .ah-seg button.in,
+#screen-auth[data-mode="up"] .ah-seg button.up{color:var(--a-bg)}
+.ah-ttl{margin-top:18px;font-size:22px;font-weight:800;letter-spacing:-.03em}
+.ah-st{margin-top:4px;font-size:14.5px;line-height:1.45;color:var(--a-mute)}
+.ah-form{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+/* 16px on every input, or iOS zooms the page when one takes focus. */
+.ah-in{height:52px;border-radius:13px;border:1px solid rgba(255,255,255,.12);
+  background:var(--a-sunk);color:#fff;font-size:16px;font-family:inherit;padding:0 15px;
+  outline:none;box-sizing:border-box;width:100%;
+  transition:border-color .2s,box-shadow .2s}
+.ah-in::placeholder{color:var(--a-ph)}
+.ah-in:focus{border-color:var(--a-accent);box-shadow:0 0 0 4px rgba(127,196,222,.15)}
+.ah-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px}
+.ah-lbl{font-size:12.5px;font-weight:600;color:var(--a-mute);margin:0 0 6px 2px}
+.ah-sx{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;border-radius:13px;
+  background:var(--a-sunk);border:1px solid rgba(255,255,255,.12)}
+.ah-sx button{height:42px;border-radius:10px;border:0;background:none;font-family:inherit;
+  font-size:15px;font-weight:600;color:var(--a-body);cursor:pointer;
+  transition:background .25s,color .25s;-webkit-tap-highlight-color:transparent}
+.ah-sx button.on{background:#fff;color:var(--a-bg)}
+/* color-scheme tells the native picker to draw itself dark; without it the
+   calendar comes up white on a dark field. */
+.ah-date{height:50px;color-scheme:dark;color:var(--a-ph)}
+.ah-date.set{color:#fff}
+.ah-pw{position:relative}
+.ah-pw .ah-in{padding-right:64px}
+.ah-peek{position:absolute;right:6px;top:6px;height:40px;padding:0 10px;display:flex;
+  align-items:center;border:0;background:none;border-radius:9px;font-family:inherit;
+  font-size:13.5px;font-weight:600;color:var(--a-accent);cursor:pointer}
+.ah-forgot{align-self:flex-end;border:0;background:none;font-family:inherit;font-size:13.5px;
+  font-weight:600;color:var(--a-accent);padding:2px 0;cursor:pointer}
+.ah-err{font-size:13.5px;color:var(--a-err);animation:ahFade .25s ease-out}
+.ah-go{position:relative;overflow:hidden;margin-top:4px;height:54px;border:0;border-radius:15px;
+  background:#fff;color:var(--a-bg);font-family:inherit;font-size:17px;font-weight:700;
+  cursor:pointer;transition:transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+.ah-go:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(0,0,0,.35)}
+.ah-go:active{transform:scale(.98)}
+.ah-go[disabled]{opacity:.7;cursor:default;transform:none}
+.ah-go i{position:absolute;top:0;bottom:0;left:0;width:30%;font-style:normal;
+  background:linear-gradient(90deg,rgba(127,196,222,0),rgba(127,196,222,.35),rgba(127,196,222,0));
+  animation:ahSheen 3.6s ease-in-out 1.4s infinite}
+@keyframes ahSheen{0%,70%{transform:translateX(-120%) skewX(-20deg)}
+  100%{transform:translateX(320%) skewX(-20deg)}}
+.ah-go span{position:relative}
+.ah-or{margin:16px 0 12px;display:flex;align-items:center;gap:10px;font-size:12.5px;
+  color:var(--a-ph)}
+.ah-or s{flex:1;height:1px;background:rgba(255,255,255,.09);text-decoration:none}
+.ah-oauth{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ah-oauth button{height:50px;border-radius:14px;border:1px solid rgba(255,255,255,.14);
+  background:none;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;
+  transition:background .2s,transform .15s;-webkit-tap-highlight-color:transparent}
+.ah-oauth button:hover{background:rgba(255,255,255,.07)}
+.ah-oauth button:active{transform:scale(.97)}
+.ah-swap{margin-top:16px;text-align:center;font-size:14px;color:var(--a-mute)}
+.ah-swap button{border:0;background:none;font-family:inherit;font-size:14px;font-weight:600;
+  color:var(--a-accent);cursor:pointer;padding:0}
+
+.ah-foot{position:relative;width:100%;max-width:1080px;margin:0 auto;box-sizing:border-box;
+  padding:16px 18px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;
+  gap:8px 18px;align-items:center;font-size:13px;color:var(--a-ph)}
+.ah-foot .c{flex:1;min-width:140px}
+.ah-foot button{border:0;background:none;font-family:inherit;font-size:13px;color:var(--a-mute);
+  cursor:pointer;padding:0}
+.ah-foot button:hover{color:#fff}
+
+/* Which fields each mode shows. One screen, two shapes. */
+#screen-auth[data-mode="in"] .ah-up{display:none}
+#screen-auth[data-mode="up"] .ah-in-only{display:none}
+
+@media (prefers-reduced-motion:reduce){
+  #screen-auth.ah *{animation:none !important;transition:none !important}
+}
+
 /* ══════════════ TODAY ══════════════
    The large title scrolls away with the content — it is not a sticky header.
    `#screen-home` carries `.sos`, so the font stack and the tokens come from
@@ -6362,108 +6572,131 @@ body.casting{overflow:hidden}
        them apart: signing in is centred under the mark, signing up is a
        left-aligned form with a step bar. Everything below keeps the ids and
        the handlers it had — this is the design, not new behaviour. -->
-  <section id="screen-auth" class="screen full sos au2" data-mode="in">
-    <div class="au2-in">
-      <header class="au2-head">
-        <div class="sos-mark au2-mark"><img src="/sos-mark.png" alt="Sideout Society"></div>
-        <h2 class="au2-welcome" id="au-welcome">Welcome back</h2>
-        <p class="au2-pitch" id="au-pitch">Sign in to see tonight’s open play and where you stand.</p>
-        <p class="au2-sub" id="au-sub" hidden></p>
-        <div class="au2-steps" id="au-steps" hidden>
-          <div class="au2-bar"><i id="au-bar-fill"></i></div>
-          <span id="au-step-n"></span>
-        </div>
-      </header>
+  <!-- ══════════════ THE FRONT DOOR ══════════════
+       Sign in or create an account on one short screen. `data-mode` is the
+       whole of the switch — the markup is static and the two shapes are CSS,
+       so the pill can slide between the tabs instead of the card being
+       rebuilt under it. It always opens on Sign in. -->
+  <section id="screen-auth" class="screen full ah" data-mode="in">
+    <div class="ah-orb a"></div><div class="ah-orb b"></div>
+    <div class="ah-ring a"></div><div class="ah-ring b"></div>
 
-      <div class="au2-body">
-        <!-- Creating an account asks for eight things. All eight on one page
-             is a wall you scroll, and a wall is where people give up. Two at
-             a time with a bar showing how much is left reads as nearly done
-             rather than barely started, and it means each screen fits without
-             scrolling on the phone it is being filled in on. The handoff
-             draws this as a single page; the steps are worth keeping. -->
-        <div class="sos-list au2-card" id="au-card">
-          <div class="sos-field" id="au-name-f" hidden>
-            <span>Full name</span>
-            <input type="text" id="au-name" autocomplete="name" placeholder="Your full name"
-              oninput="AuthUI.check('name')">
+    <header class="ah-bar">
+      <img src="sos-logo-white.png" alt="Sideout Society">
+      <span class="sp"></span>
+      <button class="ah-staff" onclick="lpStaff()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/></svg>Staff</button>
+    </header>
+
+    <div class="ah-grid">
+      <div class="ah-pitch">
+        <div class="ah-eye">
+          <span class="ah-dot"><i></i><u></u></span>
+          <span>Open play, run properly</span>
+        </div>
+        <h1 class="ah-h1">Your spot in line, <i>in your pocket.</i></h1>
+        <p class="ah-p">Join the queue, get a buzz when you&rsquo;re up, and keep every result.
+          Your club&rsquo;s feed is right there too.</p>
+
+        <div class="ah-mini">
+          <div class="ah-mh"><b>Court 2 · live</b><i id="ah-score">4 &ndash; 3</i></div>
+          <div class="ah-court">
+            <s class="net"></s><s class="k1"></s><s class="k2"></s><s class="m1"></s><s class="m2"></s>
+            <span class="ah-pl" style="left:17%;top:28%;background:#1F4F65;animation-delay:0s">LO</span>
+            <span class="ah-pl" id="ah-me" style="left:17%;top:72%;background:#A05A6B;animation-delay:.4s">MI</span>
+            <span class="ah-pl" style="left:83%;top:28%;background:#3F7397;animation-delay:.2s">AJ</span>
+            <span class="ah-pl" style="left:83%;top:72%;background:#9A6340;animation-delay:.6s">KA</span>
+            <span class="ah-shadow"></span>
+            <span class="ah-ball"></span>
           </div>
-          <div class="sos-field" id="au-alias-f" hidden>
-            <span>Nickname</span>
-            <input type="text" id="au-alias" autocomplete="nickname"
-              placeholder="What the club calls you" maxlength="20" oninput="AuthUI.check('alias')">
+
+          <div class="ah-notif" id="ah-notif">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15.5 6 9.5z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg></span>
+            <span class="tx">
+              <span class="hd"><span>Sideout · Thursday Open Play</span><span>now</span></span>
+              <b id="ah-line">You are 4th in line</b>
+            </span>
+            <span class="ah-dots" id="ah-dots"><i></i><i></i><i></i><i></i></span>
           </div>
-          <div class="sos-field" id="au-email-f">
-            <span>Email</span>
-            <input type="email" id="au-email" autocomplete="email" inputmode="email"
-              placeholder="you@example.com" oninput="AuthUI.check('email')">
-          </div>
-          <div class="sos-field" id="au-phone-f" hidden>
-            <span>Mobile</span>
-            <div class="au2-tel">
-              <select id="au-dial" onchange="AuthUI.check('phone')"></select>
-              <input type="tel" id="au-phone" autocomplete="tel" inputmode="tel"
-                placeholder="50 123 4567" oninput="AuthUI.check('phone')">
+        </div>
+      </div>
+
+      <form class="ah-card" id="ah-card" onsubmit="AuthUI.submit(event)">
+        <div class="ah-seg">
+          <span class="ah-pill"></span>
+          <button type="button" class="in" onclick="AuthUI.mode2('in')">Sign in</button>
+          <button type="button" class="up" onclick="AuthUI.mode2('up')">Create account</button>
+        </div>
+
+        <div class="ah-ttl" id="ah-ttl">Welcome back</div>
+        <div class="ah-st" id="ah-st">Sign in to see tonight and your spot.</div>
+
+        <div class="ah-form">
+          <input class="ah-in ah-up" type="text" id="au-name" autocomplete="name"
+            placeholder="Full name">
+
+          <div class="ah-two ah-up">
+            <div>
+              <div class="ah-lbl">Gender</div>
+              <!-- `f` and `m` rather than the labels, because that is what the
+                   members table stores and what mixed doubles balances on. -->
+              <div class="ah-sx" id="au-sx" data-v="">
+                <button type="button" data-v="m" onclick="AuthUI.sex('m')">Male</button>
+                <button type="button" data-v="f" onclick="AuthUI.sex('f')">Female</button>
+              </div>
+            </div>
+            <div>
+              <div class="ah-lbl">Birthday</div>
+              <!-- A whole date is the easiest thing to type, but only the day
+                   and the month are ever sent: `members` has `birth_month` and
+                   `birth_day` and no year, which is a promise this app has
+                   made since it started asking. `max` is today, because
+                   nobody was born next week. -->
+              <input class="ah-in ah-date" type="date" id="au-bday"
+                oninput="AuthUI.bday()">
             </div>
           </div>
-          <div class="sos-field au2-field-col" id="au-bday-f" hidden>
-            <span>Birthday</span>
-            <div id="au-bday-slot"></div>
-          </div>
-          <div class="sos-field au2-field-col" id="au-sex-f" hidden>
-            <span>You play as</span>
-            <div id="au-sex-slot"></div>
-          </div>
-          <div class="sos-field" id="au-pass-f">
-            <span>Password</span>
-            <input type="password" id="au-pass" autocomplete="current-password"
-              placeholder="Required" oninput="AuthUI.check('pass')">
-            <button type="button" class="au2-eye" id="au-eye" onclick="AuthUI.peek()"
-              aria-label="Show password">Show</button>
-          </div>
-          <div class="sos-field" id="au-pass2-f" hidden>
-            <span>Confirm</span>
-            <input type="password" id="au-pass2" autocomplete="new-password"
-              placeholder="Type it again" oninput="AuthUI.check('pass2')">
-          </div>
-</div>
 
-        <!-- Every field's complaint in one place under the card, rather than
-             a line that appears between two rows and pushes the form down as
-             you type. -->
-        <p class="fx-err" id="err-name" hidden></p>
-        <p class="fx-err" id="err-alias" hidden></p>
-        <p class="fx-err" id="err-phone" hidden></p>
-        <p class="fx-err" id="err-email" hidden></p>
-        <p class="fx-err" id="err-pass" hidden></p>
-        <p class="fx-err" id="err-pass2" hidden></p>
-        <p class="hint tight au2-hint" id="au-pwhint" hidden>At least six characters.</p>
-        <p class="au-msg" id="au-msg" hidden></p>
+          <input class="ah-in" type="email" id="au-email" autocomplete="email" inputmode="email"
+            placeholder="Email">
 
-        <div class="au2-forgot" id="au-forgot-row">
-          <button class="au2-link" onclick="AuthUI.forgot()">Forgot password?</button>
+          <div class="ah-pw">
+            <input class="ah-in" type="password" id="au-pass" autocomplete="current-password"
+              placeholder="Password">
+            <button type="button" class="ah-peek" id="ah-peek" onclick="AuthUI.peek()">Show</button>
+          </div>
+
+          <button type="button" class="ah-forgot ah-in-only" onclick="AuthUI.forgot()">Forgot password?</button>
+
+          <p class="ah-err" id="ah-err" hidden></p>
+
+          <button type="submit" class="ah-go" id="au-go"><i></i><span id="ah-go-tx">Sign in</span></button>
         </div>
 
-        <label class="sos-list au2-keep" id="au-keep-f">
-          <input type="checkbox" id="au-keep" checked onchange="AuthUI.keep(this.checked)">
-          <i class="sos-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff"
-            stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"
-            ><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></i>
-          <span>Keep me signed in on this device</span>
-        </label>
+        <div class="ah-or"><s></s>or<s></s></div>
 
-        <button class="sos-btn sos-btn-go au2-go" id="au-go" onclick="AuthUI.go()">Sign in</button>
-        <button class="sos-btn sos-btn-quiet au2-backstep" id="au-backstep" hidden
-          onclick="AuthUI.back()">Back a step</button>
+        <div class="ah-oauth">
+          <button type="button" onclick="AuthUI.soon('Apple')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.7zM14.1 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>Apple</button>
+          <button type="button" onclick="AuthUI.soon('Google')">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.7 3.9-5.5 3.9-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.3 14.6 2.3 12 2.3 6.6 2.3 2.3 6.6 2.3 12s4.3 9.7 9.7 9.7c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6H12z"/></svg>Google</button>
+        </div>
 
-        <p class="au2-swap" id="au-swap">
-          <span id="au-swap-t">New to the club?</span>
-          <button class="au2-link au2-link-b" onclick="AuthUI.flip()" id="au-swap-b">Create an account</button>
-        </p>
-        <button class="au2-link au2-cancel" id="au-cancel" onclick="AuthUI.cancel()">Back</button>
-        <div class="sos-tail"></div>
-      </div>
+        <div class="ah-swap">
+          <span id="ah-swap-q">New here?</span>
+          <button type="button" onclick="AuthUI.flip()" id="ah-swap-a">Create an account</button>
+        </div>
+      </form>
     </div>
+
+    <footer class="ah-foot">
+      <span class="c">&copy; Sideout Society</span>
+      <button onclick="AuthUI.soonPage('Privacy')">Privacy</button>
+      <button onclick="AuthUI.soonPage('Terms')">Terms</button>
+      <button onclick="AuthUI.soonPage('Help')">Help</button>
+    </footer>
   </section>
 
 <div id="viewer" hidden>
@@ -16700,35 +16933,14 @@ function fieldMsg(id, msg, kind){
 
 const AuthUI = {
   mode: 'in',          /* 'in' or 'up' */
-
-  /* Whether the session outlives closing the app. Set before submit so
-     Auth.store puts the token in the right place first time, rather than
-     writing it to localStorage and moving it a moment later. */
-  keep(on){ Auth.keep = !!on; },
-
-  /* The line on the navy panel. Only ever a real figure, read from the
-     roster this device already has cached — a sign-in page that invents a
-     member count is lying to you before you have even got in. A phone that
-     has never been signed in has nothing cached and gets no line at all,
-     which is the honest answer rather than a zero. */
-  stats(){
-    const box = document.getElementById('au-stats');
-    if(!box) return;
-    const bits = [];
-    const c = (typeof Club !== 'undefined' && Club.cache) ? Club.cache() : null;
-    const n = (c && c.list && c.list.length) || 0;
-    if(n) bits.push(`<span><i></i>${n} player${n === 1 ? '' : 's'}</span>`);
-    /* Only if the front page has already counted them. Fetching from the
-       sign-in screen to decorate it would be a network round trip nobody
-       asked for, and a made-up number would be worse than none. */
-    const up = (typeof Feed !== 'undefined' && Feed.up) ? Feed.up.length : 0;
-    if(up) bits.push(`<span><i></i>${up} session${up === 1 ? '' : 's'} on</span>`);
-    box.innerHTML = bits.join('');
-    box.hidden = !bits.length;
-  },
   after: null,
   busy: false,
   shown: false,
+
+  /* Whether the session outlives closing the app. `Auth.keep` is true by
+     default and the screen no longer asks — a front door that makes you tick
+     a box to stay signed in is asking a question almost nobody wants put. */
+  keep(on){ Auth.keep = !!on; },
 
   open(after, mode){
     if(!Auth.on()){
@@ -16739,262 +16951,222 @@ const AuthUI = {
     }
     closeSheet();
     this.after = after || null;
-    this.mode = mode || 'in';
-    this.step = 0;
     this.shown = true;
     showOnly('auth');
-    this.bindEnter();
-    this.paint();
+    /* Always opens on Sign in. Somebody arriving at the front door is far
+       more often coming back than arriving for the first time, and the one
+       who is new has the tab and the line under the card. */
+    this.mode2(mode === 'up' ? 'up' : 'in');
+    this.pitch();
     setTimeout(()=>{
       const e = document.getElementById(this.mode === 'up' ? 'au-name' : 'au-email');
       if(e) e.focus();
     }, 80);
   },
-  /* Only the words change when you flip between the two \u2014 whatever
-     has been typed stays where it is. */
-  paint(){
+
+  /* The whole switch. `data-mode` on the section decides which fields show
+     and where the pill sits, so nothing is rebuilt and the pill can slide. */
+  mode2(m){
+    this.mode = (m === 'up') ? 'up' : 'in';
+    const sec = document.getElementById('screen-auth');
+    if(sec) sec.dataset.mode = this.mode;
     const up = this.mode === 'up';
     const set = (id, t) =>{ const e = document.getElementById(id); if(e) e.textContent = t; };
-    /* The navy panel says what the app is and does not change — it is the
-       product's pitch, not a caption for whichever form is showing. Only
-       the form's own heading flips. */
-    this.stats();
-    set('au-swap-t', up ? 'Already have one?' : 'New to the club?');
-    set('au-swap-b', up ? 'Sign in instead' : 'Create an account');
-    const bslot = document.getElementById('au-bday-slot');
-    if(bslot && !bslot.innerHTML) bslot.innerHTML = Birthday.fields('au', null, null);
-    const sslot = document.getElementById('au-sex-slot');
-    if(sslot && !sslot.innerHTML) sslot.innerHTML = SexField.html('au', null);
-    const dial = document.getElementById('au-dial');
-    if(dial && !dial.options.length) dial.innerHTML = Phone.options('971');
-    /* The password hint used to live inside the password field's own block,
-       so hiding the block hid it. It sits under the card with the other
-       messages now, which means its own step has to ask for it — otherwise
-       "At least six characters" greets you on step one, above two boxes
-       wanting your name. paintStep owns it. */
-    const pass = document.getElementById('au-pass');
-    if(pass) pass.setAttribute('autocomplete', up ? 'new-password' : 'current-password');
-    const name = document.getElementById('au-name');
-    if(up && name && !name.value) name.value = (Club.me() || {}).name || '';
-    this.paintStep();
+    set('ah-ttl', up ? 'Join the club' : 'Welcome back');
+    set('ah-st', up ? 'Free. Takes about twenty seconds.'
+                    : 'Sign in to see tonight and your spot.');
+    set('ah-go-tx', up ? 'Create account' : 'Sign in');
+    set('ah-swap-q', up ? 'Already a member?' : 'New here?');
+    set('ah-swap-a', up ? 'Sign in' : 'Create an account');
+    const pw = document.getElementById('au-pass');
+    if(pw) pw.setAttribute('autocomplete', up ? 'new-password' : 'current-password');
+    this.say('');
+  },
+  flip(){ this.mode2(this.mode === 'up' ? 'in' : 'up'); },
+
+  /* `f` and `m`, because that is what `members` stores and what mixed
+     doubles balances on — not the label on the button. */
+  sex(v){
+    const box = document.getElementById('au-sx');
+    if(!box) return;
+    box.dataset.v = v;
+    [].slice.call(box.querySelectorAll('button')).forEach(b =>
+      b.classList.toggle('on', b.dataset.v === v));
+    this.say('');
   },
 
-  /* ── signing up, two questions at a time ──────────────────────────────
-     Order matters: the things somebody will definitely type come first and
-     the optional ones last, so the moment they can stop is as late as
-     possible but the moment they *want* to stop never falls in the middle
-     of something required. */
-  step: 0,
-  STEPS: [
-    { t:'What should we call you?',
-      s:'Your full name for the club record, and the short one the board uses.',
-      f:['name','alias'], need:['name','alias'], focus:'name' },
-    { t:'How do we reach you?',
-      s:'The email signs you in. The number is so an organizer can tell you a night is off.',
-      f:['email','phone'], need:['email','phone'], focus:'email' },
-    { t:'Pick a password',
-      s:'Six characters or more. You will need it to get back in on another phone.',
-      f:['pass','pass2'], need:['pass','pass2'], focus:'pass' },
-    { t:'Anything else?',
-      s:'Both optional, both easy to change later — birthdays show on the club’s home page, and the other only matters for mixed doubles.',
-      f:['bday','sex'], need:[], focus:null }
-  ],
+  bday(){
+    const el = document.getElementById('au-bday');
+    if(el) el.classList.toggle('set', !!el.value);
+    this.say('');
+  },
 
-  paintStep(){
-    const up = this.mode === 'up';
-    const scr = document.getElementById('screen-auth');
-    if(scr) scr.dataset.mode = up ? 'up' : 'in';
-    const set = (id, t) =>{ const e = document.getElementById(id); if(e) e.textContent = t; };
-    const show = (id, on) =>{ const e = document.getElementById(id); if(e) e.hidden = !on; };
-    const last = this.STEPS.length - 1;
-    if(up && this.step > last) this.step = last;
-    if(this.step < 0) this.step = 0;
-    const st = this.STEPS[this.step];
+  peek(){
+    const el = document.getElementById('au-pass');
+    const b = document.getElementById('ah-peek');
+    if(!el || !b) return;
+    const show = el.type === 'password';
+    el.type = show ? 'text' : 'password';
+    b.textContent = show ? 'Hide' : 'Show';
+  },
 
-    /* every optional-in-sign-in field is hidden unless this step wants it */
-    const all = ['name','alias','phone','sex','bday','pass2','email','pass'];
-    all.forEach(k =>{
-      const f = document.getElementById('au-' + k + '-f');
-      if(!f) return;
-      f.hidden = up ? st.f.indexOf(k) < 0
-                    : (k !== 'email' && k !== 'pass');
-    });
+  say(msg, bad){
+    const e = document.getElementById('ah-err');
+    if(!e) return;
+    e.textContent = msg || '';
+    e.hidden = !msg;
+  },
 
-    /* The rows of the field card are separated by a hairline above each one,
-       which is right until a step hides the row that was first. The steps do
-       not run in DOM order either — step two is email and phone, and phone
-       sits three rows above email — so no sibling selector gets this right.
-       Whichever row is showing first is marked, and that one has no line. */
-    const card = document.getElementById('au-card');
-    if(card){
-      let first = true;
-      [...card.children].forEach(row =>{
-        const on = !row.hidden;
-        row.classList.toggle('sos-first', on && first);
-        if(on) first = false;
+  soon(which){ toast(which + ' sign-in is under development.'); },
+  soonPage(what){ toast(what + ' has not been written yet.'); },
+
+  /* ── the pitch ────────────────────────────────────────────────────────
+     A score that ticks and a notification that counts you down the queue.
+     Driven against the DOM on two timers, because the card beside it holds
+     half-typed fields and a repaint would take them out from under somebody
+     mid-sentence. */
+  pitch(){
+    this.unpitch();
+    try{ if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; }
+    catch(e){}
+    let a = 4, b = 3, step = 0;
+    const LINES = ['You are 4th in line', 'You are 3rd in line', 'You are 2nd in line',
+      'You’re up next. Grab your paddle.', 'Court 2 is yours. Go play.'];
+    this.pt = [];
+    this.pt.push(setInterval(()=>{
+      if(Math.random() < .5) a++; else b++;
+      /* The same rule the product uses, so the page cannot say something it
+         does not do. */
+      if(Math.max(a, b) >= 11 && Math.abs(a - b) >= 2){ a = 0; b = 0; }
+      const el = document.getElementById('ah-score');
+      if(el) el.textContent = a + ' – ' + b;
+    }, 2200));
+    this.pt.push(setInterval(()=>{
+      step = (step + 1) % 5;
+      const on = step === 4;
+      const line = document.getElementById('ah-line');
+      if(line) line.textContent = LINES[step];
+      const n = document.getElementById('ah-notif');
+      /* Two identical keyframes, alternated. Re-assigning the same name does
+         not restart an animation, and there is no element to re-key because
+         nothing here re-renders. */
+      if(n) n.style.animation = (step % 2 ? 'ahNotifB' : 'ahNotif')
+        + ' .55s cubic-bezier(.2,.9,.25,1.1)';
+      const dots = document.getElementById('ah-dots');
+      if(dots) [].slice.call(dots.children).forEach((d, i) =>{
+        d.style.background = i < Math.min(step + 1, 4) ? (on ? '#3E9A68' : '#2D6A85') : '#D5DBE0';
       });
-    }
+      const me = document.getElementById('ah-me');
+      if(me){ me.classList.toggle('me', on); me.textContent = on ? 'YOU' : 'MI'; }
+    }, 2600));
+  },
+  unpitch(){ (this.pt || []).forEach(t => clearInterval(t)); this.pt = []; },
 
-    show('au-pwhint', up && st.f.indexOf('pass') >= 0);
-    show('au-steps', up);
-    show('au-sub', up);
-    show('au-backstep', up && this.step > 0);
-    show('au-keep-f', !up || this.step === last);
-    show('au-forgot-row', !up);
-    /* Both of these are "leave this form", and offering them alongside the
-       step's own Back gave three ways out and no way to tell them apart.
-       Past the first step the only Back on screen is the one that goes back
-       a step. */
-    show('au-swap', !up || this.step === 0);
-    show('au-cancel', !up || this.step === 0);
-    const fill = document.getElementById('au-bar-fill');
-    if(fill) fill.style.width = up ? ((this.step + 1) / (last + 1) * 100) + '%' : '0';
-
-    if(up){
-      set('au-welcome', st.t);
-      set('au-sub', st.s);
-      set('au-step-n', 'Step ' + (this.step + 1) + ' of ' + (last + 1));
-      set('au-go', this.step === last ? 'Create account' : 'Next');
-    } else {
-      set('au-welcome', 'Welcome back');
-      set('au-go', 'Sign in');
-    }
-  },
-
-  /* One button. On sign-in it submits; part-way through signing up it
-     advances, and only the last step actually creates anything. */
-  go(){
-    if(this.mode !== 'up' || this.step === this.STEPS.length - 1) return this.submit();
-    if(!this.stepOk()) return;
-    this.step++;
-    this.paintStep();
-    this.say('');
-    this.focusStep();
-  },
-  back(){
-    if(this.step <= 0) return;
-    this.step--;
-    this.paintStep();
-    this.say('');
-    this.focusStep();
-  },
-  focusStep(){
-    const st = this.STEPS[this.step];
-    setTimeout(()=>{
-      const e = st && st.focus ? document.getElementById('au-' + st.focus) : null;
-      if(e) e.focus();
-    }, 40);
-  },
-  /* Checks only what this step asked for. Validating the whole form on every
-     Next would mark the password empty while somebody is still typing their
-     name, which reads as the form being broken. */
-  stepOk(){
-    const st = this.STEPS[this.step];
-    const v = id => String((document.getElementById('au-' + id) || {}).value || '').trim();
-    const tests = {
-      name:  ()=> Valid.name(v('name')),
-      alias: ()=> Valid.alias(v('alias')),
-      email: ()=> Valid.email(v('email').toLowerCase()),
-      phone: ()=> Phone.check(v('phone')),
-      pass:  ()=> Valid.pass(String((document.getElementById('au-pass') || {}).value || '')),
-      pass2: ()=> (document.getElementById('au-pass') || {}).value
-                  === (document.getElementById('au-pass2') || {}).value
-                  ? '' : 'Passwords do not match'
-    };
-    let bad = null;
-    st.need.forEach(k =>{
-      const msg = tests[k] ? tests[k]() : '';
-      fieldMsg(k, msg, k === 'pass2' && msg ? 'no' : undefined);
-      if(msg && !bad) bad = k;
-    });
-    if(bad){
-      this.say('Have another look at the field marked below.', true);
-      const el = document.getElementById('au-' + bad);
-      if(el) el.focus();
-      return false;
-    }
-    return true;
-  },
-
-  flip(){
-    this.mode = this.mode === 'up' ? 'in' : 'up';
-    this.step = 0;
-    this.say(''); this.clearErrors(); this.paint();
-    this.focusStep();
-  },
-  clearErrors(){
-    ['name','alias','phone','email','pass','pass2'].forEach(k => fieldMsg(k, ''));
-  },
-  val(id){ const e = document.getElementById('au-' + id); return e ? e.value : ''; },
-  /* Checked as they type, so nothing is a surprise at the end. */
-  check(which){
+  /* ── submit ───────────────────────────────────────────────────────────
+     Five fields creating, two signing in. The old screen asked for eight
+     across three steps; this one asks for what the club actually needs on
+     day one and lets the rest be filled in on a profile. */
+  async submit(ev){
+    if(ev && ev.preventDefault) ev.preventDefault();
+    if(this.busy) return;
     const up = this.mode === 'up';
-    if(which === 'pass2' || (which === 'pass' && up)){
-      const a2 = this.val('pass'), b2 = this.val('pass2');
-      if(which === 'pass') fieldMsg('pass', Valid.pass(a2));
-      if(up && b2) fieldMsg('pass2', a2 === b2 ? 'Passwords match' : 'Passwords do not match',
-                            a2 === b2 ? 'ok' : 'no');
-      else if(up) fieldMsg('pass2', '');
+    const v = id => String((document.getElementById(id) || {}).value || '').trim();
+    const email = v('au-email').toLowerCase();
+    const pass = String((document.getElementById('au-pass') || {}).value || '');
+    const name = v('au-name');
+    const sex = (document.getElementById('au-sx') || { dataset:{} }).dataset.v || '';
+    const bday = v('au-bday');
+
+    let bad = null, focus = null;
+    if(up && !name){ bad = 'Add your name so the club knows who you are.'; focus = 'au-name'; }
+    else if(up && !sex){ bad = 'Pick a gender. It keeps mixed doubles fair.'; }
+    else if(up && !bday){ bad = 'Add your birthday so the club can celebrate it.'; focus = 'au-bday'; }
+    else if(!/.+@.+\..+/.test(email)){ bad = 'That email doesn’t look right.'; focus = 'au-email'; }
+    else if(pass.length < 6){ bad = 'Password needs at least 6 characters.'; focus = 'au-pass'; }
+    if(bad){
+      this.say(bad, true);
+      const el = focus && document.getElementById(focus);
+      if(el) el.focus();
       return;
     }
-    if(which === 'name' && up) fieldMsg('name', Valid.name(this.val('name')));
-    if(which === 'alias' && up) fieldMsg('alias', Valid.alias(this.val('alias')));
-    if(which === 'phone' && up) fieldMsg('phone', Phone.check(this.val('phone')));
-    if(which === 'email') fieldMsg('email', this.val('email') ? Valid.email(this.val('email')) : '');
-    if(which === 'pass') fieldMsg('pass', this.val('pass') ? Valid.pass(this.val('pass')) : '');
-  },
-  /* Enter is how a form is finished, and on a stepped one it has to mean
-     "next" rather than "create the account now" — otherwise filling in your
-     name and hitting Enter submits three empty steps. Bound once on the
-     screen rather than on nine inputs. */
-  bindEnter(){
-    const scr = document.getElementById('screen-auth');
-    if(!scr || scr.dataset.enter) return;
-    scr.dataset.enter = '1';
-    scr.addEventListener('keydown', ev =>{
-      if(ev.key !== 'Enter') return;
-      const t = ev.target;
-      if(!t || t.tagName !== 'INPUT' || t.type === 'checkbox') return;
-      ev.preventDefault();
-      this.go();
-    });
-  },
-  peek(){
-    const p = document.getElementById('au-pass'), b = document.getElementById('au-eye');
-    if(!p || !b) return;
-    const hidden = p.type === 'password';
-    p.type = hidden ? 'text' : 'password';
-    b.textContent = hidden ? 'Hide' : 'Show';
-    b.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
-  },
-  say(msg, bad){
-    const el = document.getElementById('au-msg');
-    if(!el) return;
-    el.textContent = msg || '';
-    el.hidden = !msg;
+
+    this.busy = true;
     const btn = document.getElementById('au-go');
-    /* Ask paintStep rather than assuming: half way through signing up this
-       button says Next, and resetting it to "Create account" on any message
-       would offer to finish from step two. */
-    if(btn){ btn.disabled = false; this.paintStep(); }
+    const tx = document.getElementById('ah-go-tx');
+    if(btn) btn.disabled = true;
+    if(tx) tx.textContent = up ? 'Creating…' : 'Signing in…';
+    try{
+      if(up) await Auth.signUp(email, pass, name, '', '');
+      else await Auth.signIn(email, pass);
+    }catch(e){
+      this.busy = false;
+      if(btn) btn.disabled = false;
+      if(tx) tx.textContent = up ? 'Create account' : 'Sign in';
+      if(e.needsConfirm){
+        this.say('Check ' + email + ' for a confirmation link, then come back and sign in.');
+        this.mode2('in');
+        return;
+      }
+      this.say(authMessage(e), true);
+      return;
+    }
+
+    /* Gender and the birthday go on after the account exists, and quietly:
+       failing this must not keep somebody out of a club they have just
+       joined. Only the month and the day are sent — `members` has no year
+       and this app has never asked for one. */
+    if(up && Auth.me && Auth.me.id){
+      const patch = {};
+      if(sex) patch.sex = sex;
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bday);
+      if(m){ patch.birth_month = Number(m[2]); patch.birth_day = Number(m[3]); }
+      if(Object.keys(patch).length){
+        try{
+          await Live.api('members?id=eq.' + Auth.me.id,
+            { method:'PATCH', body: JSON.stringify(patch) });
+          Auth.me = Object.assign({}, Auth.me, patch);
+        }catch(e){}
+      }
+    }
+
+    this.busy = false;
+    this.shown = false;
+    this.say('');
+    if(btn) btn.disabled = false;
+    if(tx) tx.textContent = up ? 'Create account' : 'Sign in';
+    const pw = document.getElementById('au-pass');
+    if(pw) pw.value = '';
+    this.unpitch();
+    document.body.classList.remove('authing');
+    const sec = document.getElementById('screen-auth');
+    if(sec) sec.classList.remove('on');
+    paintAccount();
+    toast(up ? 'Account created.' : 'Signed in.');
+    const go2 = this.after; this.after = null;
+    if(typeof go2 === 'function') go2();
+    else if(!document.body.classList.contains('watching')) gateScreens();
   },
+
   cancel(){
     this.shown = false;
     this.after = null;
     this.say('');
+    this.unpitch();
     document.body.classList.remove('authing');
     /* reading an invite is its own world — do not bounce them out of it */
     if(document.body.classList.contains('watching')){
-      document.getElementById('screen-auth').classList.remove('on');
+      const sec = document.getElementById('screen-auth');
+      if(sec) sec.classList.remove('on');
       return;
     }
     gateScreens();
   },
+
   /* The organizer cannot do this for them, and should not want to. */
   forgot(){
     const typed = (document.getElementById('au-email') || {}).value || '';
     openSheet(`<h3>Reset your password</h3>
-      <p class="sub">We will email you a link to set a new one. It goes to you, not to the club \u2014
+      <p class="sub">We will email you a link to set a new one. It goes to you, not to the club —
         nobody else ever sees your password.</p>
       <div class="field"><span class="label">Your email</span>
         <input type="email" id="fp-mail" autocomplete="email" value="${esc(typed.trim())}"
@@ -17012,7 +17184,7 @@ const AuthUI = {
     const say = t =>{ if(err){ err.textContent = t; err.hidden = false; } };
     if(!/.+@.+\..+/.test(mail)){ say('That does not look like an email address.'); return; }
     const btn = document.querySelector('#sheet .btn-go');
-    if(btn){ btn.disabled = true; btn.textContent = 'Sending\u2026'; }
+    if(btn){ btn.disabled = true; btn.textContent = 'Sending…'; }
     try{ await Auth.sendReset(mail); }
     catch(e){
       if(btn){ btn.disabled = false; btn.textContent = 'Send the link'; }
@@ -17024,85 +17196,6 @@ const AuthUI = {
       <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
   },
 
-  async submit(){
-    if(this.busy) return;
-    const up = this.mode === 'up';
-    const val = id => String((document.getElementById('au-' + id) || {}).value || '').trim();
-    const email = val('email').toLowerCase();
-    const pass = String((document.getElementById('au-pass') || {}).value || '');
-    const pass2 = String((document.getElementById('au-pass2') || {}).value || '');
-    const name = val('name'), alias = val('alias');
-    const phone = Phone.join(val('dial') || '971', val('phone'));
-
-    const checks = up
-      ? [['name', Valid.name(name)], ['alias', Valid.alias(alias)], ['phone', Phone.check(val('phone'))],
-         ['email', Valid.email(email)], ['pass', Valid.pass(pass)]]
-      : [['email', Valid.email(email)], ['pass', Valid.pass(pass)]];
-    let bad = null;
-    checks.forEach(c =>{ fieldMsg(c[0], c[1]); if(c[1] && !bad) bad = c[0]; });
-    if(up && pass !== pass2){
-      fieldMsg('pass2', 'Passwords do not match', 'no');
-      if(!bad) bad = 'pass2';
-    }
-    if(bad){
-      this.say('Have another look at the fields marked below.', true);
-      const el = document.getElementById('au-' + bad);
-      if(el) el.focus();
-      return;
-    }
-
-    this.busy = true;
-    const btn = document.getElementById('au-go');
-    /* The ring rather than the ball: it sits on one line inside the button,
-       and a signing-in button that only changes its wording looks like a
-       button that did not take. */
-    if(btn){
-      btn.disabled = true;
-      btn.innerHTML = `<span class="ld-ring"></span>${up ? 'Creating\u2026' : 'Signing in\u2026'}`;
-    }
-    try{
-      if(up) await Auth.signUp(email, pass, name, alias, phone);
-      else await Auth.signIn(email, pass);
-    }catch(e){
-      this.busy = false;
-      if(e.needsConfirm){
-        this.say('Check ' + email + ' for a confirmation link, then come back and sign in.');
-        this.mode = 'in'; this.paint();
-        return;
-      }
-      this.say(authMessage(e), true);
-      return;
-    }
-    /* the birthday is not part of creating the account, so it goes on
-       afterwards — and quietly, since failing it must not block
-       somebody from getting in */
-    if(up){
-      const bd = Birthday.read('au');
-      const sx = SexField.read('au');
-      if(sx) bd.sex = sx;
-      if((bd.birth_month || bd.sex) && Auth.me && Auth.me.id){
-        try{
-          await Live.api('members?id=eq.' + Auth.me.id,
-            { method: 'PATCH', body: JSON.stringify(bd) });
-          Auth.me = Object.assign({}, Auth.me, bd);
-        }catch(e){}
-      }
-    }
-    this.busy = false;
-    this.shown = false;
-    this.say('');
-    ['au-pass','au-pass2'].forEach(id=>{
-      const el = document.getElementById(id); if(el) el.value = '';
-    });
-    this.clearErrors();
-    document.body.classList.remove('authing');
-    document.getElementById('screen-auth').classList.remove('on');
-    paintAccount();
-    toast(up ? 'Account created.' : 'Signed in.');
-    const go2 = this.after; this.after = null;
-    if(typeof go2 === 'function') go2();
-    else if(!document.body.classList.contains('watching')) gateScreens();
-  },
   confirmOut(){
     openSheet(`<h3>Sign out?</h3>
       <p class="sub">You will need your email and password to get back in. Your photo, rating and record stay with the club.</p>
@@ -17110,18 +17203,11 @@ const AuthUI = {
       <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Stay signed in</button>`);
   },
   async out(){
-    const wasHosting = !!(S.active && S.liveCode);
     await Auth.signOut();
-    /* Signing out has to put down whatever this device was holding.
-       The session itself keeps running on the server \u2014 it is saved,
-       it has its own code, and anyone watching still sees it. This
-       device just stops being the one in charge of it. */
     leaveSession();
     closeSheet(); paintAccount(); paintAcctBtn(); renderAll();
     showOnly('landing');
-    toast(wasHosting
-      ? 'Signed out. The session is still running \u2014 sign back in and open it to carry on.'
-      : 'Signed out.');
+    toast('Signed out.');
   }
 };
 
