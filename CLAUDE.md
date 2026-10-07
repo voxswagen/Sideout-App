@@ -34,6 +34,33 @@ turns off the Score/Queue/Manage/Stats strip and the clock dock without
 than being chased to a dozen call sites, and `manageSession()` redirects to the
 watch view so a stale cache or an old notification still lands somewhere.
 
+**A harness that stubs auth and calls `go()` is not a boot test, and mine
+passed while the app was dead.** `.probe/harness.py` walks the screens by
+calling `go()` directly with `Auth` stubbed — so it never ran the real boot
+path, and reported twenty screens rendering and no errors while an actual cold
+load was a blank page. `.probe/boot.py` is the other half: it loads the real
+page over HTTP with nothing stubbed and reports the first uncaught error, the
+screen that ended up `.on`, and how much text is on it. **Run both.** A blank
+`bodyText` with a named screen is the signature of a top-level throw.
+
+**Deleting markup breaks every painter that wrote into it, and one null stops
+the whole script.** Nine screens going took `#courts`, `#roster`, `#ladder-preview`,
+`#active-count`, `#lb`, `#bracket` and twenty more with them, and the painters
+kept being called — from `load()`, from setters, from adopting a night.
+Thirty-odd of those writes were unguarded. The ones at the *top level* are the
+dangerous kind: `document.getElementById('brand-badge').src = BADGE` threw,
+the script block stopped there, and every `const` below it — `Auth`, `Club`,
+`Score` — never initialised. Function declarations still worked because they
+hoist, which is what made it look like a scoping puzzle rather than a dead
+script.
+
+Every painter whose element has gone now returns at the top. Two rules came
+out of it: **a painter is guarded on the element it needs, not on its
+caller**, and **a function that takes an argument must not be guarded on its
+fallback element** — `addPlayer(name)` reads `#new-name` only when no name is
+handed in, and guarding it on that field made every programmatic add a silent
+no-op, which is the latecomer bug for the fourth time.
+
 **The session brand bar was on screen from the first paint, over everything.**
 `<header class="top">` — back button, club badge, the format underneath, the
 Live pill, the big-screen button — had **no `hidden` in its markup**, so it was
@@ -156,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v163`. Forgetting this means testers see last week's app and
+Currently `sideout-v164`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 

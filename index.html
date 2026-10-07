@@ -5966,7 +5966,7 @@ body.casting{overflow:hidden}
       <header class="lp2-bar">
         <span class="lp2-mark sos-mark"><img src="/sos-mark.png" alt="Sideout Society"></span>
         <button class="lp2-quiet" onclick="AuthUI.open(()=>{ gateScreens(); }, 'in')">Sign in</button>
-        <button class="lp2-go" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Start a night</button>
+        <button class="lp2-go" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
       </header>
 
       <div class="lp2-scroll">
@@ -5985,7 +5985,12 @@ body.casting{overflow:hidden}
             who is up, what the score is, who won — and keeps everybody talking about it
             afterwards.</p>
           <div data-rv="4" class="lp2-cta">
-            <button class="lp2-white" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Start a night</button>
+            <!-- "Start a night" was the promise this page led with, and
+                 setting one up is in the manager app now. What this one offers
+                 is the club: what is on, who is playing, the table and the
+                 talk. An HTML comment, not ${''} — this is static markup, not
+                 a template literal, and the notes have caught that twice. -->
+            <button class="lp2-white" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
             <button class="lp2-ghost" onclick="lpDemo()">See a night run</button>
           </div>
 
@@ -6123,7 +6128,7 @@ body.casting{overflow:hidden}
           <p class="lp2-b mid">Set a night up in a minute, share the link, and let the
             board do the arguing.</p>
           <div class="lp2-cta mid">
-            <button class="lp2-go big" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Start a night</button>
+            <button class="lp2-go big" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
             <button class="lp2-soft" onclick="AuthUI.open(()=>{ gateScreens(); }, 'in')">I have an account</button>
           </div>
           <p class="lp2-note">Been sent a link? Just open it — you do not need an account
@@ -7806,6 +7811,7 @@ function recomputeWhen(){
 function afterWhen(){
   whenHint();
   const ti = document.getElementById('sess-title');
+  if(!ti) return;   /* the screen this painted has gone */
   if(ti) ti.placeholder = defaultTitle();
   renderLive(); TV.paint();
   save(); if(S.live) Live.beat();
@@ -7827,6 +7833,7 @@ function runsFor(){
 }
 function whenHint(){
   const hint = document.getElementById('start-hint');
+  if(!hint) return;   /* the screen this painted has gone */
   const clear = document.getElementById('start-clear');
   if(clear) clear.hidden = !(S.dateOn || S.startHM || S.endHM);
   if(!hint) return;
@@ -7847,6 +7854,7 @@ function whenHint(){
 }
 function syncStartTime(){
   const dt = document.getElementById('sess-date');
+  if(!dt) return;   /* the screen this painted has gone */
   const a = document.getElementById('sess-time'), b2 = document.getElementById('sess-end');
   if(dt && document.activeElement !== dt) dt.value = S.dateOn || '';
   if(a && document.activeElement !== a) a.value = S.startHM || '';
@@ -7891,6 +7899,7 @@ function setVenue(v){
 }
 function paintVenue(){
   const box = document.getElementById('venue-preview');
+  if(!box) return;   /* the screen this painted has gone */
   const inp = document.getElementById('sess-venue');
   if(inp && document.activeElement !== inp) inp.value = S.venue || '';
   const nin = document.getElementById('sess-venue-name');
@@ -7947,6 +7956,7 @@ function syncClosed(){
     b.classList.toggle('on', (b.dataset.j === '1') === !!S.closed);
   });
   const h = document.getElementById('closed-hint');
+  if(!h) return;   /* the screen this painted has gone */
   if(h) h.textContent = S.closed
     ? 'It still shows on the club\u2019s home page, with a lock on it. Only you can add players.'
     : 'Anyone who can see it can put themselves on the list.';
@@ -7960,6 +7970,7 @@ function syncListed(){
     b.classList.toggle('on', (b.dataset.l === '1') === !!S.listed);
   });
   const h = document.getElementById('listed-hint');
+  if(!h) return;   /* the screen this painted has gone */
   if(h) h.textContent = S.listed
     ? 'Everyone in the club sees this on their home page and can join from there.'
     : 'Only people you send the link to. It will not be listed anywhere.';
@@ -7982,6 +7993,7 @@ function syncApprove(){
     b.classList.toggle('on', (b.dataset.a === '1') === !!S.approve);
   });
   const h = document.getElementById('approve-hint');
+  if(!h) return;   /* the screen this painted has gone */
   if(h) h.textContent = S.approve
     ? 'Everyone who joins waits on the list until you bring them in. They are told they are waiting.'
     : 'Anyone with the link is in straight away' + (S.cap > 0
@@ -8023,11 +8035,13 @@ function setCap(v){
   const n = Math.max(0, Math.min(200, parseInt(v, 10) || 0));
   S.cap = n;
   const el = document.getElementById('sess-cap');
+  if(!el) return;   /* the screen this painted has gone */
   if(el && document.activeElement !== el) el.value = n || '';
   capHint(); save(); if(S.live) Live.beat();
 }
 function capHint(){
   const hint = document.getElementById('cap-hint');
+  if(!hint) return;   /* the screen this painted has gone */
   const sug = document.getElementById('cap-suggest');
   if(sug){
     const n = suggestCap();
@@ -8108,6 +8122,7 @@ function fillFromWait(){
 function setDetails(v){ S.details = v; renderLive(); save(); }
 function toggleDetails(){
   const w = document.getElementById('detail-wrap');
+  if(!w) return;   /* the screen this painted has gone */
   const l = document.getElementById('detail-link');
   if(!w) return;
   const open = w.hasAttribute('hidden');
@@ -9622,7 +9637,8 @@ function fillLevelCourts(){
 }
 function bumpCourts(d){
   S.nCourts = Math.max(1, Math.min(8, S.nCourts + d));
-  document.getElementById('courts-val').textContent = S.nCourts;
+  const cv = document.getElementById('courts-val');
+  if(cv) cv.textContent = S.nCourts;
   syncCourtLevels();
   renderLadder(); save();
 }
@@ -9736,6 +9752,7 @@ function setupPage(k){
   if(setupAt && setupAt !== was) setupMark();
   if(!setupAt) setupWas = null;
   const sum = document.getElementById('setup-summary');
+  if(!sum) return;   /* the screen this painted has gone */
   if(sum) sum.hidden = !!setupAt;
   SETUP_PAGES.forEach(n =>{
     const el = document.getElementById('sp-' + n);
@@ -9809,6 +9826,7 @@ function paintSetupSummary(){
   /* Online with a code means it exists and people can already see it. */
   const live = !!(S.live && S.liveCode);
   const mode = document.getElementById('sp-mode');
+  if(!mode) return;   /* the screen this painted has gone */
   if(mode){
     const joined = Object.keys(S.players || {}).length;
     mode.className = 'sp-mode' + (live ? ' editing' : '');
@@ -9939,10 +9957,15 @@ function setNewLevel(l){
     if(b) b.setAttribute('aria-pressed', String(k===l));
   });
 }
+/* The field it used to read from was on the old Setup screen, but a name can
+   also be handed in — which is how everything except that one field adds
+   somebody. Guarding on the element alone would have made every programmatic
+   add a silent no-op, which is the latecomer bug yet again and the worst kind,
+   because nothing errors. */
 function addPlayer(name, level, force){
   const input = document.getElementById('new-name');
-  let n = (name || input.value).trim();
-  if(!n){ input.focus(); return; }
+  let n = String(name || (input ? input.value : '')).trim();
+  if(!n){ if(input) input.focus(); return; }
   const taken = id => S.order.some(x => P(x).name.toLowerCase() === id.toLowerCase());
   if(taken(n)){
     /* Typed by hand it is almost always the same person twice.
@@ -10204,8 +10227,13 @@ function playingRows(){
   }).join('');
   return rows || noHits('is playing');
 }
+/* The roster panel lived on the old Setup screen and went with it. This is
+   still called from a dozen places — a setter, a merge, adopting a night — so
+   it answers for itself rather than making each of them check. The same is
+   true of every painter whose screen has gone: the element is the test. */
 function renderRoster(){
   const box = document.getElementById('roster');
+  if(!box) return;
   const ids = S.order;
   const rc = document.getElementById('roster-count');
   if(rc) rc.innerHTML = ids.length ? rosterCounts() : '0 in';
@@ -10318,6 +10346,7 @@ function mixedBalanceNote(){
 }
 function renderLadder(){
   const box = document.getElementById('ladder-preview');
+  if(!box) return;   /* the screen this painted has gone */
   if(S.mode === 'mixed'){
     const missing = needsSex();
     box.innerHTML = `<div class="rail">
@@ -11511,6 +11540,7 @@ function setCourts(n){
   if(S.nCourts === n){ return; }
   S.nCourts = n;
   const v = document.getElementById('courts-val');
+  if(!v) return;   /* the screen this painted has gone */
   if(v) v.textContent = n;
   syncCourtLevels(); renderLadder(); renderNew(); save();
 }
@@ -13195,8 +13225,10 @@ function courtRow(c, i, N){
 }
 
 function renderCourts(){
+  if(!document.getElementById('courts')) return;   /* the screen this painted has gone */
   refreshPlan();
   const box = document.getElementById('courts');
+  if(!box) return;   /* the screen this painted has gone */
   if(!S.active){
     box.innerHTML = `<div class="empty"><span class="glyph">${icon('paddle')}</span>Nothing on court yet.<br>Add your players in Setup and start the session.</div>`;
     document.getElementById('queue-panel').hidden = true;
@@ -13644,6 +13676,7 @@ function courtCard(c, i, N, next){
    each of them — which is how the pay pill came to be on two lists with
    only one of them being redrawn. */
 function renderPlayers(){
+  if(!document.getElementById('active-count')) return;   /* the screen this painted has gone */
   try{ renderPeople(); }catch(e){}
   const live = S.order.filter(id => P(id) && !P(id).out);
   const out  = S.order.filter(id => P(id) && P(id).out);
@@ -13739,6 +13772,7 @@ function renderPlayers(){
 }
 function addLate(){
   const input = document.getElementById('late-name');
+  if(!input) return;   /* the screen this painted has gone */
   const n = input.value.trim();
   if(!n) return;
   /* The cap means the same thing however somebody arrives — a late
@@ -17304,6 +17338,7 @@ function warsRound(){
    start their list again, and only those two are re-dealt — the others may
    be part way through a game nobody has reported yet.               */
 function renderPools(){
+  if(!document.getElementById('pools-body')) return;   /* the screen this painted has gone */
   const box = document.getElementById('pools-panel');
   if(!box) return;
   const pooled = S.active && (S.mode === 'wars' || S.mode === 'river') && S.tiers;
@@ -18844,6 +18879,7 @@ function meOrganizing(){
    build a season out of.                                              */
 async function paintRecord(){
   const strip = document.getElementById('me-stats');
+  if(!strip) return;   /* the screen this painted has gone */
   const list  = document.getElementById('me-nights');
   if(strip) strip.innerHTML =
     `<div class="hero-strip"><div class="ld-block" style="padding:8px 0;flex:1">
@@ -19519,6 +19555,7 @@ function roleWord(r){
    at the top of it once the session actually exists. */
 function paintBrandBar(name){
   const badge = document.getElementById('brand-badge');
+  if(!badge) return;   /* the screen this painted has gone */
   const mark  = document.getElementById('brand-mark');
   const bname = document.getElementById('brand-name');
   const bsub  = document.getElementById('brand-sub');
@@ -24797,6 +24834,7 @@ function paintAcctBtn(){
 
 function paintAccount(){
   const box = document.getElementById('account-box');
+  if(!box) return;   /* the screen this painted has gone */
   const panel = document.getElementById('account-panel');
   if(!box || !panel) return;
   paintAcctBtn();
@@ -25217,6 +25255,7 @@ function tourToBracket(){
    RENDER — STATS
    ═══════════════════════════════════════════════════ */
 function renderStats(){
+  if(!document.getElementById('lb')) return;   /* the screen this painted has gone */
   /* A team night is won by a team. The individual ladder is still worth
      having underneath -- people want their own record -- but the answer to
      "who is winning" is the table, so the table goes first. */
@@ -25245,8 +25284,10 @@ function renderStats(){
 }
 
 function renderTeamStats(){
+  if(!document.getElementById('st-round')) return;   /* the screen this painted has gone */
   const table = MLP.table();
   const box = document.getElementById('lb');
+  if(!box) return;   /* the screen this painted has gone */
   if(box) box.innerHTML = table.length
     ? table.map((r, i) =>{
         const t = MLP.team(r.id) || {};
@@ -25434,6 +25475,7 @@ function ranked(){
 }
 function poMax(){ return Math.floor(ranked().length / 4) * 4; }
 function renderPlayoffSetup(){
+  if(!document.getElementById('po-val')) return;   /* the screen this painted has gone */
   const max = poMax();
   if(poSize > Math.max(4,max)) poSize = Math.max(4,max);
   document.getElementById('po-val').textContent = poSize;
@@ -25603,6 +25645,7 @@ function teamName(i){
   return b.teams[i].map(id => esc(nm(id))).join(' + ');
 }
 function renderBracket(){
+  if(!document.getElementById('bracket')) return;   /* the screen this painted has gone */
   const b = S.bracket;
   if(!b){
     document.getElementById('bracket').innerHTML = '';
@@ -27990,6 +28033,7 @@ function renderLive(){
            || document.querySelector('[data-live-box]');
   if(!box) return;
   const pill = document.getElementById('live-pill');
+  if(!pill) return;   /* the screen this painted has gone */
   if(pill) pill.hidden = !S.live;
   /* Shown for any session that exists, not only a shared one. Hiding it
      unless the night was online meant an organizer running a local session
@@ -30009,8 +30053,10 @@ async function makeCard(){
 }
 
 function publishCard(c){
+  if(!document.getElementById('card-save')) return;   /* the screen this painted has gone */
   const url = c.toDataURL('image/png');
   const pv = document.getElementById('card-preview');
+  if(!pv) return;   /* the screen this painted has gone */
   pv.innerHTML = '<img alt="Session card" src="' + url + '">';
   pv.hidden = false;
   document.getElementById('card-save').hidden = false;
