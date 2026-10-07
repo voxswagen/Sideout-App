@@ -238,7 +238,7 @@ button{cursor:pointer;border:none;background:none;padding:0}
 .ab-bell:hover{background:var(--card-2);color:var(--court-ink)}
 .ab-face{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%}
 .ab-face .av{width:34px;height:34px}
-.scrim.on{opacity:1}
+
 /* Fixed to the top of the screen, so installed it starts underneath
    the clock and the island. The inset goes on the panel rather than
    on whichever child happens to be first — one place to be right,
@@ -250,15 +250,13 @@ button{cursor:pointer;border:none;background:none;padding:0}
   display:flex;flex-direction:column;overflow-y:auto}
 .drawer.on{transform:none}
 .dr-head{padding:20px 16px 14px;border-bottom:1px solid var(--edge)}
-.dr-me span{display:flex;flex-direction:column;min-width:0}
-.dr-me b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dr-me i{font-style:normal;font-size:11.5px;color:var(--ink-3);
-  font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.11em;
-  text-transform:uppercase;margin-top:2px}
-.dr-out b{display:block;font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:4px}
-.dr-out p{margin:0 0 12px;font-size:13px;color:var(--ink-2)}
-.dr-item.on{background:var(--kitchen);color:var(--court-ink);font-weight:600}
-.dr-item.on .dr-ico{color:var(--court-ink)}
+
+
+
+
+
+
+
 .nav{position:sticky;top:0;z-index:35;background:var(--card);border-bottom:1px solid var(--edge);
   display:flex;box-shadow:var(--sh-1)}
 .nav button{flex:1 1 auto;min-width:0;white-space:nowrap;
@@ -312,7 +310,7 @@ button{cursor:pointer;border:none;background:none;padding:0}
 .btn-danger{background:var(--fault);border:1.5px solid var(--fault);color:#fff;
   box-shadow:0 4px 14px rgba(176,42,42,.3)}
 .btn-danger:hover{filter:brightness(1.06)}
-.btn-sm{padding:9px 12px;font-size:12px;width:auto}
+
 
 /* ═════════ FORM BITS ═════════ */
 .field{display:block;margin-bottom:12px}
@@ -372,8 +370,8 @@ select{background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),
 .special-head .lbl span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:1px}
 .special-head .chev{color:var(--ink-3);font-size:15px;transition:transform .22s}
 .special.open .special-head .chev{transform:rotate(180deg)}
-.special-body{display:none;padding:0 10px 10px;gap:9px}
-.special.open .special-body{display:grid}
+
+
 .mode{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;text-align:left;
   padding:13px 14px;border-radius:var(--r);border:1.5px solid var(--edge-2);background:var(--card-2);
   transition:border-color .15s,background .15s}
@@ -420,27 +418,22 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .gr-set:hover{border-color:var(--court);color:var(--court-ink)}
 .gr-set .ic{width:15px;height:15px}
 /* An organizer and an owner are worth spotting in a list of eighty. */
-.pr .nm em.gr-organizer{color:var(--court-ink);font-weight:700}
-.pr .nm em.gr-owner{color:var(--crown);font-weight:700}
+
+
 .pr-go .sr-go{flex:0 0 auto;margin-left:4px;opacity:.45;font-size:19px;line-height:1}
 .pr .x{flex:0 0 auto;width:26px;height:26px;display:grid;place-items:center}
 .pr .nm em.pairtag{color:var(--court-ink);font-weight:700;text-transform:none;letter-spacing:.02em}
 .pr .nm em.when{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
   font-weight:600;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.startrow{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
-.tlab{display:flex;flex-direction:column;gap:4px;font-family:'Barlow Condensed',sans-serif;
-  font-weight:800;font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3)}
-.tdash{padding-bottom:11px;color:var(--ink-3);font-size:16px}
-.startrow input[type=date]{padding:10px 12px;border-radius:var(--r-s);
-  border:1.5px solid var(--edge-2);background:var(--card-2);color:var(--ink);
-  font-family:'Barlow',sans-serif;font-size:16px}
-.startrow input[type=date]:focus{border-color:var(--court);outline:none}
-.startrow input[type=time]{flex:0 0 auto;padding:10px 12px;border-radius:var(--r-s);
-  border:1.5px solid var(--edge-2);background:var(--card-2);color:var(--ink);
-  font-family:'Barlow',sans-serif;font-size:16px}
-.startrow input[type=time]:focus{border-color:var(--court);outline:none}
-.startrow .linky{padding-bottom:11px}
+
+
+
+
+
+
+
+
 .venue-chip{display:inline-flex;align-items:center;gap:7px;margin-top:9px;padding:8px 13px 8px 10px;
   border-radius:999px;background:var(--kitchen);border:1.5px solid var(--court);
   color:var(--court-deep);text-decoration:none;font-weight:600;font-size:14px;max-width:100%}
@@ -453,15 +446,11 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .tier{position:relative}
 .tier.locked{opacity:.62}
 .tier.locked h2,.tier.locked .hint{filter:grayscale(1)}
-.tier-lock{position:absolute;top:14px;right:14px;font-size:19px;opacity:.55}
-.tier-gate{margin:10px 0 0;padding:9px 12px;border-radius:var(--r-s);text-align:center;
-  background:var(--card-2);border:1px dashed var(--edge-2);
-  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
-  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
-.tier-pts b{font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--ink)}
-.tier-bar{height:9px;border-radius:99px;background:var(--card-2);overflow:hidden;
-  border:1px solid var(--edge)}
-.tier-bar i{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+
+
+
+
+
 .tt{width:100%;border-collapse:collapse;font-size:13px}
 .tt th{text-align:left;padding:5px 6px;font-family:'Barlow Condensed',sans-serif;font-weight:800;
   font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);
@@ -481,14 +470,11 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .conn.ok{color:var(--grass)}
 .score-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .score-row input{width:100%;padding:12px;font-size:17px;text-align:center;box-sizing:border-box}
-.disclose{display:flex;align-items:center;justify-content:space-between;width:100%;
-  padding:14px 2px;margin:4px 0 2px;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);
-  border-top:1px solid var(--edge)}
-.disclose:hover{color:var(--ink)}
-.disclose i{font-style:normal;transition:transform .18s}
-.disclose.open{color:var(--court-ink);border-top-color:var(--court)}
-.disclose.open i{transform:rotate(180deg)}
+
+
+
+
+
 #adv-box:not([hidden]){border-left:2px solid var(--kitchen);padding-left:11px;margin-top:2px}
 .sx{border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;
   background:var(--card);margin-bottom:13px;
@@ -503,8 +489,8 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .sx-top{position:relative;aspect-ratio:8 / 3;min-height:112px;cursor:pointer;
   background:linear-gradient(140deg,var(--court-lift),var(--court-deep));
   background-size:cover;background-position:center}
-.sx-top:not(.shot) .sx-veil{background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.32) 100%)}
-.sx-top:has(.sx-in) h3{bottom:32px}
+
+
 .cover-pick{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:11px;
   border:1.5px dashed var(--edge-2);border-radius:var(--r-s);background:var(--card-2);
   font-family:inherit;transition:border-color .15s}
@@ -520,9 +506,7 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .sx-top h3{position:absolute;left:14px;right:14px;bottom:11px;margin:0;color:#fff;
   font-family:'Bebas Neue',sans-serif;font-size:25px;line-height:1.05;letter-spacing:.01em;
   text-shadow:0 1px 8px rgba(0,0,0,.35)}
-.sx-badges i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;padding:4px 9px;border-radius:99px;
-  background:rgba(255,255,255,.92);color:var(--court-deep)}
+
 .sx.over{cursor:pointer}
 .sx.over .sx-top:not(.shot){background:linear-gradient(140deg,#8C97A4,#5A6675)}
 /* a played night keeps its picture, drained of colour so it reads as
@@ -550,16 +534,14 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .sx-line{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--ink-2);
   margin-bottom:7px;line-height:1.4}
 .sx-ico{color:var(--court-ink);flex:0 0 auto;font-size:12px;line-height:1.5}
-.sx-admin .btn{margin-top:0;flex:1}
-.sx-undo{color:var(--ball);border-color:color-mix(in srgb, var(--ball) 40%, transparent)}
-.sx-undo:hover{background:color-mix(in srgb, var(--ball) 12%, transparent)}
+
+
+
 .sx-cw{font-size:14px;line-height:1;opacity:.8}
-.sx-copy.ok{color:var(--grass);border-color:color-mix(in srgb, var(--grass) 45%, transparent)}
-.sx-copy.ok .sx-cw{opacity:1}
+
+
 .lad-row.you{background:var(--kitchen);border-radius:var(--r-s)}
-.you-tag{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9px;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--on-accent,#fff);background:var(--court);
-  padding:2px 6px;border-radius:99px;margin-left:6px;vertical-align:middle}
+
 #pull{position:fixed;top:0;left:50%;margin-left:-17px;width:34px;height:34px;z-index:38;
   display:grid;place-items:center;pointer-events:none;opacity:0;
   border-radius:50%;background:var(--card);box-shadow:var(--sh-2);
@@ -589,24 +571,17 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .icon-btn .ic{width:18px;height:18px}
 .sx-seg button{padding:10px 4px;font-size:12.5px}
 .bd-row{display:grid;grid-template-columns:1.6fr 1fr;gap:8px}
-.bd-strip{border:1px solid var(--edge);border-radius:var(--r);background:var(--card);
-  box-shadow:var(--sh-1);padding:12px 13px 13px;margin-bottom:13px}
-.bd-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.bd-head b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
-.bd-head i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:10px;letter-spacing:.1em;color:var(--court-ink);background:var(--kitchen);
-  padding:2px 7px;border-radius:99px}
-.bd-list{display:flex;gap:14px;overflow-x:auto;padding:4px 1px 3px;
-  scrollbar-width:none;-ms-overflow-style:none}
-.bd-list::-webkit-scrollbar{display:none}
-.bd-one{display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;width:52px}
-.bd-n{font-size:11.5px;line-height:1.2;color:var(--ink-2);max-width:100%;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bd-d{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
-.bd-one.now .bd-d{color:var(--court-ink)}
-.bd-one.now .av{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55), 0 0 0 2px var(--court)}
+
+
+
+
+
+
+
+
+
+
+
 .cr-stage{position:relative;overflow:hidden;width:100%;margin:12px 0 4px;
   border-radius:var(--r);background:var(--card-2);border:1px solid var(--edge-2);
   cursor:grab;touch-action:none;user-select:none}
@@ -673,9 +648,9 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
 .mb-d i{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:normal;
   font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .mb-none{color:var(--ink-3)}
-.dr-ico .dr-i{width:19px;height:19px}
+
 /* four ways in, as a row of taps rather than a column of sentences */
-.add-ways{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 12px}
+
 .way{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;cursor:pointer;
   border:1px solid var(--edge-2);border-radius:99px;background:var(--card);color:var(--ink-2);
   font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
@@ -705,7 +680,7 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
    listed, and it costs the row no extra width. */
 .lad-seg{margin:12px 0 4px}
 .lad-seg button{padding:9px 6px;font-size:12px}
-.lad-mdl .mdl{margin:0;vertical-align:0;width:15px;height:15px}
+
 .ad-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .ad-row{display:flex;flex-direction:column;gap:3px;padding:11px 13px;border-radius:var(--r-s);
   background:var(--card);border:1px solid var(--edge);border-left:3px solid var(--edge-2)}
@@ -735,13 +710,11 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
   box-shadow:0 1px 3px rgba(96,112,12,.35)}
 .clubr i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
   font-size:8.5px;letter-spacing:.1em;opacity:.68}
-.cr-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px 4px 8px;
-  border-radius:99px;background:var(--kitchen);border:1px solid var(--court);color:var(--court-ink)}
-.cr-badge.soft{opacity:.72;border-style:dashed}
-.cr-badge svg{width:14px;height:14px;flex:0 0 auto}
-.cr-badge b{font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;letter-spacing:.02em}
-.cr-badge i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;opacity:.8}
+
+
+
+
+
 .paid{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;
   padding:4px 9px;border-radius:99px;cursor:pointer;
   background:transparent;border:1.5px dashed var(--edge-2);color:var(--ink-3);
@@ -770,11 +743,10 @@ button.pr:hover{border-color:var(--edge-2);background:var(--card)}
   font-size:10px;letter-spacing:.13em;text-transform:uppercase;padding:4px 10px 4px 8px;
   border-radius:99px;color:#fff}
 .tier-ic{flex:0 0 auto}
-.ms-row.done{opacity:.72}
-.rank-big small{font-size:15px;color:var(--ink-3);margin-left:2px}
-.rank-txt b{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
-.rank-txt span{font-size:13px;color:var(--ink-2)}
+
+
+
+
 .welcome{padding:22px 4px 6px}
 .welcome h2{margin:2px 0 0;font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;
   letter-spacing:.01em}
@@ -842,20 +814,15 @@ body.nodock{padding-bottom:0}
    to be the other way round — a navy block with rounded bottom corners on a
    pale page — which made the panel read as a banner stuck to the top rather
    than as the thing the form is standing on. */
-.au-head{position:relative;overflow:hidden;background:none;
-  padding:calc(26px + env(safe-area-inset-top)) 22px 22px;
-  margin:0 -14px;color:#fff}
+
 /* The mark again, enormous and barely there, bled off the bottom corner.
    It is the one piece of the identity that can be big without being loud. */
-.au-ghost{position:absolute;right:-84px;top:-40px;width:280px;height:280px;
-  opacity:.08;pointer-events:none}
-.au-head > *:not(.au-ghost){position:relative;z-index:1}
-.au-lock{display:flex;align-items:center;gap:9px}
-.au-lock b{font:700 19px/1 'Outfit',sans-serif;letter-spacing:-.045em;color:#fff}
-.au-h{margin:16px 0 0;font:700 30px/1.1 'Outfit',sans-serif;letter-spacing:-.045em;
-  text-wrap:balance;max-width:16ch}
-.au-p{margin:11px 0 0;font:400 12.5px/1.5 'Outfit',sans-serif;
-  color:rgba(255,255,255,.7);max-width:34ch}
+
+
+
+
+
+
 /* Two facts, only ever real ones. Rendered from what the device already
    knows and left out entirely when it knows nothing, because a sign-in
    page that invents a member count is lying on the way in. */
@@ -882,15 +849,15 @@ body.nodock{padding-bottom:0}
    first pass dropped both, and a navy strip holding nothing but a logo and a
    player count reads as a page that failed to load rather than as a decision.
    The headline is what makes it a panel; the blurb is what makes it long. */
-#screen-auth[data-mode='up'] .au-p{display:none}
-#screen-auth[data-mode='up'] .au-h{font-size:22px;margin-top:12px;max-width:22ch}
-#screen-auth[data-mode='up'] .au-head{padding-bottom:16px}
+
+
+
 /* Sign-in centres in the space under its panel, which looks composed because
    the panel is tall. Sign-up's panel is a strip, so centring left the first
    question stranded in the middle of an empty screen with the progress bar
    half way down it. Steps start at the top and grow downwards, which is also
    what stops the fields moving about between one step and the next. */
-#screen-auth[data-mode='up'] .au-body{padding-top:24px}
+
 /* Top-aligned, not centred. Centring put "Welcome back" a third of the way
    down an empty screen with the panel stranded above it; starting under the
    panel also means the fields do not jump about between sign-in and each
@@ -898,17 +865,14 @@ body.nodock{padding-bottom:0}
 /* The card. Rounded at the top, square at the bottom because it runs off the
    bottom of the screen — a card with four rounded corners floating above the
    home indicator reads as unfinished. */
-.au-body{flex:1;display:flex;flex-direction:column;justify-content:flex-start;
-  margin:0 -14px;padding:26px 22px calc(22px + env(safe-area-inset-bottom));
-  background:var(--card);border-radius:26px 26px 0 0}
+
 .au-welcome{margin:0 0 4px;font:700 26px/1.2 'Outfit',sans-serif;letter-spacing:-.035em;color:var(--ink)}
 .au-sub{margin:0 0 16px;font:400 13.5px/1.5 'Outfit',sans-serif;color:var(--brand-slate-2)}
 /* how much is left, as a bar rather than a count of dots — dots stop scaling
    the moment a step is added, and this reads as progress at a glance */
 .au-steps{display:flex;align-items:center;gap:11px;margin:2px 0 12px}
-.au-bar{flex:1;height:4px;border-radius:99px;background:rgba(15,39,71,.12);overflow:hidden}
-.au-bar i{display:block;height:100%;border-radius:99px;background:var(--brand-green);
-  width:0;transition:width .28s cubic-bezier(.4,0,.2,1)}
+
+
 .au-steps span{flex:0 0 auto;font:600 11px/1 'Outfit',sans-serif;letter-spacing:.08em;
   text-transform:uppercase;color:var(--brand-slate)}
 .au-backstep{margin-top:9px;background:none;border:0;color:var(--brand-slate-2);
@@ -940,19 +904,13 @@ body.nodock{padding-bottom:0}
   .au-body .field{margin-bottom:9px}
   .au-keep{margin-bottom:12px}
 }
-.au-body .field{margin-bottom:14px}
-.au-body .label{font:600 12px/1 'Outfit',sans-serif;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--brand-slate)}
-.au-body input,.au-body select{font-family:'Outfit',system-ui,sans-serif}
-.au-body input{width:100%;padding:15px 16px;font-size:16px;box-sizing:border-box;
-  border-radius:12px;border:0;background:var(--brand-field);
-  box-shadow:inset 0 0 0 1px rgba(15,39,71,.1)}
-.au-body input:focus{outline:0;background:var(--card);
-  box-shadow:inset 0 0 0 2px var(--brand-navy)}
-.au-body input.bad{box-shadow:inset 0 0 0 2px var(--fault)!important}
-.au-body #au-go{border-radius:12px;padding:17px;background:var(--brand-navy);
-  border-color:var(--brand-navy);color:#fff;
-  font:600 15.5px/1 'Outfit',sans-serif;letter-spacing:0;text-transform:none}
+
+
+
+
+
+
+
 .au-keep{display:flex;align-items:center;gap:10px;margin:0 0 16px;cursor:pointer;
   font:400 13.5px/1.35 'Outfit',sans-serif;color:var(--brand-slate-2)}
 .au-keep input{position:absolute;opacity:0;width:0;height:0}
@@ -967,13 +925,11 @@ body.nodock{padding-bottom:0}
 /* This page is Sideout Society's, not a club's, so the small print takes the brand
    greys rather than whatever accent the club happens to be wearing — a club
    in bright green would otherwise get acid-green "Show" and "Forgot?". */
-.au .pw-eye{color:var(--brand-slate);font-family:'Outfit',sans-serif;font-weight:500;
-  font-size:12.5px;letter-spacing:0;text-transform:none}
+
 /* .au prefix so these beat .linky, which is the same specificity and later
    in the file — the cancel link was coming out club-accent green on the one
    page that is deliberately not wearing the club's colours. */
-.au .au-forgot .linky,.au .au-back{color:var(--brand-slate-2);font-family:'Outfit',sans-serif;
-  font-weight:500;font-size:13px;letter-spacing:0;text-transform:none;border-bottom:0}
+
 .au-swap{font-family:'Outfit',sans-serif}
 
 @media (min-width:900px){
@@ -1011,10 +967,10 @@ body.nodock{padding-bottom:0}
 input.bad{border-color:var(--fault)!important}
 .au-msg{margin:0 0 14px;padding:11px 13px;border-radius:var(--r-s);font-size:13.5px;line-height:1.5;
   background:var(--fault-soft);border:1px solid var(--fault);color:var(--fault)}
-.au-forgot{text-align:center;margin:11px 0 0}
+
 .au-swap{margin:16px 0 0;text-align:center;font-size:14px;color:var(--ink-2)}
 .au-swap .linky{display:inline;margin-left:4px}
-.au-back{width:100%;text-align:center;margin-top:22px}
+
 /* Premium here means fewer words and more air, not more ornament: one
    full-bleed field, type doing the work, a single thing to press. */
 /* One screen, no scroll: the hero takes whatever is left after the
@@ -1030,17 +986,15 @@ input.bad{border-color:var(--fault)!important}
 .lp{max-width:680px;margin:0 -14px;display:flex;flex-direction:column;min-height:100%;
   font-family:'Outfit',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:var(--brand-navy)}
 @media(min-width:588px){ .lp{margin:0 auto} }
-.lp-lock b{font:700 17px/1 'Outfit',sans-serif;letter-spacing:-.045em;color:var(--brand-navy)}
+
 
 /* Every block keeps its own height. .lp is a flex column so the footer can
    push to the bottom with margin-top:auto — but without this the hero was a
    shrinkable flex item, collapsed to 100px, and its own overflow:hidden then
    clipped the headline and both buttons clean off the page. */
 .lp > *{flex:none}
-.lp-pill i{width:5px;height:5px;border-radius:50%;background:var(--brand-green)}
-.lp-cta .btn-go{border-radius:14px;padding:16px;background:var(--brand-navy);
-  border-color:var(--brand-navy);color:#fff;font:600 15px/1 'Outfit',sans-serif;
-  letter-spacing:0;text-transform:none;box-shadow:none}
+
+
 .lp-nums{display:flex;align-items:center;gap:18px;margin-top:20px}
 .lp-nums div{display:flex;flex-direction:column;gap:5px}
 .lp-nums b{font:700 21px/1 'Outfit',sans-serif;letter-spacing:-.035em}
@@ -1067,16 +1021,13 @@ input.bad{border-color:var(--fault)!important}
   font:600 10px/1 'Outfit',sans-serif;background:var(--brand-green);color:var(--brand-navy)}
 .lp-row .s.few{background:var(--brand-gold)}
 .lp-row .s.full{background:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);color:#fff}
-.lp-what h2{margin:0 0 16px;font:600 10.5px/1 'Outfit',sans-serif;letter-spacing:.46em;
-  text-transform:uppercase;color:var(--brand-slate)}
-.lp-ic svg{width:18px;height:18px}
-.lp-ic.navy{background:var(--brand-navy);color:var(--brand-gold)}
-.lp-ic.green{background:var(--brand-green);color:var(--brand-navy)}
-.lp-ic.gold{background:var(--brand-gold);color:var(--brand-navy)}
-.lp-feat > span:last-child b{display:block;font:700 15.5px/1.2 'Outfit',sans-serif;
-  letter-spacing:-.025em}
-.lp-feat > span:last-child span{display:block;margin-top:5px;
-  font:400 13px/1.5 'Outfit',sans-serif;color:var(--brand-slate-2)}
+
+
+
+
+
+
+
 /* Navy card, our mark, one button. It used to be a Play Store badge with
    italic "Install it on / Android" under it, which read as somebody else's
    download button pasted onto the page. */
@@ -1415,8 +1366,7 @@ body.chat-pinned{overflow:hidden}
   background:var(--court);border:0;color:var(--on-accent,#fff);
   font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
   letter-spacing:.08em;text-transform:uppercase}
-.mk-top h2{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;
-  letter-spacing:.02em;color:var(--ink)}
+
 /* Subtle on purpose: selling is the rarer thing anybody comes here to do. */
 .mk-new{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:9px 14px;
   border-radius:99px;cursor:pointer;background:var(--card);border:1.5px solid var(--court);
@@ -1447,10 +1397,9 @@ body.chat-pinned{overflow:hidden}
   line-height:1;letter-spacing:.03em;color:var(--court-ink)}
 .mk-by{display:block;margin-top:5px;font-size:11.5px;color:var(--ink-3);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mk-shots img{flex:0 0 auto;width:132px;height:132px;border-radius:var(--r-s);
-  object-fit:cover;display:block;background:var(--card-2);border:1px solid var(--edge)}
-.mk-seller b{display:block;font-size:14.5px}
-.mk-seller span span{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
+
+
+
 
 /* Off screen rather than display:none. Safari on iOS refuses to open a file
    picker for an input it is not rendering, so every photo button in the app
@@ -1503,9 +1452,9 @@ body.chat-pinned{overflow:hidden}
 .st-rk{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
   background:var(--card-2);border:1px solid var(--edge-2);
   font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12.5px;color:var(--ink-2)}
-.st-rk.r1{background:var(--brand-gold);border-color:var(--brand-gold);color:var(--brand-navy)}
-.st-rk.r2{background:#D8DEE6;border-color:#C6CEDA;color:var(--brand-navy)}
-.st-rk.r3{background:#E7C9A9;border-color:#DDB894;color:var(--brand-navy)}
+
+
+
 .st-n{flex:1;min-width:0}
 .st-n b{display:block;font-weight:600;font-size:15px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
@@ -1525,8 +1474,8 @@ body.chat-pinned{overflow:hidden}
 .mu-count{margin:0 2px 12px;font-size:12px;color:var(--ink-3)}
 .mu-r{margin:16px 2px 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;
   letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
-.mu-c .ic{width:11px;height:11px;color:var(--crown);vertical-align:-1px}
-.mu-side.won .mu-n{color:var(--ink);font-weight:600}
+
+
 
 /* ── no signal ─────────────────────────────────────────────────────────
    The green splash. Fixed above everything, its own colours rather than the
@@ -1591,8 +1540,7 @@ select.mini{padding:6px 8px;border-radius:var(--r-s);border:1px solid var(--edge
 .fx:hover{border-color:var(--court);box-shadow:var(--sh-2)}
 .fx.flat{cursor:default;background:var(--card-2);box-shadow:none}
 .fx.flat:hover{border-color:var(--edge)}
-.fx-top b{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:.01em;color:var(--ink);
-  line-height:1.1}
+
 .fx-at,.fx-n{font-size:12.5px;color:var(--ink-3)}
 /* One white card with the rows inside it, hairlines between. It was a column
    of detached rows with 6px of page showing through and no ground of its
@@ -1725,9 +1673,9 @@ input[type=text].ros-q:focus{border-color:var(--court);background:var(--card);
 [data-theme="night"] .sp[aria-pressed="true"].adv{color:var(--court-lift)}
 .sp[aria-pressed="true"].int{background:var(--grass-soft);color:var(--grass)}
 .sp[aria-pressed="true"].beg{background:var(--edge);color:var(--ink)}
-.sp[aria-pressed="true"].sx-m{background:var(--kitchen);color:var(--court-deep)}
-[data-theme="night"] .sp[aria-pressed="true"].sx-m{color:var(--court-lift)}
-.sp[aria-pressed="true"].sx-f{background:#FBEDF5;color:#A3457E}
+
+
+
 /* Deliberately our own badge, not DUPR's mark — the word only. */
 .av{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
   background-size:cover;background-position:center;background-color:var(--edge);
@@ -1778,13 +1726,13 @@ input[type=text].ros-q:focus{border-color:var(--court);background:var(--card);
   background:var(--card-2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;
   color:var(--ink);outline:none;text-align:center}
 .dupr-in:focus{border-color:var(--court)}
-[data-theme="night"] .sp[aria-pressed="true"].sx-f{background:#2C1A26;color:#E79CC8}
+
 .x{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--ink-3);
   font-size:16px;flex:0 0 auto;transition:background .15s,color .15s}
 .x:hover{background:var(--fault-soft);color:var(--fault)}
-.add-row{display:flex;gap:8px}
-.add-row input{flex:1}
-.add-row .btn{width:auto;padding:0 18px;flex:0 0 auto}
+
+
+
 /* ── watching ─────────────────────────────────────── */
 body.watching > *:not(#viewer):not(#toast):not(#veil):not(#screen-auth){display:none !important}
 /* signing in takes the whole screen, in the app or over an invite */
@@ -1835,10 +1783,9 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
   background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
   transition:background .15s}
 .vw-home:hover{background:rgba(255,255,255,.26)}
-.vw-code i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
-.vw-code b{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.18em}
-.vw-code .ic{opacity:.75;font-size:13px}
+
+
+
 .vw-top{position:relative;overflow:hidden;color:var(--on-accent,#fff);
   padding:calc(15px + env(safe-area-inset-top)) 18px 20px;
   background:linear-gradient(157deg,var(--court) 0%,var(--court-deep) 58%,#08243C 100%)}
@@ -1887,12 +1834,9 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
 .vw-count-s{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;
   letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.62);margin-top:3px}
 .vw-count.due b{font-size:27px;color:#fff}
-.vw-where a,.vw-where span{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;
-  border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);
-  color:#fff;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;
-  font-size:13px;letter-spacing:.05em;max-width:100%}
-.vw-where a:hover{background:rgba(255,255,255,.22)}
-.vw-where b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+
+
+
 .vw-details{position:relative;margin:13px 0 0;padding-top:13px;font-size:14px;line-height:1.55;
   color:rgba(255,255,255,.82);white-space:pre-line;border-top:1px solid rgba(255,255,255,.17)}
 /* Sticky, because the reason you are on Players is usually to scroll it, and
@@ -2023,9 +1967,8 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
 .vw-cta{margin-bottom:14px}
 .vw-me{background:var(--grass-soft);border:1.5px solid var(--grass);border-radius:var(--r-s);
   padding:11px 13px;margin-bottom:14px;font-size:14px;color:var(--grass)}
-.vw-join input{width:100%;padding:12px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
-  background:var(--card-2);font-family:'Barlow',sans-serif;font-size:16px;outline:none}
-.vw-join input:focus{border-color:var(--court)}
+
+
 .vw-courts{display:grid;gap:11px;margin-bottom:14px}
 @media(min-width:560px){ .vw-courts{grid-template-columns:1fr 1fr} }
 .vw-court{background:linear-gradient(165deg,var(--court),var(--court-deep));border-radius:var(--r);
@@ -2059,9 +2002,9 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
 .vw-row .rec b{color:var(--grass)}
 .vw-empty{text-align:center;padding:50px 20px;color:var(--ink-2)}
 .vw-empty .sub{font-size:13px;color:var(--ink-3);margin-top:6px}
-.chip.r-on{background:var(--grass-soft);border-color:var(--grass);color:var(--grass)}
-.chip.r-out{opacity:.5;text-decoration:line-through}
-.chip.r-left{opacity:.45;text-decoration:line-through}
+
+
+
 .chip i{font-style:normal;font-size:9.5px;opacity:.75;letter-spacing:.08em}
 .vw-over{background:linear-gradient(150deg,var(--court),var(--court-deep));border-radius:var(--r);
   padding:26px 18px;margin-bottom:14px;text-align:center;color:var(--on-accent,#fff)}
@@ -2212,11 +2155,9 @@ body.recapping > *:not(#recap):not(#toast):not(#veil){display:none !important}
 .live-pill:hover{background:rgba(255,255,255,.26)}
 .live-pill:active{transform:scale(.95)}
 .live-url{font-size:12px;color:var(--ink-3);text-align:center;word-break:break-all;margin:0 0 11px}
-.title-in{width:100%;padding:12px 13px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
-  background:var(--card-2);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.035em;
-  color:var(--ink);outline:none;margin-bottom:4px}
-.title-in:focus{border-color:var(--court);background:var(--card)}
-.title-in::placeholder{color:var(--ink-3)}
+
+
+
 #detail-wrap textarea{min-height:96px;margin-bottom:4px}
 .linky{display:block;margin:2px 0 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
   font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--court-ink);
@@ -2352,8 +2293,8 @@ textarea:focus{border-color:var(--court)}
   text-transform:uppercase;color:rgba(255,255,255,.5);padding:1px 0}
 .nc-src{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;
   text-transform:uppercase;line-height:1.35;color:#fff}
-.nc-src .nc-hit{color:#fff}
-.nc-src .nc-soft{color:rgba(255,255,255,.6);font-weight:500}
+
+
 .nc-src em{font-style:normal;color:rgba(255,255,255,.42);margin:0 6px}
 .nc-foot{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:nowrap;
   padding-top:8px;border-top:1px solid rgba(255,255,255,.2);width:100%;min-width:0}
@@ -2440,11 +2381,10 @@ textarea:focus{border-color:var(--court)}
   letter-spacing:.22em;text-transform:uppercase;color:var(--crown)}
 .champ .who{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.04em;line-height:1.1;
   margin-top:5px;color:var(--ink)}
-.kv{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;
-  border-bottom:1px solid var(--edge);font-size:14px}
-.kv:last-child{border-bottom:none}
-.kv span{color:var(--ink-2)}
-.kv b{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em}
+
+
+
+
 
 .log{display:flex;flex-direction:column;gap:4px;max-height:440px;overflow-y:auto;
   margin:0 -4px;padding:0 4px}
@@ -2566,10 +2506,9 @@ textarea:focus{border-color:var(--court)}
 .gc-in{font-style:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--court-ink);border:1px solid var(--court);border-radius:5px;padding:1px 5px;
   margin-left:5px;vertical-align:2px}
-.gh-tx h2{margin:0;font-family:'Bebas Neue',sans-serif;font-size:27px;letter-spacing:.02em;
-  color:var(--ink);line-height:1.1}
-.gh-court svg{width:14px;height:14px;flex:0 0 auto}
-.gh-edit svg{width:17px;height:17px}
+
+
+
 .pick.on{border-color:var(--court);background:var(--kitchen)}
 .gm-day{margin:14px 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--court-ink)}
@@ -2604,19 +2543,18 @@ textarea:focus{border-color:var(--court)}
   border:1px solid var(--edge-2);color:var(--ink-2);font-size:12.5px;white-space:nowrap}
 .chip:hover{border-color:var(--court)}
 .chip.on{background:var(--court);border-color:var(--court);color:var(--on-accent,#fff);font-weight:600}
-.hm-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:19px;
-  letter-spacing:.02em;color:var(--court-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hm-tx span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:1px}
-.hm-tx .hm-rt span{display:inline;margin:0}
-.hm-rt s{width:1px;height:11px;background:var(--edge);flex:0 0 auto;text-decoration:none}
-.hm-rt b{font-weight:700;color:var(--ink)}
-.hm-rt em{font-style:normal;font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
-.hm-rt .soft b{opacity:.62}
-.hm-cnt b{display:block;font-family:'Bebas Neue',sans-serif;font-size:23px;line-height:1;color:var(--ink)}
-.hm-cnt span{display:block;font-size:11.5px;color:var(--ink-2);margin-top:3px}
-.hm-cnt.hot b{color:var(--court-ink)}
-.hm-cnt.hot{border-color:var(--court)}
-.hm-shot.none .ic{width:20px;height:20px;opacity:.8}
+
+
+
+
+
+
+
+
+
+
+
+
 .vw-off .ic{width:13px;height:13px;vertical-align:-2px;margin-right:5px}
 /* Two densities for the feed. The big card sells a night to somebody deciding
    whether to come; the compact row answers "what is on" for somebody who
@@ -2742,7 +2680,7 @@ button.lnk{border:0;background:none;padding:0;cursor:pointer;font:inherit;
   border:1px solid var(--edge-2);background:var(--card-2);color:var(--ink-3);font-size:17px;
   line-height:1;display:grid;place-items:center}
 .gr-no:hover{border-color:var(--fault);color:var(--fault)}
-.nudge-wait .nudge-ic{background:var(--ink-3)}
+
 /* the money row wears the money colour, so the two are told apart at a
    glance rather than by reading them */
 .pv-cash{background:var(--grass-soft)!important;color:var(--grass)!important}
@@ -2782,37 +2720,32 @@ button.lnk{border:0;background:none;padding:0;cursor:pointer;font:inherit;
 .ct-shut{width:28px;height:28px;border:0;background:none;cursor:pointer;
   color:var(--ink-3);font-size:19px;line-height:1}
 .ct-row.open{border-color:var(--crown-line)}
-.rq-ring circle{fill:none;stroke:rgba(255,255,255,.14);stroke-width:7}
-.rq-ring circle.on{stroke:var(--brand-green);stroke-linecap:round}
-.rq-rate b{display:block;font-family:'Bebas Neue',sans-serif;font-size:25px;letter-spacing:.02em}
-.rq-rate i{display:block;margin-top:2px;font-style:normal;font-size:8.5px;letter-spacing:.12em;
-  text-transform:uppercase;color:rgba(255,255,255,.6)}
-.rq-wl b{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em}
-.rq-wl em{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:12px;color:rgba(255,255,255,.55);margin-right:5px}
-.rq-wl i{font-style:normal;margin-left:8px;font-family:'Barlow Condensed',sans-serif;
-  font-weight:800;font-size:14px}
-.rq-wl i.up{color:var(--brand-green)} .rq-wl i.down{color:var(--fault)}
-.rq-bar span{display:block;height:100%;border-radius:99px;background:var(--brand-green)}
-.rq-h h2{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
-button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-green);padding:0}
-.rq-pip.w{background:var(--brand-green);color:#fff}
-.rq-pip.l{background:var(--card-2);border:1px solid var(--edge);color:var(--ink-3)}
-.rq-v b{font-family:'Bebas Neue',sans-serif;font-size:31px;line-height:1;color:var(--court-ink)}
-.rq-v i{font-style:normal;font-size:11.5px;color:var(--ink-2)}
-.rq-seg i{flex:1;height:4px;border-radius:99px;background:var(--edge)}
-.rq-seg i.on{background:var(--brand-green)}
-.rq-gold .rq-v b{color:#12200B} .rq-gold .rq-v i{color:rgba(18,32,11,.72)}
-.rq-crown.has .rq-cr{background:var(--brand-gold);color:#12200B}
-.rq-cr .ic{width:19px;height:19px}
-.rq-ct b{display:block;font-size:14.5px}
-.rq-ct span{display:block;font-size:12px;color:var(--ink-2);margin-top:1px}
-.rq-crown.has .rq-cn{color:var(--crown-ink,var(--court-ink))}
-.rq-rb span{display:block;height:100%;border-radius:99px;background:var(--brand-green)}
 
-.hm-today h2{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;
-  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
 .hm-sess{display:flex;align-items:center;gap:11px;width:100%;padding:12px;margin-bottom:8px;
   border-radius:var(--r-s);background:var(--card);border:1px solid var(--edge);text-align:left}
 .hm-sess:hover{border-color:var(--court)}
@@ -2854,17 +2787,14 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .mx-flat:hover{border-color:var(--edge)}
 .mx-flat .mx-foot b{color:var(--court-ink)}
 .mx-foot span{font-size:11.5px;color:var(--ink-2)}
-.mt-sc.won{background:var(--grass-soft);color:var(--grass)}
-.mt-sc.lost{background:var(--fault-soft);color:var(--fault)}
-.mt-tx b{display:block;font-size:14px;color:var(--ink);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mt-tx span{display:block;font-size:11.5px;color:var(--ink-2);margin-top:2px}
-.pl-head b{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;
-  color:var(--ink);line-height:1.05;display:flex;align-items:center;gap:6px}
-.pl-head i{font-style:normal;font-size:12.5px;color:var(--ink-2)}
-.hm-greet h1{flex:1;min-width:0;margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
-  font-size:clamp(28px,7.4vw,36px);line-height:1;letter-spacing:.02em;color:var(--ink)}
-.hm-greet p{flex:1 0 100%;margin:0;font-size:14px;color:var(--ink-2)}
+
+
+
+
+
+
+
+
 
 /* ── the night that is next ── */
 .hm-next{position:relative;overflow:hidden;padding:17px 18px 18px;border-radius:var(--r-l);
@@ -2872,32 +2802,26 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
   background:linear-gradient(158deg,var(--brand-navy) 0%,#12304F 58%,var(--brand-navy-deep) 100%)}
 .hm-next::after{content:'';position:absolute;right:-90px;top:-40px;width:230px;height:230px;
   border-left:2px solid rgba(255,255,255,.10);transform:rotate(-24deg);pointer-events:none}
-.hm-nh b{flex:1;min-width:0;display:flex;align-items:center;gap:7px;
-  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
-  letter-spacing:.18em;text-transform:uppercase;color:#fff}
-.hm-nh b i{width:8px;height:8px;border-radius:50%;background:var(--ball);flex:0 0 auto}
-.hm-nh span{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);
-  max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hm-lock .ic{width:11px;height:11px}
-.hm-quiet .ic{width:15px;height:15px}
+
+
+
+
+
 .hm-cd{position:relative;display:flex;align-items:flex-start;gap:4px;margin-bottom:14px}
-.hm-cu b{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(38px,12.4vw,56px);
-  line-height:.9;letter-spacing:.01em;font-variant-numeric:tabular-nums}
-.hm-cu i{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:9px;
-  letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+
+
 /* The seconds are the part that is actually moving, so they are the part
    that is lit — everything else on this card is still.
 
    Not `.sec`: that is the section wrapper the profile and group pages use,
    and it carries a 22px top margin, so the seconds sat lower than the hours
    and the minutes for no reason anybody could see. */
-.hm-cu.ticking b{color:var(--ball)}
+
 .hm-next h2{position:relative;margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
   font-size:clamp(30px,8.6vw,42px);line-height:.96;letter-spacing:.02em;color:#fff}
-.hm-faces .av{width:30px;height:30px;font-size:11px;border:2px solid var(--brand-navy)}
-.hm-nacts .btn{flex:1;border-radius:99px;padding:15px}
-.hm-nact svg{width:19px;height:19px}
+
+
+
 
 /* ── how you are doing, in four figures ── */
 .hm-fig{display:flex;margin:12px 0 0;padding:13px 6px;background:var(--card);
@@ -2906,9 +2830,8 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .hm-fig .ps+.ps{border-left:1px solid var(--edge)}
 .hm-fig .ps b{font-size:23px}
 .hm-fig .ps b.good{color:var(--grass)}
-.hm-sh h2{flex:1;min-width:0;margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
-  font-size:26px;letter-spacing:.02em;color:var(--ink)}
-.hm-sh p{margin:0}
+
+
 /* One row that scrolls rather than a block of chips that wraps to three
    lines. Which club a night belongs to is a filter you flick through, not a
    list you read. */
@@ -3131,16 +3054,12 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 
 /* ── the code box ── */
 #home-box .nudge{margin-top:16px}
-#home-box .bd-strip{margin-top:16px}
-.hm-code input{flex:1;min-width:0;border:0;background:none;padding:9px 8px;font-size:14.5px}
-.hm-code input:focus{outline:none}
-.hm-code button{flex:0 0 auto;padding:12px 20px;border-radius:var(--r-s);
-  background:var(--brand-navy);color:#fff;font-family:'Barlow Condensed',sans-serif;
-  font-weight:800;font-size:12px;letter-spacing:.13em;text-transform:uppercase}
-.hm-done .dn-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:15px;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hm-done .dn-tx span{display:block;font-size:12px;color:var(--ink-2);margin-top:1px}
+
+
+
+
+
+
 
 /* ══════════════ THE HERO SCREENS ══════════════
    Your profile and a group's page are the two screens that are about a
@@ -3178,23 +3097,16 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
    this edge by pulling itself up 18px, so anything less than that plus room to
    breathe means the card lands on the rating tiles and crops "self-reported"
    off the bottom of them. */
-.hero-band{position:relative;overflow:hidden;padding:20px 16px 46px;
-  margin:0 -0px;color:#fff;
-  background:linear-gradient(163deg,var(--brand-navy) 0%,#123253 55%,var(--brand-navy-deep) 100%)}
+
 /* a court drawn faintly behind it, the same one the session header wears */
-.hero-band::after{content:'';position:absolute;right:-70px;top:-54px;width:250px;height:250px;
-  border:2px solid rgba(255,255,255,.10);border-radius:12px;transform:rotate(-18deg);
-  pointer-events:none}
-.hero-band::before{content:'';position:absolute;right:-70px;top:46px;width:250px;height:2px;
-  background:rgba(255,255,255,.10);transform:rotate(-18deg);pointer-events:none}
-.hero-back{position:relative;display:inline-flex;align-items:center;gap:5px;margin-bottom:10px;
-  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11.5px;
-  letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.72)}
-.hero-back span{font-size:17px;line-height:1}
+
+
+
+
 
 /* ── who it is ── */
 /* ── a group's own band ── */
-.gp-idr{position:relative;display:flex;align-items:flex-start;gap:14px}
+
 .gp-logo{flex:0 0 auto;width:78px;height:78px;border-radius:14px;overflow:hidden;
   display:grid;place-items:center;background:#fff;color:var(--brand-navy)}
 .gp-logo img{width:100%;height:100%;object-fit:cover;display:block}
@@ -3206,7 +3118,7 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .gp-court{display:flex;align-items:center;gap:5px;margin:7px 0 0;font-size:13px;
   color:var(--ball)}
 .gp-court svg{width:14px;height:14px}
-.gp-tiles{position:relative;display:flex;gap:9px;margin-top:16px}
+
 .gp-tile{flex:1;min-width:0;padding:10px 12px;border-radius:var(--r);text-align:left;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15)}
 .gp-tile.own{background:rgba(123,201,67,.14);border-color:rgba(123,201,67,.42)}
@@ -3247,7 +3159,7 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 #gm-list .pr{border:0;border-radius:0;background:none;box-shadow:none;padding:11px 14px}
 #gm-list .pr+.pr{border-top:1px solid var(--edge)}
 
-.pf-idr{position:relative;display:flex;align-items:center;gap:15px}
+
 .pf-face{flex:0 0 auto;position:relative;display:block;border-radius:50%}
 .pf-face .av{width:92px;height:92px;font-size:30px}
 .pf-face .av-img,.pf-face img{width:92px;height:92px}
@@ -3261,16 +3173,14 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .pf-who h1{margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;
   font-size:clamp(34px,10vw,48px);line-height:.94;letter-spacing:.02em;color:#fff}
 .pf-who p{margin:3px 0 0;font-size:13.5px;color:rgba(255,255,255,.72)}
-.pf-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-.pf-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:99px;
-  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10.5px;
-  letter-spacing:.14em;text-transform:uppercase}
-.pf-chip.role{background:var(--brand-green);color:#0B1B2B}
-.pf-chip.tier{background:var(--tier,#8A8F98);color:#fff}
-.pf-chip.flat{border:1px solid rgba(255,255,255,.34);color:rgba(255,255,255,.82)}
+
+
+
+
+
 
 /* ── the two ratings ── */
-.pf-rates{position:relative;display:flex;gap:10px;margin-top:16px}
+
 .pf-rate{flex:1;min-width:0;padding:11px 13px;border-radius:var(--r);
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15)}
 /* The club rating is the one this app is responsible for, so it is the one
@@ -3292,18 +3202,13 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .hero-strip .ps b.good{color:var(--grass)}
 
 /* ── where you stand ── */
-.pf-stand{display:flex;align-items:center;gap:14px;margin:14px 14px 0;padding:14px 16px;
-  border-radius:var(--r);color:#fff;
-  background:linear-gradient(100deg,#4C8B2B 0%,#5E9E33 100%)}
-.pf-stand b{flex:0 0 auto;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:38px;
-  line-height:.9;letter-spacing:.02em}
-.pf-stand b small{font-size:15px;vertical-align:super;margin-left:1px}
-.pf-stand s{flex:0 0 auto;width:1px;align-self:stretch;background:rgba(255,255,255,.34)}
-.pf-stand span{flex:1;min-width:0}
-.pf-stand span i{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
-  font-weight:800;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
-  color:rgba(255,255,255,.78)}
-.pf-stand span em{display:block;font-style:normal;font-size:14.5px;margin-top:2px}
+
+
+
+
+
+
+
 
 /* ── section headings, outside the cards ── */
 .sec{margin:22px 14px 0}
@@ -3319,35 +3224,25 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .sec-note{margin:-5px 2px 9px;font-size:12.5px;color:var(--ink-2)}
 
 /* ── rank progress ── */
-.pf-rank{padding:14px}
-.pf-rank .rk-top{display:flex;align-items:center;gap:12px}
-.pf-rank .rk-mark{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;
-  place-items:center;background:var(--card-2);border:1px solid var(--edge-2)}
-.pf-rank .rk-who{flex:1 1 auto;min-width:0}
-.pf-rank .rk-who span{text-wrap:pretty}
-.pf-rank .rk-who b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
-.pf-rank .rk-who span{display:block;font-size:13px;color:var(--ink-2);margin-top:1px}
-.pf-rank .rk-next{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase}
+
+
+
+
+
+
+
+
 
 /* ── one upcoming night ── */
-.pf-up{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:13px 14px}
-.pf-up+.pf-up{border-top:1px solid var(--edge)}
-.pf-when{flex:0 0 auto;width:48px;padding:6px 0;border-radius:11px;text-align:center;
-  background:var(--brand-navy);color:#fff}
-.pf-when i{display:block;font-style:normal;font-family:'Barlow Condensed',sans-serif;
-  font-weight:800;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:rgba(255,255,255,.62)}
-.pf-when b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:23px;
-  line-height:1}
-.pf-up .up-tx{flex:1;min-width:0}
-.pf-up .up-tx b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:16px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pf-up .up-tx span{display:block;font-size:12.5px;color:var(--ink-2);margin-top:1px}
-.pf-going{flex:0 0 auto;padding:4px 11px;border-radius:99px;border:1px solid var(--grass);
-  color:var(--grass);font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+
+
+
+
+
+
+
+
+
 
 /* ── a night you played ── */
 .pf-night{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px}
@@ -3368,27 +3263,21 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
 .pf-night .ni-r span{display:block;font-size:11px;color:var(--ink-3);line-height:1.25}
 
 /* ── the QR card ── */
-.pf-id{padding:16px;border-radius:var(--r);color:#fff;position:relative;overflow:hidden;
-  background:linear-gradient(158deg,var(--brand-navy) 0%,#12304F 60%,var(--brand-navy-deep) 100%)}
-.pf-id>p{margin:0 0 13px;font-size:13px;color:rgba(255,255,255,.74)}
-.pf-id .id-qr{margin:0;padding:14px;background:#fff;border-radius:12px;line-height:0;
-  display:flex;justify-content:center}
-.pf-id .id-ft{display:flex;align-items:flex-end;gap:12px;margin-top:13px}
-.pf-id .id-ft span{flex:1;min-width:0}
-.pf-id .id-ft b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:22px;
-  letter-spacing:.02em;line-height:1.05}
-.pf-id .id-ft em{display:block;font-style:normal;font-size:11.5px;color:rgba(255,255,255,.62);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pf-share{flex:0 0 auto;padding:7px 15px;border-radius:99px;background:var(--brand-green);
-  color:#0B1B2B;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;
-  letter-spacing:.14em;text-transform:uppercase}
+
+
+
+
+
+
+
+
 
 /* ── plain fact rows ── */
-.pf-facts{padding:2px 14px}
-.pf-facts>div{display:flex;align-items:center;gap:12px;padding:11px 0}
-.pf-facts>div+div{border-top:1px solid var(--edge)}
-.pf-facts dt{flex:1;min-width:0;margin:0;font-size:13.5px;color:var(--ink-2)}
-.pf-facts dd{margin:0;font-size:13.5px;font-weight:600;color:var(--ink);text-align:right}
+
+
+
+
+
 
 /* ── the list rows, restyled for a page with headings above the cards ── */
 .sec-c .me-list{border-radius:0;box-shadow:none;border:0}
@@ -3405,15 +3294,13 @@ button.rq-note.lnk{border:0;background:none;cursor:pointer;color:var(--brand-gre
    white circle with a border, and the toggle row was quietly wearing it: a
    full-width white ellipse drawn around "Switch to night". Two-letter class
    names are cheap to collide with. */
-.me-item.me-tog{cursor:pointer}
-.me-item.me-tog>span:first-child{flex:1;min-width:0}
-.me-item.me-tog .me-sw{flex:0 0 auto}
-.me-sw{flex:0 0 auto;width:44px;height:26px;border-radius:99px;background:var(--edge-2);
-  position:relative;transition:background .18s}
-.me-sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;
-  border-radius:50%;background:#fff;box-shadow:var(--sh-1);transition:transform .18s}
-.me-item.me-tog.on .me-sw{background:var(--grass)}
-.me-item.me-tog.on .me-sw::after{transform:translateX(18px)}
+
+
+
+
+
+
+
 
 .me-list{display:flex;flex-direction:column;gap:1px;border-radius:var(--r);
   overflow:hidden;background:var(--edge);border:1px solid var(--edge)}
@@ -3478,22 +3365,18 @@ body.tabbed{padding-bottom:calc(var(--dock-h) + env(safe-area-inset-bottom))}
    this worth having: you can read the whole session down the left of the
    screen without opening any of it, and only the line that is wrong needs
    a tap. */
-.sumlist{display:flex;flex-direction:column;gap:1px;border-radius:var(--r);
-  overflow:hidden;background:var(--edge);border:1px solid var(--edge)}
-.sumrow{display:flex;align-items:center;gap:12px;width:100%;padding:15px 14px;
-  background:var(--card);text-align:left;border:0}
-.sumrow:hover{background:var(--card-2)}
-.sumrow .sr-t{flex:0 0 auto;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
-.sumrow .sr-v{flex:1;min-width:0;text-align:right;font-size:12.5px;color:var(--ink-2);
-  line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sumrow .sr-go{flex:0 0 auto;font-style:normal;font-size:19px;color:var(--ink-3);line-height:1}
+
+
+
+
+
+
 /* something still to say — a session with no date, nobody on the list */
-.sumrow .sr-v.todo{color:var(--court-ink)}
+
 
 /* A setting opened on its own. Not a sheet: these are long, some of them
    scroll, and a sheet that scrolls on a phone fights the page behind it. */
-.setup-page{animation:spIn .16s ease}
+
 @keyframes spIn{from{opacity:0;transform:translateX(9px)}to{opacity:1;transform:none}}
 .sp-back{display:inline-flex;align-items:center;gap:7px;margin:10px 0 12px;padding:9px 14px 9px 10px;
   border-radius:var(--r-s);background:var(--card-2);border:1px solid var(--edge);
@@ -3525,8 +3408,8 @@ body.tabbed{padding-bottom:calc(var(--dock-h) + env(safe-area-inset-bottom))}
 #tv.on{display:flex}
 /* A screen showing nothing but the board: no app behind it to scroll. */
 body.casting{overflow:hidden}
-.tv-top .t{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.18em;line-height:1}
-.tv-top .s{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+
+
 .tv-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(19px,2.2vw,30px);letter-spacing:.045em;
   color:#fff;line-height:1.05;margin-bottom:3px}
 .tv-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,9vw,124px);letter-spacing:.04em;line-height:1;
@@ -3567,11 +3450,10 @@ body.casting{overflow:hidden}
   line-height:1.14;color:#fff}
 .tv-team.win{color:var(--ball)}
 .tv-team i{font-style:normal;opacity:.35;margin:0 6px}
-.tv-court .tv-body{margin-top:6px}
-.tv-next b{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.35);
-  font-weight:700;flex:0 0 auto}
-.tv-next .tv-nx{font-size:clamp(14px,1.35vw,21px);letter-spacing:.05em;text-transform:uppercase;font-weight:600}
-.tv-next em{font-style:normal;color:rgba(255,255,255,.28);margin:0 7px;font-size:.85em}
+
+
+
+
 @media (max-height:700px){
   .tv-top{padding:10px 20px;gap:12px}
   .tv-top .tv-clock{font-size:clamp(44px,11vw,64px)}
@@ -3588,9 +3470,9 @@ body.casting{overflow:hidden}
 .tv-join{display:flex;align-items:center;gap:10px;margin-left:18px;padding-left:18px;
   border-left:1px solid rgba(255,255,255,.18)}
 .tv-join svg{display:block;border-radius:4px}
-.tj-t b{display:block;color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.22em}
-.tj-t span{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.16em;color:var(--ball)}
-.tv-bot b{color:rgba(255,255,255,.85);letter-spacing:.16em;text-transform:uppercase;font-size:11px}
+
+
+
 #tv-auto{color:var(--ball);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:15px}
 .btn-hold{background:var(--crown) !important;color:#fff !important;box-shadow:0 4px 14px rgba(201,138,24,.3) !important}
 
@@ -3620,17 +3502,14 @@ body.casting{overflow:hidden}
 .seg.fmt button{line-height:1.15;padding:9px 6px;text-wrap:balance;
   min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px}
 /* What we are playing, and the way in to changing it. */
-.fmt-now{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;
-  padding:11px 13px;border-radius:var(--r-s);border:1.5px solid var(--edge-2);
-  background:var(--card-2);color:var(--ink);transition:border-color .15s}
-.fmt-now:hover{border-color:var(--court)}
-.fmt-now .lbl{flex:1;min-width:0}
-.fmt-now b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;
-  font-size:15px;letter-spacing:.07em;text-transform:uppercase}
-.fmt-now .lbl span{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
-.fmt-now .chev{color:var(--ink-3);font-size:15px;transition:transform .22s}
-.fmt-now[aria-expanded="true"]{border-color:var(--court)}
-.fmt-now[aria-expanded="true"] .chev{transform:rotate(180deg)}
+
+
+
+
+
+
+
+
 #fmt-list{margin-top:10px}
 .seg button[aria-pressed="true"],
 .seg button.on{border-color:var(--court);background:var(--kitchen);color:var(--court-deep);
@@ -3828,7 +3707,7 @@ body.casting{overflow:hidden}
    Named for the job, not the size, so a screen never picks a number. */
 .sos-t-lg{font-size:34px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--sos-ink);margin:0}
 .sos-t-sc{font-size:32px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--sos-ink);margin:0}
-.sos-t-sec{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--sos-ink);margin:0}
+
 .sos-t-grp{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--sos-dim)}
 .sos-t-row{font-size:16px;font-weight:400;letter-spacing:-.01em;color:var(--sos-ink)}
 .sos-t-row-b{font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--sos-ink)}
@@ -3876,8 +3755,8 @@ body.casting{overflow:hidden}
 .sos-stats b{display:block;font-size:21px;font-weight:700;letter-spacing:-.02em;color:var(--sos-ink)}
 .sos-stats span{display:block;margin-top:2px;font-size:12px;color:var(--sos-dim)}
 .sos-stats-3{grid-template-columns:repeat(3,1fr)}
-.sos-stats-4 b{font-size:21px}
-.sos-stats-4 span{font-size:11.5px}
+
+
 
 /* ── buttons ──
    Full width, 50px, 14px radius for the one thing a screen is for; 46-48px
@@ -3889,7 +3768,7 @@ body.casting{overflow:hidden}
 .sos-btn-go{background:var(--sos-accent);color:var(--sos-on-accent)}
 .sos-btn-quiet{background:var(--sos-card);color:var(--sos-ink);font-size:16px}
 .sos-btn[disabled]{background:var(--sos-off-bg);color:var(--sos-off-fg);cursor:default;pointer-events:none}
-.sos-btn-in{min-height:46px;border-radius:13px;font-size:16px}
+
 .sos-btn:active{opacity:.85}
 
 /* A link that names where it goes. The negative margin is so the glyph
@@ -3966,8 +3845,8 @@ body.casting{overflow:hidden}
 .sos-search input:focus{outline:none}
 .sos-search input::placeholder{color:var(--sos-dim)}
 .sos-stack{display:flex}
-.sos-stack .sos-av{box-shadow:0 0 0 2px var(--sos-card)}
-.sos-stack .sos-av + .sos-av{margin-left:-8px}
+
+
 
 /* ── pills ── */
 .sos-pill{display:inline-flex;align-items:center;border-radius:99px;padding:3px 9px;
@@ -3988,8 +3867,8 @@ body.casting{overflow:hidden}
 .sos-dot i,.sos-dot b{position:absolute;inset:0;border-radius:99px;background:currentColor}
 .sos-dot b{animation:sosPulse 2s ease-out infinite}
 @media(prefers-reduced-motion:reduce){.sos-dot b{animation:none}}
-.sos-or i{flex:1;height:1px;background:var(--sos-hair)}
-.sos-or span{font-size:13px;color:var(--sos-dim-2)}
+
+
 
 /* ── the logo, cropped ──
    Both files are square canvases with the art in a thin horizontal band and
@@ -4318,10 +4197,8 @@ body.casting{overflow:hidden}
 #screen-players .lbl b,#screen-stats .lbl b{font-family:inherit;font-weight:600;
   font-size:16px;letter-spacing:-.01em;text-transform:none;color:var(--sos-ink)}
 #screen-players .lbl span{font-size:13px;color:var(--sos-ink-2)}
-#screen-players .fmt-now{border-radius:12px;background:var(--sos-fill-2);
-  border:1px solid var(--sos-hair)}
-#screen-players .row-lab,#screen-players .set-h{font-family:inherit;font-weight:600;
-  font-size:15.5px;letter-spacing:-.01em;text-transform:none;color:var(--sos-ink)}
+
+
 /* The amber "local mode" box is a note, not a warning — nothing is wrong,
    the server simply has not been filled in. */
 /* `.conn.warn` is the amber "local mode" note. Nothing is wrong — the
@@ -4387,10 +4264,9 @@ body.casting{overflow:hidden}
 #screen-stats .lb-row .dif{font-style:normal;font-size:12.5px;color:var(--sos-dim)}
 
 /* The figures under it read as rows rather than as a ruled table. */
-#screen-stats .kv{padding:10px 2px;font-size:16px;color:var(--sos-ink);border:0}
-#screen-stats .kv + .kv{border-top:1px solid var(--sos-sep)}
-#screen-stats .kv b{font-family:inherit;font-weight:700;font-size:17px;
-  letter-spacing:-.02em;color:var(--sos-ink)}
+
+
+
 
 
 /* ── the pinned session banner ──
@@ -4463,11 +4339,9 @@ body.casting{overflow:hidden}
 /* Stated, not auto. width:auto on a <button> is shrink-to-fit however the
    display is set — the same thing that collapsed .sos-btn to 80px — so this
    is the gutters subtracted by hand. */
-.pst-say{display:flex;align-items:center;gap:10px;width:calc(100% - 32px);margin:0 16px 10px;
-  min-height:48px;padding:0 14px;border-radius:14px;cursor:pointer;text-align:left;
-  background:var(--sos-card);border:1px solid var(--sos-hair);font-family:inherit}
-.pst-say span{flex:1;min-width:0;font-size:14.5px;color:var(--sos-dim)}
-.pst-say .av{width:30px;height:30px;font-size:11px;flex:none}
+
+
+
 
 .pst{margin:0 16px 12px;padding:13px 0 0;border-radius:16px;overflow:hidden;
   background:var(--sos-card);box-shadow:0 1px 3px rgba(23,36,43,.06)}
@@ -4493,7 +4367,7 @@ body.casting{overflow:hidden}
    you can do about it — which is why a post nobody has touched has no line
    here rather than a row of noughts. */
 .pst-n{margin-top:11px;font-size:13px;color:var(--sos-ink-2)}
-.pst-img{display:block;width:100%;margin-top:10px;border-radius:11px}
+
 
 .pst-acts{display:flex;align-items:center;margin-top:10px;
   border-top:1px solid var(--sos-sep)}
@@ -4511,20 +4385,16 @@ body.casting{overflow:hidden}
 .pst-a.gold.on{color:#8A6712}
 .pst-a.gold.on svg{fill:#8A6712}
 
-.pst-th{margin-top:6px;padding-top:9px;border-top:1px solid var(--sos-sep)}
-.pst-c{display:flex;align-items:flex-start;gap:9px;padding:5px 0}
-.pst-c .av{width:26px;height:26px;font-size:10px;flex:none;margin-top:1px}
-.pst-ct{flex:1;min-width:0;font-size:14px;line-height:1.45}
-.pst-ct b{font-weight:700;color:var(--sos-ink)}
-.pst-ct span{color:var(--sos-ink-2)}
+
+
+
+
+
+
 .pst-none{margin:2px 0 6px;font-size:13.5px;color:var(--sos-dim)}
-.pst-add{display:flex;gap:7px;margin:6px 0 4px}
-.pst-add input{flex:1;min-width:0;min-height:38px;padding:0 12px;border-radius:10px;
-  background:var(--sos-bg);border:1px solid var(--sos-hair);font-family:inherit;
-  font-size:14.5px;color:var(--sos-ink)}
-.pst-add button{flex:none;min-height:38px;padding:0 14px;border-radius:10px;border:0;
-  cursor:pointer;background:var(--sos-accent);color:var(--sos-on-accent);
-  font-family:inherit;font-size:14px;font-weight:600}
+
+
+
 /* The composer: pictures, then the caption, then the buttons — each with
    room around it. They used to sit flush against one another. */
 .pst-ta{width:100%;margin:0 0 14px;padding:12px;border-radius:12px;font-family:inherit;
@@ -4534,10 +4404,10 @@ body.casting{overflow:hidden}
 /* What you have chosen, before it goes. Square thumbnails so four of them
    are a block rather than a ragged column. */
 .pst-grid{display:grid;gap:6px;margin:0 0 14px;grid-template-columns:repeat(2,1fr)}
-.pst-grid.n1{grid-template-columns:1fr}
+
 .pst-cell{position:relative;display:block}
 .pst-cell img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px}
-.pst-grid.n1 .pst-cell img{aspect-ratio:4/3}
+
 .pst-cell button{position:absolute;top:6px;right:6px;width:28px;height:28px;border:0;
   border-radius:99px;cursor:pointer;background:rgba(23,36,43,.62);color:#fff;
   font-size:18px;line-height:1}
@@ -4547,10 +4417,10 @@ body.casting{overflow:hidden}
 
 /* And how they read once posted. */
 .pst-shots{display:grid;gap:3px;margin-top:10px;grid-template-columns:repeat(2,1fr)}
-.pst-shots.n1{grid-template-columns:1fr}
-.pst-shots.n3 img:first-child{grid-column:span 2}
+
+
 .pst-shots img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;cursor:zoom-in}
-.pst-shots.n1 img{aspect-ratio:auto;max-height:70vh;object-fit:cover}
+
 
 /* ── comments ──
    The composer takes the place of the tab bar rather than sitting above it:
@@ -4596,69 +4466,52 @@ body.casting{overflow:hidden}
    it has one and the club's own gradient when it does not — never an empty
    grey box, which reads as a picture that failed rather than a night without
    one. */
-.hmx-next{margin:18px 16px 0;background:var(--sos-card);border-radius:16px;overflow:hidden;
-  box-shadow:0 1px 2px rgba(23,36,43,.05),0 10px 26px rgba(23,36,43,.07)}
-.hmx-shot{position:relative;height:128px;
-  background:linear-gradient(135deg,var(--court) 0%,var(--court-deep) 55%,#233A45 100%);
-  background-size:cover;background-position:center}
-.hmx-shot.shot::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(11,22,29,.15) 0%,rgba(11,22,29,.72) 100%)}
-.hmx-shot > *{position:relative;z-index:1}
-.hmx-ring{position:absolute;right:-30px;top:-40px;width:180px;height:180px;
-  border-radius:99px;border:1px solid rgba(255,255,255,.12);z-index:0}
-.hmx-wm{position:absolute;right:10px;bottom:12px;width:132px;height:29px;overflow:hidden;
-  opacity:.3;z-index:0}
-.hmx-wm img{display:block;width:132px;height:132px;margin-top:-51px;
-  filter:brightness(0) invert(1)}
-.hmx-cd{position:absolute;left:16px;top:14px;display:flex;align-items:center;gap:7px;
-  background:rgba(255,255,255,.16);border-radius:99px;padding:5px 11px 4px;color:#fff;
-  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-.hmx-cd .sos-dot{width:6px;height:6px;color:#fff}
-.hmx-lock{position:absolute;right:14px;top:14px;display:flex;align-items:center;gap:5px;
-  background:rgba(11,22,29,.5);border-radius:99px;padding:5px 10px 4px;color:#fff;
-  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.hmx-lock svg,.hmx-lock .ic{width:12px;height:12px}
-.hmx-title{position:absolute;left:16px;bottom:14px;right:120px;margin:0;
-  font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:#fff}
 
-.hmx-body{padding:14px 16px 16px}
-.hmx-meta{display:flex;align-items:center;gap:10px;margin:0 0 9px;
-  font-size:15px;color:var(--sos-ink-2)}
-.hmx-meta:nth-of-type(2){margin-bottom:0}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .hmx-i{flex:none;width:17px;height:17px;color:var(--sos-dim)}
-.hmx-who{margin-top:14px;display:flex;align-items:center;gap:10px}
-.hmx-who .av{width:26px;height:26px;font-size:10px;box-shadow:0 0 0 2px var(--sos-card)}
-.hmx-who .av + .av{margin-left:-8px}
-.hmx-more{display:grid;place-items:center;background:var(--sos-fill) !important;
-  color:var(--sos-ink-3) !important;font-size:10px;font-weight:700}
-.hmx-ct{flex:1;min-width:0;font-size:14px;color:var(--sos-dim)}
-.hmx-cta{margin-top:15px;display:flex;gap:8px}
-.hmx-cta .sos-btn{flex:1}
-.hmx-map{flex:none;width:46px;min-height:46px;display:grid;place-items:center;
-  background:var(--sos-fill);border-radius:13px;color:var(--sos-ink-2)}
-.hmx-map .hmx-i{width:19px;height:19px;color:var(--sos-ink-2)}
+
+
+
+
+
+
+
+
+
 
 /* ── the strip of figures ── */
 .hmx-stats{margin-top:14px}
 .hmx-accent{color:var(--sos-accent) !important}
 
 /* ── sections ── */
-.hmx-sec{margin:24px 16px 7px}
-.hmx-sh{margin:24px 16px 7px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.hmx-sh h2{margin:0}
-.hmx-all{background:none;border:0;cursor:pointer;font-family:inherit;font-size:13.5px;
-  font-weight:600;color:var(--sos-accent);padding:0}
+
+
+
+
 
 /* The two filter rows, restyled from what Feed already emits rather than
    rebuilt — `.chip` and `.hm-club` are its markup and Games uses `.chip`
    too, so both are scoped to this screen. */
-.hmx-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;
-  margin:0 16px 8px;padding-bottom:2px}
-.hmx-chips::-webkit-scrollbar{display:none}
+
+
 /* Only Feed.clubChips()'s own wrapper is dissolved — `display:contents` on a
    button is ignored by browsers today but not by specification, and the
    filter row's chips are direct children here. */
-.hmx-chips > .hm-clubs{display:contents}
+
 #screen-home .chip,#screen-home .hm-club{flex:none;display:inline-flex;align-items:center;
   gap:6px;min-height:34px;padding:0 13px;border-radius:99px;background:var(--sos-card);
   border:1px solid var(--sos-hair);cursor:pointer;font-family:inherit;font-size:13.5px;
@@ -4677,36 +4530,29 @@ body.casting{overflow:hidden}
 /* ── a night in the list ──
    The date badge leads because a night is "the one on Thursday" long before
    it is its own name. */
-.hmx-row{gap:12px;padding:11px 14px}
-.hmx-date{flex:none;width:44px;border-radius:10px;background:var(--sos-fill);
-  padding:5px 0;text-align:center}
-.hmx-date i{display:block;font-style:normal;font-size:10px;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--sos-dim)}
-.hmx-date b{display:block;font-size:18px;font-weight:700;letter-spacing:-.02em;
-  color:var(--sos-ink);line-height:1.1}
-.hmx-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hmx-row .sos-t-2nd,.hmx-badge + .sos-row-v .sos-t-2nd{display:block;margin-top:1px}
-.hmx-state{flex:none;font-size:13px;font-weight:600}
-.hmx-state.going{color:var(--sos-green)}
-.hmx-state.live{color:var(--sos-green)}
-.hmx-state.dim{color:var(--sos-dim)}
-.hmx-sep{margin-left:70px}
+
+
+
+
+
+
+
+
+
+
+
 .hmx-empty{display:block;padding:16px 14px;font-size:14.5px;line-height:1.45;
   color:var(--sos-dim);text-wrap:pretty;min-height:0}
 
 /* The badge on a night already played carries the night's own cover. The
    design puts a finishing place there; the RPC does not return one. */
-.hmx-badge{flex:none;width:36px;height:36px;border-radius:99px;background:var(--sos-fill);
-  display:grid;place-items:center;color:var(--sos-dim);background-size:cover;
-  background-position:center;overflow:hidden}
-.hmx-badge svg{width:19px;height:19px}
+
+
 
 /* ── a code, typed in ── */
-.hmx-join{margin:22px 16px 0;display:flex;gap:8px}
-.hmx-code{flex:1;min-width:0}
-.hmx-joinb{flex:none;min-height:38px;padding:0 18px;border-radius:11px;border:0;
-  background:var(--sos-accent);color:var(--sos-on-accent);cursor:pointer;
-  font-family:inherit;font-size:15px;font-weight:600;letter-spacing:-.01em}
+
+
+
 #screen-home .fx-err{margin:8px 16px 0;font-size:13.5px;line-height:1.4;
   color:var(--sos-red);text-wrap:pretty}
 
@@ -4958,13 +4804,11 @@ body.casting{overflow:hidden}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sc-in input{width:100%;padding:12px;border-radius:12px;font-family:inherit;
   font-size:30px;font-weight:700;text-align:center;letter-spacing:-.02em}
-.run-undo{flex:none;display:flex;align-items:center;gap:6px;min-height:38px;padding:0 13px;
-  border-radius:11px;border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;
-  background:var(--sos-fill);color:var(--sos-ink-3)}
-.run-undo svg{width:15px;height:15px}
+
+
 /* Greyed when there is nothing to undo, and still readable: a control you
    cannot read tells nobody why it is inert. */
-.run-undo[disabled]{color:var(--sos-off-fg);background:var(--sos-fill);cursor:default}
+
 .run-fin{flex:none;min-height:44px;padding:0 18px;border-radius:12px;border:0;cursor:pointer;
   font-family:inherit;font-size:15px;font-weight:600;letter-spacing:-.01em;
   background:var(--sos-fill);color:var(--sos-ink-3)}
@@ -5272,9 +5116,9 @@ body.casting{overflow:hidden}
 .rec-pts{flex:none;text-align:right}
 .rec-pts b{display:block;font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--sos-ink)}
 .rec-pts i{display:block;font-style:normal;font-size:11.5px;color:var(--sos-dim)}
-.rec-diff2{flex:none;width:40px;text-align:right;font-size:13px;font-weight:600}
-.rec-diff2.up{color:var(--sos-green)}
-.rec-diff2.down{color:var(--sos-dim)}
+
+
+
 
 /* ══════════════ A PLAYER ══════════════ */
 #screen-player.on{padding:0 0 8px}
@@ -5364,8 +5208,7 @@ body.casting{overflow:hidden}
 #screen-new.on{padding:0 0 8px}
 /* The group row is a button sitting in a list of fields, so it has to match
    the inputs beside it rather than read as a control of a different kind. */
-.nw-grp-row{width:100%;background:none;border:0;cursor:pointer;font-family:inherit;
-  text-align:left;display:flex;align-items:center;gap:10px;min-height:56px;padding:9px 16px}
+
 .nw-grp-v{flex:none;font-size:14.5px;color:var(--sos-dim)}
 .nw-rep{padding:9px 16px}
 .nw-repseg{flex:none;width:auto}
@@ -5373,7 +5216,7 @@ body.casting{overflow:hidden}
 .nw-sugg{width:100%;background:none;border:0;cursor:pointer;font-family:inherit;text-align:left;
   display:flex;align-items:center;gap:10px;min-height:56px;padding:9px 16px}
 .nw-sugg .nw-grp-v{font-weight:700;color:var(--sos-accent)}
-.nw-grp-row svg{flex:none}
+
 /* The four stages: where you are, what you have done, what is left. Tappable
    backwards and to anything already reached, so it is the navigation as well
    as the progress. */
@@ -7941,10 +7784,6 @@ function setTitle(v){ S.title = v; renderLive(); TV.paint(); save(); }
 /* People think in "eight o'clock", not in dates. Take the time and
    work out which day they meant — today if it is still to come,
    tomorrow if it has already gone. */
-function hhmm(ms){
-  const d = new Date(ms);
-  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-}
 /* 21:00 is a timestamp; "9:00 pm" is how anyone reads a time out
    loud, so that is what the app shows. The 24-hour form stays only
    where the browser demands it — inside <input type="time">. */
@@ -7958,14 +7797,6 @@ function clockText(ms){
 /* People think in "eight o'clock", not in dates. Take the time and
    work out which day they meant \u2014 today if it is still to come,
    tomorrow if it has already gone. */
-function timeToday(v){
-  const [hh, mm] = String(v).split(':').map(Number);
-  if(isNaN(hh) || isNaN(mm)) return null;
-  const d = new Date();
-  d.setHours(hh, mm, 0, 0);
-  if(d.getTime() < Date.now() - 60000) d.setDate(d.getDate() + 1);
-  return d.getTime();
-}
 /* The date and the two clock times are what the host typed; the
    timestamps are worked out from them. Keeping it that way round
    means changing the date moves the whole session, rather than
@@ -8005,11 +7836,6 @@ function setDateOn(v){
 }
 function setStartTime(v){ S.startHM = v || ''; recomputeWhen(); afterWhen(); }
 function setEndTime(v){ S.endHM = v || ''; recomputeWhen(); afterWhen(); }
-function clearWhen(){
-  S.dateOn = null; S.startHM = ''; S.endHM = ''; S.startsAt = null; S.endsAt = null;
-  ['sess-date','sess-time','sess-end'].forEach(id =>{ const e = document.getElementById(id); if(e) e.value = ''; });
-  afterWhen();
-}
 /* Which day the session is on, whether or not it has started. */
 function sessionWhen(){ return S.started || S.startsAt || (S.dateOn ? new Date(S.dateOn + 'T12:00:00').getTime() : null); }
 function runsFor(){
@@ -8300,24 +8126,6 @@ function fillFromWait(){
   return moved;
 }
 function setDetails(v){ S.details = v; renderLive(); save(); }
-function toggleAdvanced(force){
-  const box = document.getElementById('adv-box');
-  const btn = document.getElementById('adv-toggle');
-  if(!box || !btn) return;
-  const open = (force === undefined) ? box.hidden : !!force;
-  box.hidden = !open;
-  btn.setAttribute('aria-expanded', String(open));
-  btn.classList.toggle('open', open);
-  /* On a phone this panel sits near the bottom, so what opens can
-     open entirely below the fold — which looks exactly like a button
-     that does nothing. Bring it into view. */
-  if(open){
-    requestAnimationFrame(()=>{
-      try{ btn.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-      catch(e){ btn.scrollIntoView(); }
-    });
-  }
-}
 function toggleDetails(){
   const w = document.getElementById('detail-wrap');
   const l = document.getElementById('detail-link');
@@ -8356,13 +8164,6 @@ function setDupr(id, v){
 /* Ratings beat a self-picked tier, so offer to derive one. */
 function duprLevel(v){ return v >= 4 ? 'adv' : (v >= 3 ? 'int' : 'beg'); }
 const LEVEL_NAME = { adv:'Advanced', int:'Intermediate', beg:'Beginner' };
-function levelsFromDupr(){
-  let n = 0;
-  S.order.forEach(id =>{ const p = P(id);
-    if(p && p.dupr != null){ p.level = duprLevel(p.dupr); n++; } });
-  renderAll(); renderLadder(); save();
-  toast(n ? n + ' level' + (n===1?'':'s') + ' set from DUPR.' : 'Nobody has a rating yet.');
-}
 function withDupr(){ return S.order.filter(id => P(id) && P(id).dupr != null).length; }
 
 /* Everyone gets a face straight away. A photo replaces it when
@@ -8483,18 +8284,6 @@ function ratingsRow(me){
 }
 
 
-function clubRateBadge(rating, games){
-  const n = Number(rating);
-  if(isNaN(n)) return '';
-  const settled = (games || 0) >= 6;
-  return `<span class="cr-badge${settled ? '' : ' soft'}"
-      title="${settled ? 'Moves with your results'
-        : 'Still settling \u2014 a few more sessions and it steadies'}">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      d="M4 17.5 9.5 12l3.5 3.5L20 8M20 8h-4.5M20 8v4.5"/></svg>
-    <b>${n.toFixed(2)}</b><i>Club Rating</i></span>`;
-}
 
 function verifiedMark(px){
   const n = px || 14;
@@ -8536,10 +8325,6 @@ function pPhoto(p){
     if(m && m.photo) return m.photo;
   }
   return p.photo || null;
-}
-function pAvatar(id, cls){
-  const p = P(id);
-  return p ? avatar(p.name, pPhoto(p), cls) : '';
 }
 
 /* The club roster. Members live on the server and outlast every
@@ -9861,25 +9646,6 @@ function bumpCourts(d){
   syncCourtLevels();
   renderLadder(); save();
 }
-function setTimed(on){
-  S.timed = !!on;
-  if(S.timed){ S.courts.forEach((c,i)=> Spin.cancel(i)); Spin.stop(); flushPools(); }
-  Clock.pause();
-  if(S.active){ S.roundStart = Date.now(); Clock.reset(); }
-  else Clock.setDefault(S.mins*60);
-  if(!S.timed) armPending();
-  syncRoundEndUI(); renderAll(); save();
-  toast(on ? 'Rounds run on the clock \u2014 every court waits for the whistle.'
-    : 'A court that finishes goes again \u2014 no waiting for the others.');
-}
-function bumpRest(d){
-  S.restAfter = Math.max(0, Math.min(12, (S.restAfter||0) + d));
-  syncRoundEndUI(); save();
-}
-function bumpTarget(d){
-  S.target = Math.max(5, Math.min(25, S.target + d));
-  syncRoundEndUI(); save();
-}
 function syncRoundEndUI(){
   const set = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
   const press = (id, v) => { const e = document.getElementById(id); if(e) e.setAttribute('aria-pressed', String(v)); };
@@ -9975,11 +9741,6 @@ function setupMark(){
   try{ setupWas = JSON.parse(JSON.stringify(setupSlice())); }
   catch(e){ setupWas = null; }
 }
-function setupDirty(){
-  if(!setupWas) return false;
-  try{ return stableStr(setupSlice()) !== stableStr(setupWas); }
-  catch(e){ return false; }
-}
 function setupSave(){
   setupMark();
   save();
@@ -9987,33 +9748,6 @@ function setupSave(){
   toast(S.live && S.liveCode
     ? 'Saved — everybody\'s link has it.'
     : 'Saved.');
-}
-function setupBack(){
-  if(!setupDirty()){ setupPage(''); return; }
-  openSheet(`<h3>Save what you changed?</h3>
-    <p class="sub">You have changed something on this panel. Going back without
-      saving puts it how it was.</p>
-    <button class="btn btn-go" onclick="closeSheet();setupSave()">
-      ${icon('check')} Save it</button>
-    <button class="btn btn-quiet" style="margin-top:9px"
-      onclick="closeSheet();setupUndo()">${icon('undo')} Put it back</button>
-    <button class="btn btn-quiet" style="margin-top:9px"
-      onclick="closeSheet()">Keep editing</button>`);
-}
-function setupUndo(){
-  const was = setupWas;
-  if(!was){ setupPage(''); return; }
-  /* A key added since the snapshot has to go, not merely be overwritten —
-     Object.assign alone would leave it behind. */
-  Object.keys(S).forEach(k =>{
-    if(SETUP_VOLATILE.indexOf(k) < 0 && !(k in was)) delete S[k];
-  });
-  Object.keys(was).forEach(k =>{ S[k] = was[k]; });
-  save();
-  try{ setMode(S.mode); }catch(e){}
-  try{ renderAll(); }catch(e){}
-  setupPage('');
-  toast('Put back the way it was.');
 }
 
 function setupPage(k){
@@ -10216,12 +9950,6 @@ function venueName(v){
   }catch(e){ return 'a venue'; }
 }
 
-function bumpMins(d){
-  S.mins = Math.max(3, Math.min(30, S.mins + d));
-  Clock.def = S.mins*60;
-  if(!Clock.running){ Clock.secs = S.mins*60; }
-  syncRoundEndUI(); save();
-}
 function setNewLevel(l){
   newLevel = l;
   ['adv','int','beg'].forEach(k=>{
@@ -10395,30 +10123,6 @@ function dropFromSession(id){
   return 'left';
 }
 
-function confirmClearRoster(){
-  openSheet(`<h3>Clear the player list?</h3>
-    <p class="sub">All ${S.order.length} names go. Nothing else is affected.</p>
-    <button class="btn btn-risk" onclick="doClearRoster()">Clear them</button>
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
-}
-function doClearRoster(){
-  S.players = {}; S.order = []; S.levelsTouched = false;
-  closeSheet(); renderAll(); renderLadder(); save();
-  toast('Player list cleared.');
-}
-function loadDemo(){
-  const demo = [
-    ['Kes','adv'],  ['Aly','adv'],     ['Vox','adv'],   ['Leonard','adv'],
-    ['Mika','int'], ['Nicole','int'],  ['Charles','int'],['Zen','int'],
-    ['Kat','int'],  ['Camille','int'],
-    ['Andrei','beg'],['Sol','beg'],    ['Bryan','beg'], ['Ellize','beg'],
-    ['CJ','beg'],   ['Flor','beg']
-  ];
-  const before = S.order.length;
-  demo.forEach(([n,l]) => { if(!S.order.some(id => P(id).name === n)) addPlayer(n, l); });
-  const added = S.order.length - before;
-  toast(added + ' sample player' + (added===1?'':'s') + ' ready.');
-}
 
 /* The search is not always what emptied the list — a level or side chip can
    do it too, and blaming a search nobody typed reads as a fault. */
@@ -13647,11 +13351,6 @@ function ensurePools(){
   S.pool.length = S.courts.length;
   S.pool = S.pool.map(p => (p||[]).filter(id => P(id) && !P(id).out));
 }
-function detach(id){
-  S.queue = S.queue.filter(x => x !== id);
-  ensurePools();
-  S.pool = S.pool.map(p => p.filter(x => x !== id));
-}
 function bankGame(i, w, l, perCourt){
   const sc = S.courts[i] ? S.courts[i].sc : null;
   const ws = (sc && sc.w !== null) ? sc.w : null;
@@ -13670,13 +13369,6 @@ function bankGame(i, w, l, perCourt){
     c: i, court: !!perCourt, king,
     win: w.map(nm), lose: l.map(nm), winIds: w.slice(), loseIds: l.slice(), ws, ls
   });
-}
-function levelCandidates(lv){
-  const proj = projectedGames();
-  const q = S.queue.filter(id => P(id) && !P(id).out);
-  const mine = q.filter(id => P(id).level === lv).sort((a,b)=> proj(a)-proj(b));
-  const rest = q.filter(id => P(id).level !== lv).sort((a,b)=> proj(a)-proj(b));
-  return [...mine, ...rest];
 }
 /* Pure: works out exactly how a court refills, without touching state.
    finishCourt commits it; the court card previews it.                */
@@ -13758,11 +13450,6 @@ function finishCourt(i){
     else P(id).sat = 0;
   });
 }
-function flushPools(){
-  ensurePools();
-  S.pool.forEach(p => S.queue.push(...p));
-  S.pool = S.courts.map(()=>[]);
-}
 function armPending(){
   if(!rolling()) return;
   let any = false;
@@ -13836,12 +13523,6 @@ const ARROW_SVG = `<svg class="nc-arrow" viewBox="0 0 24 24" aria-hidden="true">
   <path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4"
     stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-function setScoring(on){
-  S.scores = !!on;
-  if(!S.scores) S.courts.forEach(c => { if(c.win !== null && !c.sc) c.sc = { w:null, l:null }; });
-  else S.courts.forEach((c,i)=> { if(c.win !== null && !c.sc) Spin.cancel(i); });
-  syncRoundEndUI(); renderAll(); TV.paint(); armPending(); save();
-}
 function winTarget(c){ return (typeof c.ws === 'number') ? c.ws : S.target; }
 function nudgeWin(i, d){
   const c = S.courts[i];
@@ -16442,12 +16123,6 @@ const Player = {
 
 /* Said once, in one place, so a thing that is not built yet says so in the
    same words wherever it is reached from. */
-function comingSoon(what){
-  openSheet(`<h3>${esc(what)} — coming soon</h3>
-    <p class="sub">Not built yet. It is on the list, and this is where it will be
-      when it is.</p>
-    <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
-}
 
 /* ── the plus ──────────────────────────────────────────────────────────
    Starting a night is something you do, not somewhere you go, so it does not
@@ -17377,10 +17052,6 @@ const AuthUI = {
 };
 
 /* Anything that needs an account routes through here. */
-function needAccount(then){
-  if(Auth.signedIn()){ then(); return; }
-  AuthUI.open(then, 'in');
-}
 
 /* ── PROFILE AND DIGITAL ID ────────────────────────────
    The QR is not decoration \u2014 it encodes this person's member id, so
@@ -17859,20 +17530,6 @@ function warsReorder(auto){
 }
 
 /* The organizer's own call, for when a round has gone on long enough. */
-function warsReorderSheet(){
-  if(S.mode !== 'wars' || !S.tiers){ toast('Only in Court Wars.'); return; }
-  const parts = S.tiers.map((t, i) => ordinal(i) + ' ' + Wars.progress(i).at + '/' + Wars.progress(i).of);
-  openSheet(`<h3>Reorder the courts now?</h3>
-    <p class="sub">Each court is part way through its list — ${esc(parts.join(' · '))}. Reordering
-      early uses the results so far, and every court starts a fresh list.</p>
-    <div class="warn-box">
-      <b>Nobody loses their record.</b>
-      <span>Wins, crowns and the ladder all carry on. It is only which court each player is on
-        that changes.</span>
-    </div>
-    <button class="btn btn-go" onclick="closeSheet();warsReorder(false)">Reorder now</button>
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep playing</button>`);
-}
 
 function seedClimb(ids, n){
   S.tiers = Climb.start(ids.slice(), n);
@@ -18837,74 +18494,6 @@ function tierChip(points){
    so a first-timer was shown a history that was not theirs. The night by
    night panel is the honest version: it is built from your own result rows,
    with where you finished on each. */
-function mySessionsHTML(){
-  const up = (Feed.up || []).filter(r => r.mine);
-  /* Nothing booked used to print "Nothing booked yet" under a heading of its
-     own, which is a heading and a sentence spent saying there is nothing to
-     say. The section is simply not there. */
-  if(!up.length) return '';
-  const row = r =>{
-    const when = Feed.ms(r.starts_at);
-    const d = when ? new Date(when) : null;
-    return `<button class="pf-up" onclick="location.href='?s=${encodeURIComponent(r.code)}'">
-      <span class="pf-when">${d
-        ? `<i>${MONTH_SHORT[d.getMonth()]}</i><b>${d.getDate()}</b>`
-        : `<i>TBC</i><b>—</b>`}</span>
-      <span class="up-tx"><b>${esc(r.title || 'Open play')}</b>
-        <span>${d ? esc(DAYS[d.getDay()] + ' · ' + d.getDate() + ' '
-          + MONTHS[d.getMonth()]) : 'No date yet'}</span></span>
-      <span class="pf-going">Going</span>
-    </button>`;
-  };
-  return `<div class="sec">
-    <div class="sec-h"><b>Upcoming</b></div>
-    <div class="sec-c">${up.map(row).join('')}</div>
-  </div>`;
-}
-function rankWord(place, total){
-  if(!place || !total) return '';
-  if(place === 1) return 'Top of the club ladder.';
-  const pct = Math.ceil(place / total * 100);
-  if(place <= 3) return 'Third or better in the club.';
-  if(pct <= 10) return 'In the top tenth of the club.';
-  if(pct <= 25) return 'In the top quarter of the club.';
-  if(pct <= 50) return 'In the top half of the club.';
-  return 'Keep turning up — every night counts.';
-}
-function tierCardHTML(points, nights, unlocked){
-  if(!unlocked){
-    return `<div class="sec">
-      <div class="sec-h"><b>Rank progress</b></div>
-      <div class="sec-c pad tier locked">
-        <div class="tier-lock">${icon('lock')}</div>
-        <p class="hint tight" style="margin:0">Reach a tier and the club has something for you —
-          ask whoever runs it what is on offer this season. Earn a point for every session you
-          play, more for finishing near the top, and climb from Bronze to Legend.</p>
-        <p class="tier-gate">Become an official member to unlock</p>
-      </div></div>`;
-  }
-  const t = tierFor(points), n = nextTier(points);
-  const from = t.at, to = n ? n.at : t.at;
-  const pct = n ? Math.max(3, Math.round((points - from) / (to - from) * 100)) : 100;
-  return `<div class="sec">
-    <div class="sec-h"><b>Rank progress</b><i>${points} pt${points === 1 ? '' : 's'}</i></div>
-    <div class="sec-c pf-rank">
-      <div class="rk-top">
-        <span class="rk-mark" style="color:${t.hue}">${tierIcon(t.name, 26)}</span>
-        <span class="rk-who"><b>${esc(t.name)}</b>
-          <span>${n ? '<b style="font-size:13px;letter-spacing:0;text-transform:none">'
-            + (to - points) + ' more</b> to reach ' + esc(n.name)
-            : 'Top tier. Nothing left to climb.'}</span></span>
-        ${n ? `<span class="rk-next" style="color:${n.hue}">${esc(n.name)}</span>` : ''}
-      </div>
-      <div class="tier-bar" style="margin:12px 0 0"><i style="width:${pct}%;background:${t.hue}"></i></div>
-      <p class="hint tight" style="margin:9px 0 0">${nights
-        ? nights + ' session' + (nights === 1 ? '' : 's')
-          + ' played · 1 point each, +1 for a top-ten finish, +1 for a top three'
-        : (t.note || '')}</p>
-    </div>
-  </div>`;
-}
 
 /* One flat list of eight was the wrong shape: club business, an organizer's
    tools and your own account all sat at the same level, so every one of them
@@ -18914,13 +18503,6 @@ function tierCardHTML(points, nights, unlocked){
    is the only group everybody has. Then organizing, which most people never
    see at all. Then the app itself, last, because changing the theme and
    signing out are the two things you are least often looking for. */
-function meSection(title, rows){
-  if(!rows.length) return '';
-  return `<div class="sec">
-    ${title ? `<div class="sec-h"><b>${title}</b></div>` : ''}
-    <div class="sec-c"><div class="me-list">${rows.join('')}</div></div>
-  </div>`;
-}
 /* `mark` is what goes on the left. An icon for the things that are a screen,
    a small square for an organizer's tools — which are a short list of jobs
    rather than places, and read better as a list than as six more glyphs —
@@ -18938,72 +18520,6 @@ function meRow(fn, label, ic, note, mark){
 function meMono(name){
   return String(name || '?').trim().split(/\s+/).slice(0, 2)
     .map(w => w.slice(0, 1).toUpperCase()).join('') || '?';
-}
-function meTools(){
-  /* Activity is what you have done; Settings is what you can change. The
-     design groups the screen that way, and the old one did not — "Account &
-     app" held the club roster, the theme and signing out in a single list. */
-  const mine = [
-    meRow("go('board')", 'Your record', 'trophy', 'Games, nights and where you stand'),
-    meRow('shareMyId()', 'Your player ID', 'open', 'Show it at the door')
-  ];
-  const app2 = [
-    meRow('accountSheet()', 'Account', 'gear', 'Your details and your password'),
-    meRow('prefsSheet()', 'Notifications', 'bell', 'This phone: alerts, look, which club')
-  ];
-  /* "The club" was a section holding one row that went to the roster. Which
-     clubs somebody is actually in is the more useful answer, and it is the
-     only place the app ever said it — the roster is reachable from each club's
-     own page, where it belongs. Each row goes to that club, which is also
-     where an owner assigns its organizers. */
-  /* The clubs section has gone from this screen. The design has no list of
-     them here — a club is reached from a session, from the board, or from
-     Club settings — and a profile that opened with a membership list was
-     answering a question nobody asks of their own page. The load stays,
-     because Club settings counts them. */
-  if(Groups.list === null && Live.ready()){
-    Groups.load().then(()=>{ if(currentScreen() === 'me') paintMe(); });
-  }
-
-  const org = [];
-  /* Club branding has gone from here. It belongs to a club, and a club is a
-     group — so it is edited where the group is, next to its name and its
-     picture, rather than on the profile of whoever happens to be an
-     organizer. Same argument for the season: a season is the group's, not
-     yours, and it now lives on the group's own page. */
-  if(canOrganize()){
-    if(Auth.isOrganizer && Auth.isOrganizer())
-      org.push(meRow('accessSheet()', 'Role management', 'key',
-                     'Owners, organizers, players', 'sq'));
-  }
-  if(Auth.isOwner()){
-    org.push(meRow("go('roles')", 'Player management', 'members',
-                   'Ratings, aliases, removing somebody', 'sq'));
-    org.push(meRow("go('audit')", 'Audit log', 'audit', '', 'sq'));
-  }
-
-  /* Day and night is a state this phone is in, not a screen to go to, so it
-     is a switch. It was a row with an arrow on the end, which promised a
-     page behind it that has never existed. */
-  const night = document.documentElement.dataset.theme === 'night';
-  const app = [`<button class="me-item me-tog${night ? ' on' : ''}" onclick="toggleTheme()">
-      <span><b>Switch to night</b></span><span class="me-sw"></span></button>`];
-  /* No arrow on Sign out. An arrow says there is a screen behind this, and
-     what is behind it is a question and then no account. */
-  if(Auth.signedIn())
-    app.push(`<button class="me-item warn" onclick="AuthUI.confirmOut()">
-      <span><b>Sign out</b></span></button>`);
-
-  const nClub = (Groups.list || []).filter(g => g.mine).length;
-  const settings = [
-    meRow("go('groups')", 'Club settings', 'members',
-      Groups.list === null ? 'Reading\u2026'
-        : (nClub || 'No') + ' club' + (nClub === 1 ? '' : 's'))
-  ].concat(app2, org);
-
-  return meSection('Activity', mine)
-       + meSection('Settings', settings)
-       + meSection('', app);
 }
 
 /* Two things, one door. Editing your details and changing your password were
@@ -19432,9 +18948,6 @@ function shortDay(ms){
 
 /* A row is left out rather than printed empty. A profile that lists
    "Phone —" for everybody who has not given one is a page of blanks. */
-function meFact(label, value){
-  return value ? '<div><dt>' + label + '</dt><dd>' + value + '</dd></div>' : '';
-}
 
 /* The ID card, out to whatever the phone does with a link — so somebody who
    has not got the app in front of them can still be added by the organizer
@@ -19472,19 +18985,6 @@ function shareMyId(){
 /* A session's link, out to whatever the phone does with one. View.share()
    is the same errand but it reads View.code, so it only works from the page
    you are already watching — and the card on Home is not that page. */
-async function shareSession(code, name){
-  if(!code) return;
-  const url = Live.url(code);
-  const ttl = name || 'Open play';
-  if(navigator.share){
-    try{ await navigator.share({ title: ttl, text: 'Playing at ' + ttl, url }); return; }
-    catch(e){ if(e && e.name === 'AbortError') return; }
-  }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    try{ await navigator.clipboard.writeText(url); toast('Link copied.'); return; }catch(e){}
-  }
-  toast(legacyCopy(url) ? 'Link copied.' : url);
-}
 
 /* Kept because other things link to it. */
 function profileSheet(){ closeSheet(); go('me'); }
@@ -20013,11 +19513,6 @@ function syncDocks(){
 /* Play means different things to different people, and asking which is
    worse than working it out: an organizer with a night running goes to it,
    an organizer without one goes to set one up, and everybody else joins. */
-function tabPlay(){
-  if(S.active){ go('play'); return; }
-  if(canOrganize()){ startOrganizing(); return; }
-  findSession();
-}
 /* ══════════════════════════════════════════════════════
    THE SHELL
    A bar with a menu behind it rather than a row of tabs.
@@ -20284,10 +19779,6 @@ function doFindSession(){
   location.href = location.pathname + '?s=' + encodeURIComponent(v);
 }
 
-function goOrganize(){
-  history.pushState(null, '', '?organize');
-  startOrganizing();
-}
 /* A clean setup screen, keeping nothing from the night before. */
 function freshSession(){
   const keepClub = CONFIG.club;
@@ -20931,54 +20422,6 @@ function paintHome(){
    entry. Yours first: a session you have joined is the one you are counting
    down to, and only if you are in none does the soonest one on the board take
    the slot — where the button says Join rather than View. */
-function hmxNext(){
-  const up = (Feed.up || []).map(r => Object.assign({}, r, { when: Feed.ms(r.starts_at) }))
-    .filter(r => r.when && r.when > Date.now() && !r.ended)
-    .sort((a, b) => a.when - b.when);
-  if(!up.length) return '';
-  const r = up.find(x => x.mine) || up[0];
-  const v = r.venue ? parseVenue(r.venue) : null;
-  const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
-  const full = r.cap > 0 && (r.joined || 0) >= r.cap;
-
-  /* Faces off the club roster rather than off the session: the roster is
-     already on the device and the session's list of who is in is not, so this
-     costs nothing and is honest about being a sample — it is `+n` for the
-     rest, not a claim to be everybody. */
-  const faces = (Club.list || []).slice(0, 3).map(x =>
-    avatar(x.alias || x.name, x.photo)).join('');
-  const rest = Math.max(0, (r.joined || 0) - 3);
-  const go = `openSession('${esc(r.code)}')`;
-
-  return `<section class="hmx-next" id="hm-next" data-at="${r.when}">
-    <div class="hmx-shot${r.cover ? ' shot' : ''}"${
-      r.cover ? ` style="background-image:url('${esc(r.cover)}')"` : ''}>
-      <span class="hmx-ring"></span>
-      ${r.cover ? '' : `<span class="hmx-wm"><img src="/sos-mark.png" alt=""></span>`}
-      <span class="hmx-cd" id="hm-cd">${hmxCd(r.when)}</span>
-      ${r.closed ? `<span class="hmx-lock">${icon('lock')} Invite only</span>` : ''}
-      <h2 class="hmx-title">${esc(r.title || 'Open play')}</h2>
-    </div>
-    <div class="hmx-body">
-      <p class="hmx-meta">${HMX_IC.clock}<span>${esc(clockText(r.when))}</span></p>
-      <p class="hmx-meta">${HMX_IC.pin}<span>${esc(venueLabel(r) || 'Venue to be set')}</span></p>
-      <div class="hmx-who">
-        <span class="sos-stack">${faces}${rest
-          ? `<span class="av hmx-more">+${rest}</span>` : ''}</span>
-        <span class="hmx-ct">${r.joined || 0} going${left !== null
-          ? ' · ' + left + ' place' + (left === 1 ? '' : 's') + ' left' : ''}</span>
-      </div>
-      <div class="hmx-cta">
-        <button class="sos-btn sos-btn-go sos-btn-in" onclick="${go}">${
-          r.mine ? 'View session'
-            : r.closed ? 'Invite only'
-            : full ? 'Join the waiting list' : 'Join session'}</button>
-        ${v && v.url ? `<a class="hmx-map" href="${esc(v.url)}" target="_blank" rel="noopener"
-          aria-label="Open in Maps" title="Open in Maps">${HMX_IC.pin}</a>` : ''}
-      </div>
-    </div>
-  </section>`;
-}
 
 /* The inside of the countdown pill, split out because the tick rewrites
    exactly this and nothing else on the card — redrawing the whole thing every
@@ -21078,56 +20521,6 @@ function feedRetry(ev){
   });
 }
 
-function hmxComing(){
-  const rows = Feed.rows();
-  const chips = Feed.clubChips();
-  const filters = Feed.chips();
-
-  const row = r =>{
-    const t = r.when;
-    const left = r.cap > 0 ? Math.max(0, r.cap - (r.joined || 0)) : null;
-    const full = r.cap > 0 && (r.joined || 0) >= r.cap;
-    const d = t ? new Date(t) : null;
-    const go = `openSession('${esc(r.code)}')`;
-    /* One word for where this night stands with you, and being in it beats
-       everything else it could say. */
-    const state = r.live ? ['Playing now', 'live']
-      : r.mine ? ['Going', 'going']
-      : r.closed ? ['Invite only', 'dim']
-      : full ? ['Full', 'dim']
-      : left !== null ? [left + ' left', 'dim']
-      : ['Open', 'dim'];
-    return `<button class="sos-row sos-row-2 sos-tap hmx-row" onclick="${go}">
-      <span class="hmx-date">${d
-        ? `<i>${esc(MONTH_SHORT[d.getMonth()])}</i><b>${d.getDate()}</b>`
-        : `<i>TBC</i>`}</span>
-      <span class="sos-row-v">
-        <span class="sos-t-row-b hmx-name">${esc(r.title || 'Open play')}</span>
-        <span class="sos-t-2nd">${t ? esc(clockText(t)) : 'Date to be set'}${
-          venueLabel(r) ? ' · ' + esc(venueLabel(r)) : ''}</span>
-      </span>
-      <span class="hmx-state ${state[1]}">${esc(state[0])}</span>
-      ${HMX_IC.chev}
-    </button>
-    <span class="sos-sep hmx-sep"></span>`;
-  };
-
-  return `<h2 class="sos-t-sec hmx-sec">What’s on</h2>
-    ${chips ? `<div class="hmx-chips">${chips}</div>` : ''}
-    ${filters ? `<div class="hmx-chips hmx-filters">${filters}</div>` : ''}
-    ${rows.length
-      ? `<div class="sos-list">${rows.map(row).join('')}</div>`
-      : Feed.up === null
-        ? `<div class="sos-list"><div class="sos-row hmx-empty">Looking for what’s on…</div></div>`
-        : Feed.failed
-        ? feedFailed('what’s on')
-        : `<div class="sos-list"><div class="sos-row hmx-empty">${
-            Feed.filter === 'all' && !Feed.group
-              ? (canOrganize()
-                 ? 'Nothing listed yet. Set one up and it will show here for all clubs.'
-                 : 'Nothing listed yet. Your organizer may still be sending links directly.')
-              : 'Nothing matches that filter.'}</div></div>`}`;
-}
 
 /* What has already been played. Three, because this is the bottom of a page
    about what is coming — the whole list is a tab of its own.
@@ -21162,46 +20555,12 @@ function wonLine(r){
   return ' · ' + (Number(r.won) || 0) + ' of ' + g + ' won';
 }
 
-function hmxPlayed(){
-  const past = (Feed.past || []);
-  if(!past.length) return '';
-  return `<div class="hmx-sh">
-      <h2 class="sos-t-sec">Already played</h2>
-      <button class="hmx-all" onclick="Games.tab='done';go('games')">See all</button>
-    </div>
-    <div class="sos-list">${past.slice(0, 3).map(r =>{
-      const t = Feed.ms(r.played_at);
-      return `<button class="sos-row sos-row-2 sos-tap" onclick="pastSession('${esc(r.code || '')}')">
-        <span class="hmx-badge${r.cover ? ' shot' : ''}"${r.cover
-          ? ` style="background-image:url('${esc(r.cover)}')"` : ''}>${
-          r.cover ? '' : (placeBadge(r) || HMX_IC.court)}</span>
-        <span class="sos-row-v">
-          <span class="sos-t-row-b hmx-name">${esc(r.title || 'Open play')}</span>
-          <span class="sos-t-2nd">${t ? esc(shortDay(t)) : ''} · ${r.players} played${
-            placeLine(r)}${wonLine(r)}${r.owing ? ' · ' + r.owing + ' still to pay' : ''}</span>
-        </span>
-        ${HMX_IC.chev}
-      </button>
-      <span class="sos-sep sos-sep-36"></span>`;
-    }).join('')}</div>`;
-}
 
 /* Typing a code in is a real thing people do — somebody reads you five
    letters across a car park — it just is not the first thing anybody comes to
    Home for, so it sits under the two lists rather than above them. The design
    has no place for it at all; dropping it would cost a way into a night for
    the sake of a cleaner drawing. */
-function hmxCode(){
-  return `<div class="hmx-join">
-    <div class="sos-search hmx-code">
-      <input type="text" id="home-code" placeholder="Got a code? Type it here"
-        autocomplete="off" aria-label="Session code"
-        onkeydown="if(event.key==='Enter')joinByCode()">
-    </div>
-    <button class="hmx-joinb" onclick="joinByCode()">Join</button>
-  </div>
-  <p class="fx-err" id="code-err" hidden></p>`;
-}
 /* Somebody who has signed up and joined nothing sees a home page of other
    people's nights with no way of telling which of them are anything to do
    with them. Groups are how the app is organised and nowhere says so at the
@@ -23436,77 +22795,6 @@ function pastSession(code, from, toResults){
   Past.open(code, from, toResults);
 }
 
-async function pastSessionSheet(code){
-  if(!code) return;
-  openSheet(`<h3>Session ended</h3><div class="ld-block"><span class="ld-ball"></span><p>Reading the night\u2026</p></div>`);
-  let rows = [];
-  try{
-    /* removed_at has to be asked for by hand here. Every sideout_* function
-       filters it for you, but this reads the table straight and so gets the
-       put-aside rows too — a night that was reset, or one banked twice by a
-       double tap, came back showing every copy. */
-    rows = await Live.api('results?club=eq.' + encodeURIComponent(CONFIG.club || 'sideout')
-      + '&code=eq.' + encodeURIComponent(code)
-      + '&removed_at=is.null'
-      + '&select=name,wins,games,pf,pa,crowns,played_at,title&order=wins.desc');
-    /* Wins alone is what the query can express; the table is then put in
-       the night's own order so this sheet, the recap and the story card
-       all agree on who came second. */
-    rows = (rows || []).slice().sort(nightOrder);
-  }catch(e){
-    openSheet(`<h3>Session ended</h3>
-      <p class="sub">Could not read that night. ${esc(e.detail || e.message || '')}</p>
-      <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
-    return;
-  }
-  if(!rows || !rows.length){
-    openSheet(`<h3>Session ended</h3>
-      <p class="sub">Nothing was recorded for that night.</p>
-      <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
-    return;
-  }
-  const title = rows[0].title || 'Open play';
-  const when = rows[0].played_at ? new Date(rows[0].played_at).getTime() : null;
-  const games = Math.round(rows.reduce((a, r) => a + (r.games || 0), 0) / 4);
-  const mins = S.mins || 8;
-  const rough = Math.max(1, Math.round(games * mins / Math.max(1, S.nCourts || 2)));
-  const body = rows.map((r, i) =>{
-    const rate = r.games ? Math.round(r.wins / r.games * 100) : 0;
-    const diff = (r.pf || 0) - (r.pa || 0);
-    const mine = Auth.me && String(r.name || '').toLowerCase()
-      === String(Auth.me.alias || Auth.me.name || '').toLowerCase();
-    return `<div class="lad-row${mine ? ' you' : ''}">
-      <span class="lad-pos">${i + 1}</span>
-      <span class="lad-n"><span class="nmn">${esc(r.name)}${mine ? ' <b class="you-tag">You</b>' : ''}</span>
-        <em>${r.games} game${r.games === 1 ? '' : 's'}${r.crowns ? ' \u00b7 ' + icon('crown') + ' ' + r.crowns : ''}</em></span>
-      <span class="lad-w">${r.wins}<i>won</i></span>
-      <span class="lad-r">${rate}%<i>${diff >= 0 ? '+' : ''}${diff}</i></span>
-    </div>`;
-  }).join('');
-  openSheet(`<h3>${esc(title)}</h3>
-    <p class="sub">${when ? esc(longDate(when)) : ''}</p>
-    <div class="pstats">
-      <div class="ps"><b>${rows.length}</b><i>played</i></div>
-      <div class="ps"><b>${games}</b><i>games</i></div>
-      <div class="ps"><b>${rough}m</b><i>about</i></div>
-    </div>
-    <div class="lad">${body}</div>
-    <button class="btn btn-go" style="margin-top:10px"
-      onclick="location.href='?r=${encodeURIComponent(code)}'">${
-        navIcon('eye')}View the full night</button>
-    <button class="btn btn-quiet" style="margin-top:8px"
-      onclick="Recap.cardMenu('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
-        navIcon('instagram')}Story card for Instagram</button>
-    <button class="btn btn-quiet" style="margin-top:8px"
-      onclick="Recap.share('${esc(code)}','${esc(title.replace(/'/g,''))}')">${
-        navIcon('share')}Share this night</button>
-    ${canOrganize() ? `<button class="btn btn-quiet" style="margin-top:8px"
-        onclick="Takings.open('${esc(code)}','${esc(title.replace(/'/g,''))}')">${icon('cash')} Payment Record</button>` : ''}
-    ${canOrganize() ? `<button class="btn btn-quiet sx-undo" style="margin-top:8px"
-        onclick="resetPastSession('${esc(code)}','${esc(title.replace(/'/g,''))}',${rows.length})">
-        \u21BA Reset \u2014 ended by mistake</button>` : ''}
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
-}
 
 /* A night already played can still get its face back. The session it
    came from may be long gone, so this writes straight to the kept
@@ -23967,134 +23255,16 @@ async function doDeleteSession(code){
    because that has everybody who joined. The results table only
    ever held the people who actually got a game, so it is the
    fallback and not the first choice.                              */
-function resetPastSession(code, title, players){
-  if(!code) return;
-  const n = Number(players) || 0;
-  openSheet(`<h3>Reset this session?</h3>
-    <p class="sub"><b>${esc(title || code)}</b> opens again with every score back to nought.
-      ${n ? `The <b>${n} player${n === 1 ? '' : 's'}</b> stay on the list` : 'Everyone who joined stays on the list'} —
-      it is the games that go.</p>
-    <div class="warn-box">
-      <b>The night's record is deleted.</b>
-      <span>Results, standings and any playoff for this session come off the club ladder for good.
-        Player ratings already moved by it are not put back.</span>
-    </div>
-    <div class="field"><span class="label">Type <b>${esc(code)}</b> to confirm</span>
-      <input type="text" id="rs-say" maxlength="12" autocomplete="off" autocapitalize="characters"
-        spellcheck="false" placeholder="${esc(code)}" oninput="resetTyped('${esc(code)}')"></div>
-    <button class="btn btn-risk" id="rs-go" disabled
-      onclick="doResetPastSession('${esc(code)}')">Reset it</button>
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Leave it alone</button>`);
-}
 
 /* Typing the code is not a password — anyone reading the sheet can see it.
    It is there to make the hand stop and the eye read which night this is.
    Somebody who means it types five characters; somebody who caught the
    wrong row finds out while everything is still there. */
-function resetTyped(code){
-  const el = document.getElementById('rs-say');
-  const go = document.getElementById('rs-go');
-  if(!el || !go) return;
-  go.disabled = String(el.value || '').trim().toUpperCase() !== String(code || '').toUpperCase();
-}
 
 /* Everything a player carries that belongs to one night rather than
    to the person. Kept in one place so a reset and a fresh session
    start a player off identically. */
-function zeroPlayer(p){
-  p.w = 0; p.l = 0; p.g = 0; p.pf = 0; p.pa = 0;
-  p.crowns = 0; p.streak = 0; p.sat = 0; p.out = false;
-  return p;
-}
 
-async function doResetPastSession(code){
-  openSheet(`<h3>Resetting\u2026</h3>
-    <div class="ld-block"><span class="ld-ball"></span><p>Putting the night back.</p></div>`);
-
-  /* Prefer the saved session: it still holds the full roster, the
-     title, the venue and the settings. */
-  let row = null;
-  try{ row = await Live.takeOver(code); }catch(e){}
-
-  let state = row && row.state ? row.state : null;
-  const pin = row && row.pin ? row.pin : null;
-
-  if(!state){
-    /* No session left on the server — rebuild what we can from the
-       banked rows. Anybody who joined but never got on court was
-       never written there, so say so rather than quietly losing
-       them. */
-    let rows = [];
-    try{
-      /* Put-aside rows excluded, same as the sheet above. Rebuilding a
-         roster from them would seat every player once per time the night
-         was banked. */
-      rows = await Live.api('results?club=eq.' + encodeURIComponent(CONFIG.club || 'sideout')
-        + '&code=eq.' + encodeURIComponent(code)
-        + '&removed_at=is.null'
-        + '&select=name,member,title') || [];
-    }catch(e){}
-    if(!rows.length){
-      openSheet(`<h3>Could not reset it</h3>
-        <p class="sub">Nothing is left of that session to bring back — neither the session itself
-          nor the players it recorded.</p>
-        <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
-      return;
-    }
-    state = blank();
-    state.title = rows[0].title || '';
-    rows.forEach(r =>{
-      const id = uid();
-      const m = r.member ? Club.find(r.member) : null;
-      state.players[id] = zeroPlayer({
-        name: r.name, mid: r.member || null,
-        dupr: m && m.dupr != null ? m.dupr : null,
-        photo: m && m.photo ? m.photo : null,
-        level: 'int'
-      });
-      state.order.push(id);
-    });
-  }
-
-  /* Wipe the night off the state, whichever way it arrived. Player
-     records are zeroed rather than the list rebuilt, so photos,
-     ratings, levels and fixed pairs all survive. */
-  Object.values(state.players || {}).forEach(zeroPlayer);
-  state.courts = []; state.queue = []; state.pool = []; state.bracket = null;
-  state.hist = { p:{}, o:{} };
-  state.round = 0; state.games = 0; state.log = [];
-  state.active = false; state.started = null; state.snap = null;
-  state.next = null; state.planRound = -1; state.roundStart = null;
-  state.ended = false; state.endedAt = null;
-  /* Reopening a night that was called off makes it a night again, so
-     the notice goes with it. Otherwise the session comes back up
-     still telling everyone watching that it is not going ahead. */
-  state.cancelled = false; state.cancelNote = '';
-
-  /* Off the ladder before it comes back on screen, so nobody sees a
-     session that is live and banked at the same time. */
-  let stripped = true;
-  try{ await Live.unarchive(code); }catch(e){ stripped = false; }
-
-  closeSheet();
-  Live.adopt(state, code, pin || state.pin || null);
-  S.ended = false; S.endedAt = null;
-  try{ await Live.saveAll(); }catch(e){}
-
-  Feed.up = null; Feed.past = null;
-  await Feed.load(true);
-  paintHome();
-  renderAll(); renderLadder(); TV.paint(); syncRoundEndUI(); save();
-  /* The night is loaded and its scores are back at nought, so the overview
-     is what somebody wants to see — the list, and the button that starts it
-     again. 'setup' no longer answers. */
-  go('session');
-
-  const heads = Object.keys(S.players || {}).length;
-  toast(stripped
-    ? `Session reset \u2014 ${heads} player${heads === 1 ? '' : 's'} still here, scores at nought.`
-    : 'Session reset here, but it could not be taken off the club ladder.');
-}
 
 /* Everybody in the club, with the three things people actually look
    for: who they are, how they rate, and how far up the tiers they
@@ -24574,26 +23744,6 @@ const Members = {
 
 /* A quiet strip, not a feature. Faces and dates, this month only, and
    never a year or an age \u2014 enough to remember to say something. */
-function birthdayStrip(){
-  const list = Birthday.thisMonth();
-  if(!list.length) return '';
-  const now = new Date();
-  return `<div class="bd-strip">
-    <div class="bd-head">
-      <b>Birthdays this month</b>
-      ${list.length > 1 ? `<i>${list.length}</i>` : ''}
-    </div>
-    <div class="bd-list">
-      ${list.map(m =>{
-        const shown = m.alias || m.name;
-        return `<span class="bd-one${m.today ? ' now' : ''}" title="${esc(shown)}">
-          ${avatar(shown, m.photo, 'sm')}
-          <span class="bd-n">${esc(String(shown).split(/\s+/)[0])}</span>
-          <span class="bd-d">${m.today ? 'Today' : esc(String(m.birth_day))}</span>
-        </span>`; }).join('')}
-    </div>
-  </div>`;
-}
 
 /* Somebody who followed a link into a session had no way out of it
    — the watching page is its own world with no menu. Drop the code
@@ -24605,30 +23755,6 @@ function leaveWatching(){
 
 /* Two marks for the two things worth promising, drawn rather than
    spelled out so the row stays short. */
-function factIcon(kind){
-  const a = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
-  if(kind === 'members'){
-    /* two people: the club itself */
-    return `<svg class="lp-ico" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M9 11a3.4 3.4 0 1 0 0-6.8A3.4 3.4 0 0 0 9 11" ${a}/>
-      <path d="M2.5 20v-1.4A4.6 4.6 0 0 1 7.1 14h3.8a4.6 4.6 0 0 1 4.6 4.6V20" ${a}/>
-      <path d="M16.5 4.6a3.4 3.4 0 0 1 0 6.6M18 14.2a4.6 4.6 0 0 1 3.5 4.4V20" ${a}/></svg>`;
-  }
-  if(kind === 'formats'){
-    /* a court divided different ways \u2014 the formats are ways of
-       carving up the same court, and the old stacked-cards mark read
-       as a copy button */
-    return `<svg class="lp-ico" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="2.5" y="4.5" width="19" height="15" rx="2" ${a}/>
-      <path d="M12 4.5v15" ${a}/>
-      <path d="M2.5 12h9" ${a}/>
-      <path d="M16.5 8.5h5M16.5 15.5h5" ${a}/></svg>`;
-  }
-  /* a lightbulb: the app works out who plays whom */
-  return `<svg class="lp-ico" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M9.2 17.5a6 6 0 1 1 5.6 0" ${a}/>
-    <path d="M9.4 17.5h5.2M10.2 20.5h3.6" ${a}/></svg>`;
-}
 
 /* The club's own size, read live. Signed out or offline it simply
    does not claim a number rather than inventing one. */
@@ -25534,19 +24660,6 @@ function loading(text){
   return `<div class="ld-block"><span class="ld-ball"></span><p>${esc(text || 'Just a moment\u2026')}</p></div>`;
 }
 
-function greetWord(){
-  const h = new Date().getHours();
-  return h < 12 ? 'Good morning' : (h < 17 ? 'Good afternoon' : 'Good evening');
-}
-function joinByCode(){
-  const el = document.getElementById('home-code');
-  const err = document.getElementById('code-err');
-  const v = (el && el.value || '').trim();
-  const bad = t =>{ if(err){ err.textContent = t; err.hidden = false; } };
-  if(err) err.hidden = true;
-  if(!v){ bad('Type the code first.'); return; }
-  location.href = location.pathname + '?s=' + encodeURIComponent(v.toUpperCase());
-}
 /* The club PIN is the bootstrap: it proves you are the person who
    set the club up, and from then on organizers can promote others. */
 /* Claiming an unclaimed club. No secret to type \u2014 either the club
@@ -25754,12 +24867,6 @@ function paintAccount(){
    Typing a name makes a guest, which is right for a one-off. But
    somebody who has played before already has a face, a rating and
    a record, and typing their name again throws all of it away.  */
-async function addFromClub(){
-  openSheet(`<h3>Add from the club</h3><p class="sub">Reading the roster\u2026</p>`);
-  if(!Club.list.length) await Club.load(true);
-  ClubPick.q = '';
-  ClubPick.paint();
-}
 const ClubPick = {
   q: '',
   list(){
@@ -25926,17 +25033,6 @@ function syncTour(){
 /* ── ASSIGNING POOLS ──
    Tap a name to move it to the next pool. Faster on a phone at the
    side of a court than dragging, and it cannot go wrong. */
-function poolSheet(){
-  const T = tourState();
-  if(S.order.length < 4){
-    openSheet(`<h3>Add some players first</h3>
-      <p class="sub">A tournament needs at least four.</p>
-      <button class="btn btn-quiet" onclick="closeSheet()">Close</button>`);
-    return;
-  }
-  if(!T.assign || Object.keys(T.assign).length === 0) autoPools();
-  paintPools();
-}
 function autoPools(){
   const T = tourState();
   /* snake the ratings across pools so no pool is stacked */
@@ -26140,80 +25236,7 @@ function tourToBracket(){
 
 /* Open on request, shut again once something has been chosen — leaving it
    hanging open is how the next scroll turns into another misclick. */
-function toggleFormats(open){
-  const btn = document.getElementById('fmt-now');
-  const list = document.getElementById('fmt-list');
-  if(!btn || !list) return;
-  const show = open === undefined ? list.hidden : !!open;
-  list.hidden = !show;
-  btn.setAttribute('aria-expanded', String(show));
-}
 
-function switchFormat(m){
-  toggleFormats(false);
-  if(m === S.mode) return;
-  if(!S.active){ setMode(m); return; }
-  const pending = S.courts.some(c => c.win !== null);
-  const body = `<h3>Switch to ${MODE_NAME[m]}?</h3>
-    <p class="sub">Everyone keeps their record and their crowns. The courts are redrawn for round ${S.round}${pending ? ' — the results you have already tapped in this round will be dropped.' : '.'}</p>
-    <button class="btn btn-go" onclick="applyFormat('${m}')">Switch now</button>
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Stay on ${MODE_NAME[S.mode]}</button>`;
-  openSheet(body);
-}
-function applyFormat(m){
-  invalidatePlan();
-  const n = S.courts.length;
-  S.mode = m;
-  /* Switching into Open play mid-night leaves whoever is mid-game where they
-     are and hands the rest back to the queue — it does not tear the courts
-     up, because somebody is playing on them. */
-  if(m === 'queue'){
-    const on = new Set(onCourtIds());
-    S.queue = activeIds().filter(id => !on.has(id));
-    /* Whoever is waiting, in the order they have been waiting, is the first
-       answer to "who is up next" — and it is the answer the organizer would
-       have typed in by hand. */
-    S.stacks = null;
-    Stacks.fill();
-    /* This used to return here, which skipped setMode, closeSheet, the
-       repaint, the save and the toast at the foot of this function — so
-       switching to Open play left the sheet open over a screen that had not
-       changed and a mode the rest of the app had not been told about. */
-  }
-  else if(m === 'levels'){ S.courtLevels = autoLevels(n); fillLevelCourts(); }
-  else if(m === 'kotc'){ seedByRecord(n); }
-  /* Court Wars deals from tiers, not from a shared plan. Switching into it
-     mid-session used to fall through to planMix, which handed out a random
-     mix and left S.tiers empty, so the next round had nothing to rebuild
-     from. Seeded on the night's form so far rather than shuffled — everyone
-     has a record by this point and it would be odd to ignore it. */
-  else if(m === 'river'){
-    const rows = activeIds().map(id =>{
-      const p = P(id);
-      return { id, g: p.g || 0, w: p.w || 0, pf: p.pf || 0, pa: p.pa || 0,
-               court: null, was: p.wasRank == null ? null : p.wasRank };
-    });
-    S.tiers = Climb.spread(Climb.rank(rows).map(r => r.id), n);
-    S.tierStats = {};
-    S.courts = new Array(n).fill(0).map(()=>({ teams: [[], []], win: null }));
-    fillClimb();
-  }
-  /* seeded on the night's form so far, then each pool draws its own list */
-  else if(m === 'wars'){
-    S.courts = new Array(n).fill(0).map(()=>({ teams: [[], []], win: null }));
-    S.tiers = Climb.spread(Wars.rank(activeIds()), n);
-    S.warPlan = S.tiers.map(pool => Wars.plan(pool));
-    S.warAt = S.tiers.map(()=> 0);
-    S.warDone = S.tiers.map(()=> false);
-    S.tierStats = {};
-    Wars.fill();
-  }
-  else if(m === 'mixed'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMixed(false))); }
-  else if(m === 'gauntlet'){ S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planGauntlet(false))); }
-  else { S.courts = new Array(n).fill(0).map(()=>({teams:[[],[]],win:null})); applyPlan(honourPairs(planMix(false))); }
-  setMode(m); closeSheet(); Clock.reset(); renderAll(); TV.paint(); save();
-  toast(MODE_NAME[m] + ' from here.');
-}
 /* A game the app never saw.
 
    Courts get played that the rotation did not deal. Two came early and had
@@ -26228,147 +25251,9 @@ function applyFormat(m){
    be scored, have its winner swapped or be undone afterwards like any
    other. It does not touch the courts: nobody is moved, no round turns,
    nothing is dealt. This is bookkeeping about a game already finished.  */
-const AddGame = {
-  slots: [null, null, null, null],
-  win: 0,
-  ws: null, ls: null,
-
-  open(){
-    this.slots = [null, null, null, null];
-    this.win = 0;
-    this.ws = null; this.ls = null;
-    this.paint();
-  },
-
-  tap(id){
-    const at = this.slots.indexOf(id);
-    if(at >= 0){ this.slots[at] = null; this.paint(); return; }
-    const free = this.slots.indexOf(null);
-    if(free < 0){ toast('All four spots are taken — tap one to clear it.'); return; }
-    this.slots[free] = id;
-    this.paint();
-  },
-  clear(k){ this.slots[k] = null; this.paint(); },
-  side(w){ this.win = w; this.paint(); },
-  score(which, v){
-    const n = v === '' ? null : Math.max(0, Math.min(99, parseInt(v, 10) || 0));
-    if(which === 'w') this.ws = n; else this.ls = n;
-  },
-
-  paint(){
-    const slot = (k, letter) =>{
-      const id = this.slots[k];
-      return `<button class="lu-slot${id ? ' set' : ''}" onclick="AddGame.clear(${k})"
-        title="${id ? 'Tap to clear' : 'Pick somebody below'}">
-        <i>${letter}</i><span>${id ? esc(nm(id)) : '—'}</span></button>`;
-    };
-    const chosen = this.slots.filter(Boolean);
-    const list = S.order.filter(id => P(id)).map(id =>{
-      const on = this.slots.indexOf(id) >= 0;
-      const p = P(id);
-      return `<button class="pick lu-p${on ? ' on' : ''}" onclick="AddGame.tap('${id}')">
-        <span class="glyph">${on ? '✓' : icon('profile')}</span>
-        <span><b>${esc(p.name)}</b><span>${p.w || 0}W · ${p.l || 0}L · ${p.g || 0} game${(p.g||0)===1?'':'s'}</span></span></button>`;
-    }).join('');
-
-    openSheet(`<h3>Add a game</h3>
-      <p class="sub">For a game that was played but never went through the app. It goes on
-        the record and the table; the courts are left exactly as they are.</p>
-      <div class="lu-slots">
-        ${slot(0,'A')}${slot(1,'B')}<span class="lu-v">v</span>${slot(2,'C')}${slot(3,'D')}
-      </div>
-      ${chosen.length === 4 ? `
-        <div class="label" style="margin:0 0 6px">Who won</div>
-        <div class="seg" style="margin-bottom:12px">
-          <button class="${this.win === 0 ? 'on' : ''}" onclick="AddGame.side(0)">${esc(nm(this.slots[0]))} &amp; ${esc(nm(this.slots[1]))}</button>
-          <button class="${this.win === 1 ? 'on' : ''}" onclick="AddGame.side(1)">${esc(nm(this.slots[2]))} &amp; ${esc(nm(this.slots[3]))}</button>
-        </div>
-        <div class="label" style="margin:0 0 6px">Score <span style="opacity:.6">— optional</span></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <input type="number" inputmode="numeric" min="0" max="99" placeholder="win"
-            value="${this.ws == null ? '' : this.ws}" oninput="AddGame.score('w',this.value)" style="flex:1;min-width:0">
-          <span style="color:var(--ink-3)">–</span>
-          <input type="number" inputmode="numeric" min="0" max="99" placeholder="lost"
-            value="${this.ls == null ? '' : this.ls}" oninput="AddGame.score('l',this.value)" style="flex:1;min-width:0">
-        </div>
-        <p class="hint tight">Leave both blank to record the win without a score.</p>` : ''}
-      ${list}
-      <button class="btn btn-go" style="margin-top:10px" ${chosen.length === 4 ? '' : 'disabled'}
-        onclick="AddGame.apply()">${chosen.length === 4 ? 'Add it to the record' : `Pick ${4 - chosen.length} more`}</button>
-      <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
-  },
-
-  apply(){
-    const four = this.slots.filter(Boolean);
-    if(four.length !== 4){ toast('Pick all four first.'); return; }
-    /* Both or neither. One number on its own says nothing and would put a
-       points difference on the table built from a score nobody entered. */
-    const scored = this.ws != null && this.ls != null;
-    const ws = scored ? this.ws : null, ls = scored ? this.ls : null;
-    if(scored && ws === ls){ toast('A game cannot be drawn — check the score.'); return; }
-
-    const w = this.win === 0 ? [four[0], four[1]] : [four[2], four[3]];
-    const l = this.win === 0 ? [four[2], four[3]] : [four[0], four[1]];
-
-    w.forEach(id =>{ const p = P(id); if(p){ p.w++; p.g++; if(scored){ p.pf += ws; p.pa += ls; } } });
-    l.forEach(id =>{ const p = P(id); if(p){ p.l++; p.g++; if(scored){ p.pf += ls; p.pa += ws; } } });
-    S.games++;
-
-    /* Marked as belonging to the round it was added in, and to no court —
-       c is -1 so the log shows it as added rather than pretending it came
-       off a court that was playing something else at the time. */
-    S.log.unshift({
-      r: S.round || 1, c: -1, court: false, king: false, added: true,
-      win: w.map(nm), lose: l.map(nm), winIds: w.slice(), loseIds: l.slice(), ws, ls
-    });
-
-    closeSheet(); renderAll(); renderLadder(); TV.paint(); save();
-    if(S.live) Live.beat();
-    toast(nm(w[0]) + ' & ' + nm(w[1]) + ' beat ' + nm(l[0]) + ' & ' + nm(l[1]) + '.');
-  }
-};
 
 /* Rebuild the ladder from the table: best record starts on Court 1. */
-function seedByRecord(n){
-  const ranked = shuffle(activeIds()).sort((a,b)=>{
-    const x = P(a), y = P(b);
-    if(y.crowns !== x.crowns) return y.crowns - x.crowns;
-    if(y.w - y.l !== x.w - x.l) return (y.w - y.l) - (x.w - x.l);
-    return LEVEL_RANK[x.level] - LEVEL_RANK[y.level];
-  });
-  const courts = [];
-  for(let i=0;i<n;i++){
-    const four = ranked.splice(0,4);
-    courts.push({ teams:[[four[0],four[3]].filter(Boolean),[four[1],four[2]].filter(Boolean)], win:null });
-  }
-  S.courts = courts;
-  S.queue = ranked;
-}
 
-function changeCourtsLive(d){
-  invalidatePlan();
-  if(!S.active){ bumpCourts(d); return; }
-  const n = S.courts.length + d;
-  const max = Math.floor(activeIds().length / 4);
-  if(n < 1 || n > max){ toast(n<1 ? 'You need at least one court.' : 'Not enough players for another court.'); return; }
-  if(d > 0){
-    const four = pullQueue(4);
-    if(four.length < 4){ S.queue.push(...four); toast('Not enough players waiting.'); return; }
-    S.courts.push({ teams:[[four[0],four[3]],[four[1],four[2]]], win:null });
-    S.courtLevels.push(S.courtLevels[S.courtLevels.length-1] || 'int');
-  } else {
-    const gone = S.courts.pop();
-    S.courtLevels.pop();
-    S.queue.push(...gone.teams.flat());
-  }
-  S.nCourts = S.courts.length;
-  if(d < 0 && Array.isArray(S.pool) && S.pool.length > S.courts.length){
-    S.queue.push(...S.pool.slice(S.courts.length).flat());
-  }
-  ensurePools();
-  if(S.mode === 'levels') fillLevelCourts();
-  renderAll(); TV.paint(); save();
-}
 
 /* ═══════════════════════════════════════════════════
    RENDER — STATS
@@ -26590,17 +25475,6 @@ function ranked(){
   return S.order.filter(id => P(id) && P(id).g > 0).sort(nightOrder);
 }
 function poMax(){ return Math.floor(ranked().length / 4) * 4; }
-function bumpPlayoff(d){
-  const max = Math.max(4, poMax());
-  poSize = Math.max(4, Math.min(max, poSize + d));
-  renderPlayoffSetup();
-}
-function setPairing(p){
-  poPairing = p;
-  document.getElementById('po-even').setAttribute('aria-pressed', String(p==='even'));
-  document.getElementById('po-seeded').setAttribute('aria-pressed', String(p==='seeded'));
-  renderPlayoffSetup();
-}
 function renderPlayoffSetup(){
   const max = poMax();
   if(poSize > Math.max(4,max)) poSize = Math.max(4,max);
@@ -26633,34 +25507,6 @@ function roundName(remaining, total){
   if(remaining === 4) return 'Semi-finals';
   if(remaining === 8) return 'Quarter-finals';
   return 'Round of ' + remaining;
-}
-function makeBracket(){
-  const pool = ranked();
-  if(pool.length < 4){ toast('Not enough completed games yet.'); return; }
-  const n = Math.min(poSize, Math.floor(pool.length/4)*4);
-  const top = pool.slice(0, n);
-  const teams = [];
-  if(poPairing === 'even'){
-    for(let i=0;i<n/2;i++) teams.push([top[i], top[n-1-i]]);
-  } else {
-    for(let i=0;i<n/2;i++) teams.push([top[i*2], top[i*2+1]]);
-  }
-  const size = Math.pow(2, Math.ceil(Math.log2(Math.max(2, teams.length))));
-
-  /* the whole shape exists from the off, so you can see the road to the final */
-  const rounds = [];
-  for(let n2 = size/2; n2 >= 1; n2 = n2/2){
-    rounds.push(Array.from({length:n2}, ()=>({ t:[null,null], w:null })));
-  }
-  const order = seedOrder(size);
-  for(let i=0;i<order.length;i+=2){
-    const a = order[i]-1, b = order[i+1]-1;
-    rounds[0][i/2].t = [a < teams.length ? a : null, b < teams.length ? b : null];
-  }
-  S.bracket = { teams, size, pairing:poPairing, rounds };
-  propagate();
-  renderBracket(); TV.paint(); go('playoff'); save();
-  toast('Bracket drawn \u2014 ' + teams.length + ' teams.');
 }
 /* ── DOUBLE ELIMINATION ──
    A losing team drops into a second bracket rather than going home,
@@ -26893,17 +25739,6 @@ function renderBracket(){
   const champ = champion();
   document.getElementById('champion').innerHTML = champ === null ? '' :
     `<div class="champ"><div class="eyebrow">Champions</div><div class="who">${teamName(champ)}</div></div>`;
-}
-function clearBracket(){
-  openSheet(`<h3>Clear the playoff?</h3>
-    <p class="sub">The bracket goes. Session standings are untouched.</p>
-    <button class="btn btn-risk" onclick="doClearBracket()">Clear it</button>
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Keep it</button>`);
-}
-function doClearBracket(){
-  S.bracket = null;
-  closeSheet(); renderBracket(); TV.paint(); go('stats'); save();
-  toast('Playoff cleared.');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -29190,74 +28025,6 @@ async function doManageSession(code){
                  : 'You are managing this session.');
 }
 
-function openResume(){
-  movedToManager('Running a night');
-  return;
-  /* eslint-disable no-unreachable */
-  /* An organizer does not need the PIN. Their role already says they may run
-     the club's nights, and making them go and ask whoever started it for four
-     digits before they could help was a gate on the wrong thing. The PIN is
-     still there and still works — it is how a device with no account proves
-     itself — this is a second door that the JWT opens. */
-  const staff = canOrganize();
-  openSheet(`<h3>Open a session</h3>
-    <p class="sub">${staff
-      ? 'Type the code and it lands here — players, scores, courts and all. As an organizer you do not need the PIN.'
-      : 'Type the code and PIN from the device that started it, and the whole session lands here — players, scores, courts and all.'}</p>
-    <div class="field"><span class="label">Session code</span>
-      <input type="text" id="rs-code" placeholder="ABC12" autocomplete="off" maxlength="6"
-        style="text-transform:uppercase;letter-spacing:.2em;font-size:22px;text-align:center"></div>
-    <div class="field"${staff ? ' id="rs-pin-f" hidden' : ''}><span class="label">Host PIN</span>
-      <input type="tel" id="rs-pin" placeholder="0000" autocomplete="off" maxlength="4"
-        inputmode="numeric" style="letter-spacing:.35em;font-size:22px;text-align:center"></div>
-    <p class="conn" id="rs-msg" hidden></p>
-    <button class="btn btn-go" onclick="doResume()">Open it</button>
-    <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Cancel</button>`);
-  setTimeout(()=>{ const e = document.getElementById('rs-code'); if(e) e.focus(); }, 60);
-}
-async function doResume(){
-  const code = (document.getElementById('rs-code').value || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  const pin  = (document.getElementById('rs-pin').value || '').replace(/\D/g,'');
-  const msg  = document.getElementById('rs-msg');
-  const say = (cls, t) => { msg.hidden = false; msg.className = 'conn ' + cls; msg.textContent = t; };
-  const staff = canOrganize();
-  if(code.length < 4){ say('bad', 'The session code, please.'); return; }
-  if(!staff && pin.length < 4){ say('bad', 'Both the code and a four-digit PIN, please.'); return; }
-  say('', 'Fetching\u2026');
-
-  /* An organizer is handed the PIN rather than asked for it. If the RPC is
-     not deployed, or this club has not made them staff, it comes back empty
-     and the PIN field is put in front of them instead — so the old way keeps
-     working everywhere and nothing depends on the migration having run. */
-  let use = pin;
-  if(staff && !use){
-    try{
-      use = await Live.rpc('sideout_open', { p_club: CONFIG.club || 'sideout', p_code: code }) || '';
-    }catch(e){ use = ''; }
-    if(!use){
-      const f = document.getElementById('rs-pin-f');
-      if(f) f.hidden = false;
-      say('bad', 'Could not open that one on your role alone \u2014 the PIN, please.');
-      return;
-    }
-  }
-  let state = null;
-  try{ state = await Live.claim(code, use); }
-  catch(e){
-    const m = String(e.message || e);
-    say('bad', m.includes('PIN') ? 'That PIN does not match the session.'
-      : (m.includes('no such') ? 'No session running under that code.'
-      : 'Could not reach the server.'));
-    return;
-  }
-  if(!state){ say('bad', 'That session has nothing saved yet.'); return; }
-  closeSheet();
-  Live.adopt(state, code, pin);
-  /* adopt() no longer navigates on its own. Typing a code and a PIN in is
-     unambiguously "open this", so this one goes. */
-  go(S.active ? 'play' : 'setup');
-  toast('Session opened \u2014 you are hosting from this device.');
-}
 
 function renderLive(){
   document.querySelectorAll('[data-live-box]').forEach(b => { b.innerHTML = ''; });
@@ -30384,11 +29151,6 @@ function fitFont(x, text, weight, family, start, maxW){
     size -= 3;
   } while(size > 22);
   return size;
-}
-function setCardKind(k){
-  cardKind = k;
-  document.getElementById('card-standings').setAttribute('aria-pressed', String(k==='standings'));
-  document.getElementById('card-session').setAttribute('aria-pressed', String(k==='session'));
 }
 function drawCrown(x, cx, cy, s, color){
   x.save(); x.fillStyle = color; x.beginPath();

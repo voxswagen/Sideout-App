@@ -34,9 +34,45 @@ turns off the Score/Queue/Manage/Stats strip and the clock dock without
 than being chased to a dozen call sites, and `manageSession()` redirects to the
 watch view so a stale cache or an old notification still lands somewhere.
 
-**The markup and the render functions are all still in the file.** Deleting
-them is the next change and its own commit — this file has lost 146KB of live
-CSS to one bulk delete already.
+**What has been deleted, and what is left.** 119KB came out in three measured
+passes, each one verified by a harness that walks all twenty kept screens,
+checks the nine redirect, runs the painters, and asserts that no write reaches
+the shared project. It lives in `.probe/harness.py`; re-run it before and after
+anything structural.
+
+* **The nine screen sections** (615 lines) — cut by line range after printing,
+  each span checked to begin on its own `<section id="screen-…">`, end on a
+  `</section>` and balance on its own. The gaps between them hold *live*
+  screens (comments, share, listing, session), so only the exact spans went.
+* **62 top-level functions** (1081 lines), found mechanically rather than by
+  eye: a function whose name appears exactly once in the whole file is
+  referenced only by its own definition. Four rounds, because each round
+  orphans more. `.probe/cut.py`.
+* **374 CSS rules** (35KB) by the documented two-check method, parsed into
+  rules and removed by span rather than by line. A rule goes only if *every*
+  comma-separated part contains at least one dead class — one dead class in a
+  part is enough, because `.dead .live` can never match either. Braces went
+  3070 → 2696 on both sides.
+
+**`renderAll()` was the casualty, and it is the hole these notes predicted.**
+`renderCourts()` writes to `#courts` with no null guard and `#courts` lived in
+`screen-play`. Of the nine painters it called, only `renderLive()` still has an
+element. It now does that, `syncNav()` and `syncDocks()`, and asks for
+`#tv-btn` rather than assuming it. Its sixty call sites were left alone on
+purpose: it is called from settings, from a merge and from adopting a night,
+and the honest fix is for the function to do only what is still real.
+
+**What could not be deleted, and why.** `Score`, `Stacks`, `Spin`, `Auto`,
+`MLP`, `Wars`, `Climb`, `Lineup`, `NewFlow`, `People`, `Tour`, `Draft`,
+`Points` and `CourtView` are all inert — nothing routes to them — but none is
+*unreachable* by static test: each is still named from live code or from each
+other. The landing page's hero board genuinely calls `Score.legal()`, and
+`renderSession()` uses `Score.pts()` to draw the read-only court cards, so
+`Score` is live. Computing the closure (candidate set, minus anything
+referenced outside it, repeat) left exactly one object that could go safely:
+`AddGame`. Pulling the rest out means hand-editing live references for a
+file-size win on code that already does nothing — worth doing deliberately, not
+worth doing in the same pass as the removal.
 
 ---
 
@@ -87,7 +123,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v160`. Forgetting this means testers see last week's app and
+Currently `sideout-v161`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
