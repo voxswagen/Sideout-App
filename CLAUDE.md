@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v169`. Forgetting this means testers see last week's app and
+Currently `sideout-v170`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -349,6 +349,32 @@ Four things changed with it, and three are worth arguing about:
 * **"Keep me signed in" is gone.** `Auth.keep` is `true` by default, which is
   what the box was set to, so behaviour is unchanged — the screen just stops
   asking a question almost nobody wants put.
+
+**A `display` on an id-and-class selector means that screen can never be
+hidden.** `#screen-auth.ah` stated `display:flex`. That is (1,1,0);
+`.screen{display:none}` is (0,1,0), so the base rule lost and the front door
+rendered on **every screen in the app**, underneath whatever was supposed to be
+showing — Today's feed with a sign-in card drawn below it.
+
+It read as correct for as long as it did because of a second rule covering for
+it: `body.authing` hides everything except `#screen-auth`, so while you are
+signed out the one screen left standing is the right one, by accident. Signing
+in takes the cover away and the bug is on screen immediately. **A rule that is
+only correct because another rule is hiding the evidence will surface the day
+that other rule stops applying.**
+
+The column layout is on `#screen-auth.ah.on` now, and the tokens, background
+and `position` stay on `.ah` where they are harmless. Nothing in this file may
+state `display` on a `#screen-*` selector without `.on`.
+
+**Every check I had asked the wrong question, and all of them passed.** The
+harness, `boot.py` and a bespoke geometry probe all asked *which screen is
+`.on`, and does it have text* — and the answer was right every time. A second
+screen visible underneath is invisible to that question. `.probe/harness.py`
+now asserts that every `.screen` other than the `.on` one computes to
+`display:none`, and the check was proved by putting the bug back: silent when
+fixed, `*** ALSO VISIBLE: screen-auth ***` on all nineteen screens when not. A
+new assertion that has never failed is not known to work.
 
 **The front door opened half way down itself, and `focus()` was the cause.**
 `AuthUI.open()` focused the email field 80ms after showing the screen, and

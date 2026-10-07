@@ -4054,8 +4054,18 @@ body.casting{overflow:hidden}
   --a-accent:#7FC4DE;--a-accent-2:#B5E0EF;--a-teal:#2D6A85;--a-green:#5FBF8A;
   --a-court:#1D5670;--a-ball:#E4EE6B;--a-body:#AFC3D2;--a-mute:#8FA8B9;
   --a-ph:#7E97A8;--a-err:#F0A39B;--a-ink:#17242B;
-  position:relative;overflow:hidden;padding:0;color:#fff;background:var(--a-bg);
-  display:flex;flex-direction:column}
+  position:relative;overflow:hidden;padding:0;color:#fff;background:var(--a-bg)}
+/* The column layout is on `.on`, and that is not a tidiness point — it is the
+   whole of whether this screen can ever be hidden. `.screen{display:none}` is
+   one class; `#screen-auth.ah` is an id and a class, so a `display` stated
+   there beats the base rule and the front door renders on every screen in the
+   app, under whatever is supposed to be showing. It read as correct for as
+   long as it did only because `body.authing` hides everything else while you
+   are signed out, so the one screen left standing was the right one by
+   accident. Signing in revealed it instantly: Today's feed, and the sign-in
+   card drawn underneath it. Nothing in this file may state `display` on a
+   screen without `.on`. */
+#screen-auth.ah.on{display:flex;flex-direction:column}
 .ah-orb,.ah-ring{position:absolute;border-radius:999px;pointer-events:none}
 .ah-orb.a{top:-140px;left:-120px;width:420px;height:420px;
   background:radial-gradient(circle,rgba(45,106,133,.45),rgba(45,106,133,0) 70%);

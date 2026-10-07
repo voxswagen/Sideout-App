@@ -40,8 +40,18 @@ PROBE = """
      var on=document.querySelector('.screen.on');
      var txt=on?(on.innerText||'').trim().length:0;
      var bad=errs.length>before;
+     /* Every other screen must actually be display:none. A `display` stated on
+        an id-and-class selector outbids `.screen{display:none}`, so a screen
+        can be permanently visible underneath whatever is on — which draws two
+        screens at once and is invisible to a check that only ever asks what
+        `.on` is. #screen-auth.ah did exactly that. */
+     var extra=[].slice.call(document.querySelectorAll('.screen')).filter(function(e){
+       return e!==on && getComputedStyle(e).display!=='none';
+     }).map(function(e){return e.id;});
+     if(extra.length) errs.push('go('+n+'): also visible: '+extra.join(','));
      out.push('  '+(n+'            ').slice(0,12)+' -> '
        +(on?on.id:'(none)')+'  text:'+txt
+       +(extra.length?'   *** ALSO VISIBLE: '+extra.join(',')+' ***':'')
        +(bad?'   *** ERROR: '+errs.slice(before).join(' / ')+' ***':''));
    });
    out.push('');
