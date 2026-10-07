@@ -19230,9 +19230,20 @@ const SESSION_SCREENS = [];
    shop and the finished-night pages were added without being listed here, so
    arriving at either took the bottom bar away and left no way back except the
    browser's own button. */
+/* `comments` is deliberately NOT here. Its composer is a fixed bar at
+   bottom:0 and so is the tab bar — at z-index 30 against the bar's 120, which
+   means the bar sat straight on top of the box you type in, and on a phone
+   that is the whole of what the screen is for. The note on `Comments` has
+   said all along that the composer replaces the tab bar while you are in it,
+   because you are writing rather than navigating; the list just never agreed
+   with it. The screen draws its own Back, so nothing is stranded.
+
+   The general rule this is an instance of: a screen with its own fixed
+   bottom bar does not belong in TAB_SCREENS, because two things pinned to
+   bottom:0 is one thing covering the other. */
 const TAB_SCREENS = ['home','groups','group','player','games','board','me',
                      'members','roles','audit','market','past','results','chats',
-                     'session','listing','share','comments'];
+                     'session','listing','share'];
 /* Which of the five a screen belongs under. Each tab covers a family, so the
    bar answers "where am I" rather than "what did I last tap" — arriving by a
    link, the back button or a redirect after signing in still lights the

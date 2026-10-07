@@ -219,7 +219,7 @@ would be open to the internet.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v176`. Forgetting this means testers see last week's app and
+Currently `sideout-v177`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -702,6 +702,29 @@ two had already drifted — Setup said more about Up & Down the River and about
 MLP than the map did. The map took the fuller wording and the cards became
 `<span class="mode-tx" data-mode="x">`, filled by `paintModeCards()` at boot
 from `MODE_NAME` and `MODE_HINT`. A format is described in one place now.
+
+**A screen with its own fixed bottom bar must not be in `TAB_SCREENS`.**
+`comments` was, so the five-tab bar drew over it — `.tabbar` is
+`position:fixed; bottom:0; z-index:120` and `.cmt-say` is the same position at
+`z-index:30`, which means the bar sat squarely on the box you type in. On a
+phone that is the whole of what the screen is for. The note on `Comments` had
+said from the start that the composer replaces the tab bar while you are in it,
+because you are writing rather than navigating; the list simply never agreed
+with the note, and nothing checks that they do.
+
+`.probe/overlay.py` is the sweep that found it: for every screen it lists any
+fixed or absolute element that is visible, larger than a chip and **not inside
+the screen that is on**. It also reports anything carrying `[hidden]` whose
+computed `display` is not `none`, which is the `#screen-auth.ah` bug stated as
+a test. Run it when a phone looks wrong; the answer wanted is the tab bar and
+nothing else, and `comments` and `session` showing none.
+
+Worth knowing for the next report of this kind: `body` already reserves
+`calc(var(--dock-h) + env(safe-area-inset-bottom))`, 88px, so the tab bar is
+not eating the foot of any list. If something looks covered everywhere at
+once, suspect a stale build before suspecting the layout — `sw.js` calls
+`skipWaiting()` and `clients.claim()`, but a page already open keeps its old
+markup until it reloads, so an installed PWA usually wants **two** loads.
 
 **The tab bar is five families, and `TAB_OF` is the map.** Each tab covers
 a set of screens rather than one page, so the bar answers "where am I"
