@@ -158,23 +158,59 @@ The `supabase-*.sql` files are copies of what is deployed, not to-dos. Anything
 applied to the database should be written back into one, so the repo and the
 project do not quietly disagree.
 
-Two exceptions, both marked at the top of the file itself and both waiting on
-a project nobody could reach:
+**There are no exceptions any more.** The migration that had been pending
+since 22 September was applied on **7 October 2026** — all three parts — and
+`supabase-migrate-2026-09-22.sql` is deleted, on its own instruction: a
+migration script left lying about beside the definitions is the thing that
+makes them stop describing the project. It is in the history if it is ever
+wanted (`git show 03fd6b0:supabase-migrate-2026-09-22.sql`).
 
-* `supabase-feed.sql` is a **proposal**, not a copy — the posts, reactions
-  and comments the handoff's Today needs and the front page already
-  advertises. The client now reads it, but only if it is there: see the
-  feed's own note below.
-* `supabase-past.sql` has gained a per-caller `place` on `sideout_past`
-  that **has not been applied**. The client wires it defensively — every
-  use is conditional and the card is exactly what it was when the column is
-  missing — so deploying it turns the feature on and not deploying it costs
-  nothing.
+So `supabase-feed.sql` and the `place` column on `sideout_past` are live, and
+every `supabase-*.sql` here is now what it claims to be. What that turns on:
+
+* **Today's feed is real rows.** `Posts.load()`'s 404 branch is still correct
+  and still wanted — it is what let the client ship before the schema — but
+  it will no longer fire on this project, so **a 404 from the feed now means
+  something is actually wrong.** Do not read a quiet feed as "not installed".
+* **`Games.knowsPlace` will start answering yes**, so Completed shows real
+  finishing places and drops the sub-line that explained it could not tell.
+* **`sideout_open`** hands an organizer the PIN, and **`p_seen`** is enforced,
+  so a co-host's write is now genuinely refused and rebased rather than
+  silently winning.
+
+**You can verify a migration without the MCP server, and it is worth knowing
+how.** That server is still down here (`CONNECTION_CLOSED`) and there is no
+token on this machine, but PostgREST will answer the publishable key in
+`CONFIG`, and that is enough to prove what deployed:
+
+* **A function's presence** — call it. PostgREST answers `PGRST202` / 404 for
+  one that is not in its schema cache, so 200 or a Postgres error code means
+  it is there. `sideout_past` came back carrying `place`.
+* **An overload** — the fault this file keeps warning about. Call the function
+  *with* the new argument and then *without* it. Two 400s is one function;
+  a 300 is two, and chat is dead for everyone on a stale cache.
+* **A write function, without writing** — send arguments that fail its first
+  guard. `sideout_save` with a one-character code raises `bad code` before it
+  touches a row, which proves the signature resolved and changes nothing.
+* **A table** — select from it. `42501 permission denied` is a table that is
+  present and properly closed; 404 is one that is not there.
+* The OpenAPI document at `/rest/v1/` is **not** available to a publishable
+  key (`"Secret API key required"`), so that is not the route.
 
 `.mcp.json` invoked the server through `cmd /c`, which is Windows and does
 not exist on macOS, so the Supabase MCP server failed to start with
 `ENOENT: cmd`. Fixed to call `npx` directly. It still needs
-`SUPABASE_ACCESS_TOKEN` in the environment the server is spawned from.
+`SUPABASE_ACCESS_TOKEN` in the environment the server is spawned from — and
+it has been failing to connect regardless, which is why the checks above
+exist.
+
+**Postgres grants EXECUTE on a new function to PUBLIC, so `anon` can call the
+feed's functions whatever the explicit grant says.** Checked: anon gets a 200
+and an empty array from `sideout_posts`. It is harmless *because every one of
+those functions checks `sideout_member_of()` itself* and returns nothing or
+raises when it is null — the grant was never what was holding the door. A new
+`sideout_*` function that leans on the grant instead of making that check
+would be open to the internet.
 
 ---
 
@@ -786,7 +822,8 @@ What's on and Already played are no longer sections here. An open play *is*
 a post — `Posts.sessionRow()` draws one from `Feed.up` — and the full lists
 live on the Sessions tab, which is what that tab is for. Deriving the
 session posts client-side rather than waiting for rows means Today is a feed
-on a project that has never run the feed migration.
+on a project that had never run the feed migration — which this one now has,
+so those posts and the real rows arrive through the same merge.
 
 `feedTimeline()` is the merge: real posts and the club's sessions, sorted by
 time. A night that has been played only appears once `sideout_post_night`
@@ -1634,8 +1671,9 @@ one win.
 
 `p_seen` defaults to null server-side and the client stops sending it after
 one 404, so a project that has not run the migration behaves exactly as
-before — which is what keeps every phone on a stale cache working the day it
-lands. Simulated both ways: with the check, two organizers on different
+before — which is what kept every phone on a stale cache working the day it
+landed. This project has it now, so the check is live and a co-host's write is
+really refused. Simulated both ways: with the check, two organizers on different
 courts both survive one refusal and one rebase; without it, one probe and
 then it never asks again.
 
@@ -1668,7 +1706,8 @@ The test is whether the sentence claims the device holds the *session*.
 handed the PIN for any session of their club rather than being asked for it,
 so helping run a night no longer means finding whoever started it. It returns
 null rather than raising when the caller is not staff, so the client falls
-back to the PIN field and nothing depends on the migration having run. "Take
+back to the PIN field and nothing depended on the migration having run — it
+has since (7 October 2026), so an organizer is handed the PIN. "Take
 over a session" is "Open a session" now — it was never exclusive, and the
 words said it was.
 

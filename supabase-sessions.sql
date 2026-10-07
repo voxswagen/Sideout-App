@@ -81,8 +81,14 @@ end $function$;
 -- refused if the row has moved on since — which turns "your co-host's points
 -- vanished" into an answer the client can act on: read what they wrote, put
 -- your own courts back on top, and save again. It defaults to null so a
--- client that does not send it behaves exactly as before, which is what
--- keeps phones on a stale cache working the day this lands.
+-- client that does not send it behaves exactly as before, which is what kept
+-- every phone on a stale cache working the day it landed (7 October 2026).
+--
+-- Verified after applying: a call naming `p_seen` resolves, and so does one
+-- that omits it — 400 "bad code" either way rather than 300, which is how you
+-- know the seven-argument twin really did go and there is exactly one of
+-- these. A one-character code raises on the first guard, so that is a probe
+-- that proves the signature without writing anything.
 drop function if exists public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid);
 drop function if exists public.sideout_save(text,text,jsonb,jsonb,text,boolean,uuid,timestamptz);
 
@@ -287,7 +293,7 @@ grant execute on function public.sideout_upcoming(text) to anon, authenticated;
 -- ═══════════════════════════════════════════════════════════════
 -- sideout_open — an organizer opens a session without the PIN
 -- ═══════════════════════════════════════════════════════════════
--- NOT DEPLOYED. Part of the pending migration.
+-- Already live on the project, applied 7 October 2026.
 --
 -- The PIN is how a *device* proves it is allowed to write a session. That
 -- was the right gate when a session could be started by anybody with a

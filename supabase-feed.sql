@@ -1,11 +1,26 @@
 -- ═══════════════════════════════════════════════════════════════
 -- sideout_posts — the club's feed
 -- ═══════════════════════════════════════════════════════════════
--- NOT DEPLOYED. Every other supabase-*.sql in this repo is a copy of what
--- is live; this one is a proposal, and it is the only file here you cannot
--- trust to describe the project. Nothing in the client reads it yet — that
--- is deliberate, because client code written against a schema nobody has
--- run is where the bugs hide.
+-- Already live on the project, applied 7 October 2026. This file is the
+-- deployed definition, like every other supabase-*.sql here — it spent a
+-- while as the one file in this repo you could not trust, and it is not that
+-- any more.
+--
+-- Verified against the project after applying: `posts`, `post_reactions` and
+-- `post_comments` all answer 42501 "permission denied" to anon, which is the
+-- shape wanted — present and closed, with every rule in the RPCs rather than
+-- split between a policy and a function that could drift. All eight functions
+-- resolve. `post_reactions` has no `id` column, which is correct: its key is
+-- (post, member, kind).
+--
+-- One thing worth knowing and not changing by accident. Postgres grants
+-- EXECUTE on a new function to PUBLIC, so `anon` can call these whatever the
+-- explicit grant says — checked, and anon does get a 200 from
+-- `sideout_posts`. It is harmless *because every function checks
+-- `sideout_member_of()` itself* and returns nothing or raises when it is
+-- null; the grant was never the thing holding the door. A future function
+-- here that leans on the grant instead of making that check would be open to
+-- the internet.
 --
 -- It exists because the handoff's Today is a feed people post to, and the
 -- front page already advertises it ("results land in a feed the club
