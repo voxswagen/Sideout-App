@@ -7414,6 +7414,32 @@ var t,r=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={
 const Live = {
   code: null, role: 'host', t: null, joinT: null, watchers: 0,
 
+  /* ── This app does not run nights any more ──────────────────────────────
+     Sessions are set up and scored in the separate manager, and both apps
+     talk to the *same* Supabase project. So the dangerous thing is not the
+     screens — it is this object. A hosting phone writes `sessions.state`
+     every few seconds and marks `joiners` rows taken; left running beside
+     the manager it would overwrite that app's scores on every beat and eat
+     the join rows before it ever saw them.
+
+     `HOSTS` is the backstop rather than the mechanism. Every route into
+     running a night has been taken off, and this makes sure that a caller
+     missed somewhere cannot still reach the database — because the cost of
+     missing one is somebody's real night, not a broken screen.
+
+     What this app still writes is only ever its own user's doing: joining
+     or leaving a night, a post, a reaction, a comment, a chat message, a
+     listing, their own profile. It reads everything else. */
+  HOSTS: false,
+  warned: false,
+  blocked(what){
+    if(!this.warned){
+      this.warned = true;
+      try{ console.warn('Sideout: this app no longer writes sessions (' + what + ').'); }catch(e){}
+    }
+    return true;
+  },
+
   /* People copy the URL from all sorts of places, so tidy whatever
      turns up: trailing slashes, a pasted /rest/v1/, stray spaces. */
   base(){
@@ -7507,6 +7533,9 @@ const Live = {
     return c;
   },
   async saveAll(){
+    /* The one write that would fight the manager app. Nothing above this
+       should be calling it; this is the net under that. */
+    if(!this.HOSTS){ this.blocked('saveAll'); return Date.now(); }
     this.ensureCode();
     if(this.mode() === 'local'){
       localStorage.setItem(this.lkey(this.code),
@@ -7969,6 +7998,7 @@ const Live = {
   /* Leave a final card up rather than a session that just stops
      updating and looks broken. */
   async finish(){
+    if(!this.HOSTS){ this.blocked('finish'); return true; }
     if(!S.live || !this.code) return true;
     clearTimeout(this._d);
     S.ended = true; S.endedAt = Date.now();
@@ -7985,6 +8015,7 @@ const Live = {
     return ok;
   },
   async goLive(){
+    if(!this.HOSTS){ this.blocked('goLive'); return false; }
     this.lastError = null;
     S.ended = false; S.endedAt = null;
     const resuming = !!S.liveCode;
@@ -8141,6 +8172,11 @@ const Live = {
     toast('Session is offline again.');
   },
   async collect(){
+    /* `takeJoiners` + `ackJoiners` *consume* the joiners queue — they stamp
+       `taken`, so a row read here is a row the manager app never sees. This
+       is the quieter of the two dangers and the harder one to notice: nothing
+       breaks, people just silently fail to arrive on the other app's roster. */
+    if(!this.HOSTS){ this.blocked('collect'); return; }
     if(!Club.list.length) await Club.load();
     if(!S.live || !this.code) return;
     let rows = [];
@@ -8322,6 +8358,7 @@ const Live = {
     return this.code;
   },
   beat(){
+    if(!this.HOSTS){ this.blocked('beat'); return; }
     if(!S.live || this.adopting) return;
     if(!this.ensureCode()) return;
     /* Something local is waiting to be written, so the state poll must not
@@ -9571,7 +9608,11 @@ const Club = {
       g: (games[n] || 0) + (P(S.order.find(id => P(id).name === n)) || {}).g || 0
     })).filter(r => r.m);
   },
+  /* Banking a night is the manager app's job now, and doing it from here
+     would write `results` rows twice — once from each app — which is the one
+     table nothing can be worked backwards from. */
   async rate(rows){
+    if(!Live.HOSTS){ Live.blocked('rate'); return 0; }
     rows = rows || this.rateNight();
     if(!rows.length) return 0;
     const n = await Live.rpc('sideout_rate', { p_club: CONFIG.club || 'sideout', p_rows: rows,
@@ -9604,6 +9645,7 @@ const Club = {
       }));
   },
   async archive(rows, title, code, games){
+    if(!Live.HOSTS){ Live.blocked('archive'); return 0; }
     rows = rows || this.rowsForArchive();
     if(!rows.length) return 0;
     const n = await Live.rpc('sideout_archive', {
@@ -9959,8 +10001,17 @@ function tierName(i, n){
    session" and leave them stranded in the editor on every refresh. */
 let navigated = false;
 
+/* The screens that ran a night. They are not routable from this app any more
+   — nights are set up and scored in the separate manager — but the markup and
+   the render functions are still in the file, so the way to be sure nobody
+   reaches one is to answer for the names rather than to trust that every
+   button has been found. A name here lands on the night itself if one is
+   loaded, and on the club's sessions if not. */
+const GONE_SCREENS = ['new','setup','play','run','stacks','players','stats','playoff','people'];
+
 function go(name){
   AuthUI.shown = false;
+  if(GONE_SCREENS.indexOf(name) >= 0) name = (S.live || S.liveCode) ? 'session' : 'games';
   /* The cast sheet is cleared here rather than only by its own Done button,
      or it survives onto whatever screen you went to next. */
   try{ BoardCast.open = false; }catch(e){}
@@ -11925,23 +11976,17 @@ function renderSession(){
       <p class="sos-sub">${esc([longDate(sessionWhen()), venueLabel(S) || ''].filter(Boolean).join(' · '))}</p>
     </div>
 
+    ${/* Start it, run it, edit it and the roster were the four things here,
+          and all four are in the manager app now. What is left is the two a
+          member does with a night — share it and talk about it — so the row
+          is those rather than an empty strip where the controls used to be. */''}
     <div class="ses-acts">
-      ${/* Before it starts, the thing you do is start it. This used to be the
-            only button on the old Setup screen, which is what made that
-            screen impossible to retire — a night could be set up from the
-            compose flow and then had nowhere to be started from. The words
-            are the ones Setup used, including the reason it will not go. */''}
-      ${S.active
-        ? `<button class="sos-btn sos-btn-go ses-go" onclick="go('run')">Run the night</button>`
-        : `<button class="sos-btn sos-btn-go ses-go" onclick="startSession()"${
-            onNight.length >= 4 ? '' : ' disabled'}>${onNight.length >= 4
-              ? ((S.live && S.liveCode) ? 'Start play' : 'Start the session')
-              : 'Add ' + (4 - onNight.length) + ' more to start'}</button>`}
-      <button class="ses-quiet" onclick="go('people')">Players</button>
-      ${/* There was no way back into the form once a night existed. Setup
-            used to be it, and when Setup went the compose screen was left
-            with no door from the session it edits. */''}
-      <button class="ses-quiet" onclick="go('new')">Edit</button>
+      ${/* `liveSheet()` returns early without `S.live`, so a night with no
+            link would have had a button that did nothing. */''}
+      ${S.live && S.liveCode
+        ? `<button class="sos-btn sos-btn-go ses-go" onclick="liveSheet()">Share this night</button>`
+        : ''}
+      <button class="ses-quiet" onclick="go('comments')">Comments</button>
     </div>
 
     <h2 class="sos-t-grp ses-grp">ON COURT</h2>
@@ -17041,14 +17086,14 @@ function comingSoon(what){
    drawer, a feed button or a screen you had to know about. */
 const PlaySheet = {
   open(){
-    const can = canOrganize();
     const row = (fn, title, sub, ic) => `<button class="pick" onclick="closeSheet();${fn}">
       <span class="glyph">${icon(ic)}</span><span><b>${title}</b><span>${sub}</span></span></button>`;
+    /* Setting a night up and opening one to run are both in the manager app
+       now. What is left here is the one thing a member does: arrive at a
+       night somebody sent them. Organizers are not shown a disabled version
+       of what moved — if you cannot do it here, it is not here, which is the
+       rule the rest of this app's navigation already follows. */
     openSheet(`<h3>Start something</h3>
-      ${can ? row('startOrganizing()', 'An open play',
-                  'Set a night up and share the link', 'plus') : ''}
-      ${can ? row('openResume()', 'Open a session',
-                  'Any night the club has running', 'open') : ''}
       ${row('findSession()', 'Join with a code',
             'Somebody sent you five letters', 'search')}
       ${/* Starting a group has come off this sheet. It is not a thing you do
@@ -19556,7 +19601,6 @@ function meTools(){
      organizer. Same argument for the season: a season is the group's, not
      yours, and it now lives on the group's own page. */
   if(canOrganize()){
-    org.push(meRow('openResume()', 'Open a session', 'open', '', 'sq'));
     if(Auth.isOrganizer && Auth.isOrganizer())
       org.push(meRow('accessSheet()', 'Role management', 'key',
                      'Owners, organizers, players', 'sq'));
@@ -19913,7 +19957,7 @@ function meOrganizing(){
   const rows = [];
   const row = (act, label) => `<button class="pf-row" onclick="${act}">
     <span>${esc(label)}</span>${HMX_IC.chev}</button>`;
-  if(canOrganize()) rows.push(row('openResume()', 'Open a session'));
+
   if(Auth.isOrganizer && Auth.isOrganizer()) rows.push(row('accessSheet()', 'Roles'));
   if(Auth.isOwner()){
     rows.push(row("go('roles')", 'Player management'));
@@ -20518,7 +20562,12 @@ function canOrganize(){
 const SCREENS = ['landing','auth','home','groups','group','player','games','board','me','members','roles','audit','setup','new','session','play','run','people','players','listing','share','stacks','comments','stats','playoff','past','results','market','chats'];
 /* The screens that belong to running a session, as opposed to the
    ones that belong to the club. */
-const SESSION_SCREENS = ['run','stacks','players','stats','playoff'];
+/* Empty on purpose. The session shell — the Score / Queue / Manage / Stats
+   strip and the clock dock — belonged to running a night, and this app does
+   not. Left as a list rather than deleted because `syncDocks()` and
+   `syncNav()` both read it, and an empty list turns them off without either
+   having to learn that the feature is gone. */
+const SESSION_SCREENS = [];
 /* One screen at a time. The landing and sign-in pages carry their
    own branding, so the app header steps out of the way for them. */
 /* The same navigation for everyone. A role adds items to it; it
@@ -20537,16 +20586,14 @@ const SESSION_SCREENS = ['run','stacks','players','stats','playoff'];
    browser's own button. */
 const TAB_SCREENS = ['home','groups','group','player','games','board','me',
                      'members','roles','audit','market','past','results','chats',
-                     'session','people','run','new','listing','share','stacks','comments'];
+                     'session','listing','share','comments'];
 /* Which of the five a screen belongs under. Each tab covers a family, so the
    bar answers "where am I" rather than "what did I last tap" — arriving by a
    link, the back button or a redirect after signing in still lights the
    right one. Anything not listed falls through to Today. */
 const TAB_OF = {
   home:'home', chats:'home', share:'home', comments:'home',
-  games:'games', session:'games', people:'games', run:'games', play:'games',
-  new:'games', stacks:'games',
-  players:'games', stats:'games', playoff:'games', setup:'games',
+  games:'games', session:'games',
   board:'board', player:'board',
   market:'market', listing:'market',
   me:'me', members:'me', roles:'me', audit:'me', groups:'me', group:'me'
@@ -20554,12 +20601,12 @@ const TAB_OF = {
 
 function syncDocks(){
   const scr = currentScreen();
+  /* Both docks were for running a night: the Start bar on the old editor and
+     the clock bar under the courts. Neither has a screen to float over now. */
   const sd = document.getElementById('setup-dock');
-  const onSetup = !S.active && scr === 'setup';
-  if(sd) sd.classList.toggle('on', onSetup);
+  if(sd) sd.classList.remove('on');
   const dk = document.getElementById('dock');
-  const inPlay = S.active && ['play','players','stats','playoff'].indexOf(scr) >= 0;
-  if(dk) dk.classList.toggle('on', inPlay);
+  if(dk) dk.classList.remove('on');
 
   const tb = document.getElementById('tabbar');
   const showTabs = TAB_SCREENS.indexOf(scr) >= 0;
@@ -20892,7 +20939,19 @@ function freshSession(){
   toast('Fresh sheet — set it up however you like.');
 }
 
+/* Both of these are answered rather than deleted. Between them they had a
+   dozen call sites — the + sheet, the profile, two empty states, the sign-in
+   redirect, a notification tap — and hunting every one and hoping is the
+   weaker version of saying it once, here. Anything that still asks to set a
+   night up or to pick one up and run it is told where that lives now. */
+function movedToManager(what){
+  go('games');
+  toast(what + ' is in the Sideout manager app now \u2014 this one is for the club.');
+}
 async function startOrganizing(){
+  movedToManager('Setting a night up');
+  return;
+  /* eslint-disable no-unreachable */
   if(!Auth.on()){ showOnly('new'); return; }
   if(!Auth.signedIn()){ AuthUI.open(()=> startOrganizing(), 'in'); return; }
   /* the role may not have been read yet on a cold open */
@@ -21175,12 +21234,7 @@ const Feed = {
       ${mine ? `<button class="btn btn-quiet" style="margin-top:8px"
         onclick="closeSheet();withdrawFrom('${esc(code)}','${esc(title || '')}')">
         ${icon('leave')} Leave this session</button>` : ''}
-      ${canOrganize() ? `<button class="btn btn-quiet" style="margin-top:8px"
-        onclick="closeSheet();manageSession('${esc(code)}','${esc(title || '')}')">
-        ${icon('gear')} Manage it</button>
-      <button class="btn btn-risk" style="margin-top:8px"
-        onclick="closeSheet();deleteSession('${esc(code)}','${esc(title || '')}',${joined || 0})">
-        ${icon('trash')} Delete it</button>` : ''}
+
       <button class="btn btn-quiet" style="margin-top:8px" onclick="closeSheet()">Close</button>`);
   },
   /* No Reset button on the card. It used to sit right here, on a feed
@@ -28967,9 +29021,6 @@ const View = {
         ? `<div class="vw-note">
              <p>The waiting list is held by the phone running this night, so
                 approving happens there.</p>
-             <button class="btn btn-quiet" style="margin-top:10px"
-               onclick="manageSession('${esc(this.code)}')">${icon('gear')}
-               Run this night on this phone</button>
            </div>` : '';
       list = pend.length
         ? `<div class="vw-plist">${pend.map((w, i) =>
@@ -29065,14 +29116,10 @@ const View = {
     if(!s2 || !s2.table || !s2.table.length) return '';
     return `<button class="btn btn-quiet vw-card" onclick="cardFromSnap()">Save the leaderboard</button>`;
   },
-  /* An organizer following a link lands on the watching page like
-     anybody else. Give them the way in from here rather than making
-     them go home and find the card. */
-  staffBar(){
-    if(!Auth.signedIn() || !canOrganize() || !this.code) return '';
-    return `<button class="btn btn-quiet vw-manage" onclick="manageSession('${esc(this.code)}')">
-      ${icon('gear')} Manage this session</button>`;
-  },
+  /* This used to hand an organizer the way in to run the night from here.
+     There is no way in any more — the watching page is what this app shows
+     everybody, organizer or not. */
+  staffBar(){ return ''; },
   /* Only when the host is running a timed round. A score-based round
      has no clock to show, and an empty box is worse than none. */
   paintClock(){
@@ -29695,15 +29742,24 @@ function paintTVJoin(){
    nothing reloads — it is one tap to the session screen. An organizer who is
    not holding it goes straight to managing it. Everybody else gets the
    watcher, which is what it is for. */
+/* One door, and now one side of it. Adopting a night to run it was the
+   organizer's branch; with the running gone there is nothing to adopt, so
+   everybody gets the same read-only view of the night — the courts as they
+   stand, the line-ups, the score as the manager app publishes it. */
 function openSession(code, title){
   code = String(code || '').trim();
   if(!code) return;
   if(S.liveCode === code){ go('session'); return; }
-  if(Auth.signedIn() && canOrganize()){ manageSession(code, title); return; }
   location.href = '?s=' + encodeURIComponent(code);
 }
 
 async function manageSession(code, title){
+  /* Nothing routes here now. Kept as a redirect rather than deleted so that
+     a stale cached page, a bookmark or a notification that still points at it
+     lands on the night instead of on nothing. */
+  location.href = '?s=' + encodeURIComponent(code);
+  return;
+  /* eslint-disable no-unreachable */
   if(!Auth.signedIn() || !canOrganize()){
     location.href = '?s=' + encodeURIComponent(code);
     return;
@@ -29764,6 +29820,9 @@ async function doManageSession(code){
 }
 
 function openResume(){
+  movedToManager('Running a night');
+  return;
+  /* eslint-disable no-unreachable */
   /* An organizer does not need the PIN. Their role already says they may run
      the club's nights, and making them go and ask whoever started it for four
      digits before they could help was a gate on the wrong thing. The PIN is

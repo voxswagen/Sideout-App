@@ -1,5 +1,45 @@
 # Sideout Society — project notes
 
+**This app does not run nights any more.** Sessions are set up and scored in a
+separate manager app, and the two share the **same Supabase project**. This one
+is the club's app: the Today feed, chat, accounts, the shop, the club's
+sessions and the matchups — who is on which court, and the score as the manager
+publishes it. All of it read-only about a night.
+
+That shared database is the whole of why this matters. The dangerous part was
+never the screens, it was `Live`: a hosting phone writes `sessions.state` every
+few seconds and stamps `joiners` rows `taken`. Left running beside the manager
+it would overwrite that app's scores on every beat and eat the join rows before
+it ever saw them — silently, because nothing errors.
+
+**`Live.HOSTS` is `false`, and it is the backstop rather than the mechanism.**
+Every route into running a night is off (see `GONE_SCREENS`), and the flag is
+checked inside `saveAll`, `collect`, `goLive`, `beat`, `finish`, `Club.archive`
+and `Club.rate` so that a caller missed somewhere cannot still reach the
+database. The cost of missing one is somebody's real night, not a broken
+screen. **Do not set it true, and do not add a write to a `sideout_*` function
+this app does not already call** — the rule is that this app writes only what
+its own user did: joining or leaving a night, a post, a reaction, a comment, a
+chat message, a listing, their own profile. Everything else it reads.
+
+Nothing in `supabase-*.sql` changed and nothing should: the manager app depends
+on those functions exactly as they are.
+
+What is routed away, by `GONE_SCREENS` in `go()`: `new`, `setup`, `play`,
+`run`, `stacks`, `players`, `stats`, `playoff`, `people`. A name lands on the
+night if one is loaded and on Sessions if not. `SESSION_SCREENS` is `[]`, which
+turns off the Score/Queue/Manage/Stats strip and the clock dock without
+`syncDocks()` or `syncNav()` having to learn the feature is gone.
+`startOrganizing()` and `openResume()` answer with `movedToManager()` rather
+than being chased to a dozen call sites, and `manageSession()` redirects to the
+watch view so a stale cache or an old notification still lands somewhere.
+
+**The markup and the render functions are all still in the file.** Deleting
+them is the next change and its own commit — this file has lost 146KB of live
+CSS to one bulk delete already.
+
+---
+
 Pickleball open-play session manager. Static site (Netlify, see `_redirects`),
 Supabase backend. The whole app is one file: `index.html`, ~25,300 lines,
 inline `<style>` and two inline `<script>` blocks. No build step, no bundler,
@@ -47,7 +87,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v159`. Forgetting this means testers see last week's app and
+Currently `sideout-v160`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
