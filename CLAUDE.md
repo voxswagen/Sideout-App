@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v170`. Forgetting this means testers see last week's app and
+Currently `sideout-v173`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -349,6 +349,62 @@ Four things changed with it, and three are worth arguing about:
 * **"Keep me signed in" is gone.** `Auth.keep` is `true` by default, which is
   what the box was set to, so behaviour is unchanged — the screen just stops
   asking a question almost nobody wants put.
+
+**There is a way across to the manager app now, and the session rides in the
+path.** An organizer could see a night here and not run it, which is a dead
+end on the one screen they most need not to hit. Every upcoming night carries
+**Open the session manager** under it for `canOrganize()`, going to
+`sosqueue.netlify.app/#run/CODE`.
+
+Three things about it are deliberate:
+
+* **The tokens are extra path segments, not query parameters.**
+  `#run/CODE/at/<access_token>/rt/<refresh_token>`. A hash router that splits
+  on `/` reads the code at `parts[1]`; append `&access_token=…` the way
+  Supabase does and that code becomes the night's name with a JWT stuck to it.
+  This way `parts[1]` is untouched and an app that knows nothing about `at`
+  never looks past it — so the link works whether or not the other side has
+  been taught to read it.
+* **The receiving app has to do its half, and it is not written here.** It
+  calls `setSession({access_token, refresh_token})` and then
+  `history.replaceState(null,'','#run/'+code)`. A fragment never reaches a
+  server log, which is why Supabase hands its own sessions over this way, but
+  it does sit in that window's address bar and history until something drops
+  it.
+* **A new window, not a navigation.** An organizer scoring a night is in it
+  for two hours and should not have to find their way back; and on an
+  installed phone a same-tab navigation to another origin walks out of the
+  PWA. A blocked pop-up is silent, so `openManager()` notices and copies the
+  address — the same answer `BoardCast.away()` gives.
+
+`.gm-card` is a `<button>`, so the row cannot live inside it: a button inside
+a button is markup the browser takes apart. `.gm-item` is the card now and
+carries the background, radius and shadow the card used to; `.gm-card` carries
+none of them. A night with no manager row looks exactly as it did.
+
+**The club signs its posts with the club's icon, and `clubAvatar()` is the one
+copy of it.** It was the letters "SS" in four places — a night, a crown, the
+birthday row and the source post above a comment thread — which is four copies
+of a piece of markup and the usual way two of them end up different.
+
+`sos-icon.png` is **not** `sosMark()`, and the distinction is worth keeping:
+the mark is Sideout Society *the product*, worn by the front door, the story
+cards and the install sheet; this disc is *the club* posting. They are
+different signatures and should not be swapped for each other. It arrived as
+2048×2048 and 1.07MB for a disc drawn at 38px, and is stored at 256×256 and
+34KB — still 2× sharp on a 3× screen. It is in the service worker's `SHELL`,
+because an avatar that pops in after the row it sits in is worse than one that
+was there from the start.
+
+`.pst-sys` no longer has a fill. Under an image that covers the whole disc, a
+tint can only ever show as a one-pixel ring of the wrong colour.
+
+**A post whose last word is its attached card had no floor under it.** `.pst`
+pads at the top only, because the actions bar is normally what closes a post
+off — and a session post has no actions bar, since there is no row in the
+database to react to. So the card sat flush against the bottom edge with 13px
+of air above it. `.pcd:last-child` answers it, and only when the card really is
+last, so a post with a bar under it is untouched.
 
 **A `display` on an id-and-class selector means that screen can never be
 hidden.** `#screen-auth.ah` stated `display:flex`. That is (1,1,0);

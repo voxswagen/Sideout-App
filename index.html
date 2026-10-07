@@ -4555,6 +4555,13 @@ body.casting{overflow:hidden}
 /* ── the attached card ──
    One shape, three kinds: a crown in gold, a finished night with its podium,
    an open play with a Join. */
+/* A post whose last word is the attached card had nothing under it. `.pst`
+   carries padding at the top only, because the actions bar is normally what
+   closes a post off — and a session post has no actions bar, since there is
+   no row in the database to react to. So the card sat flush against the
+   bottom edge while the top had 13px of air. Only when the card is genuinely
+   last, so a post with a bar under it is untouched. */
+.pcd:last-child{margin-bottom:13px}
 .pcd{margin:12px 14px 0;padding:13px 14px;border-radius:13px;background:var(--sos-fill-2);
   border:1px solid var(--sos-hair)}
 .pcd.gold{background:#FBF7EC;border-color:#EADFC2}
@@ -4596,7 +4603,11 @@ body.casting{overflow:hidden}
 /* The club's own posts are signed by the club, so the disc is the accent
    rather than somebody's colour — it is not a person and should not read
    as one. */
-.pst-sys{background-color:var(--sos-ink);color:#fff}
+/* The icon is the whole disc, so there is no fill behind it to show at the
+   edges — a tint under a picture that covers the circle is a one-pixel ring
+   of the wrong colour and nothing else. */
+.pst-sys{background:none;overflow:hidden}
+.pst-sys img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .pst-who{flex:1;min-width:0}
 .pst-who b{display:flex;align-items:center;gap:6px;font-size:15.5px;font-weight:600;
   letter-spacing:-.01em;color:var(--sos-ink)}
@@ -5403,9 +5414,24 @@ body.casting{overflow:hidden}
 .gm-tabs .sos-seg button.on i{color:var(--sos-accent)}
 
 .gm-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
-.gm-card{display:block;width:100%;text-align:left;background:var(--sos-card);border:0;
-  border-radius:16px;padding:14px 15px;cursor:pointer;font-family:inherit;
+/* The card moved out to its wrapper so the manager row can sit inside the
+   same box. A night with no manager row looks exactly as it did — the
+   wrapper carries what the card used to carry and the card carries nothing. */
+.gm-item{background:var(--sos-card);border-radius:16px;overflow:hidden;
   box-shadow:0 1px 3px rgba(23,36,43,.06)}
+.gm-card{display:block;width:100%;text-align:left;background:none;border:0;
+  border-radius:0;padding:14px 15px;cursor:pointer;font-family:inherit;
+  box-shadow:none}
+/* Quiet on purpose. Joining is what most people are here to do and this is
+   not that — it is the one thing only an organizer can do, so it sits under
+   the night rather than competing with it. */
+.gm-mgr{display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;min-height:44px;padding:0 15px;border:0;border-top:1px solid var(--sos-sep);
+  background:none;font-family:inherit;font-size:14px;font-weight:600;
+  letter-spacing:-.01em;color:var(--sos-accent);cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.gm-mgr:hover{background:var(--sos-fill)}
+.gm-mgr .ic{width:16px;height:16px}
 .gm-top{display:flex;align-items:flex-start;gap:13px}
 /* Filled when you are going, because that is the thing you are scanning the
    list for. */
@@ -15612,7 +15638,12 @@ const Games = {
         : left !== null ? [left + ' left','dim']
         : ['Open','dim'];
       const go = `openSession('${esc(r.code)}')`;
-      return `<button class="gm-card" onclick="${go}">
+      /* The card is a button, so the manager row cannot live inside it — a
+         button inside a button is markup the browser takes apart. `.gm-item`
+         is the card now and both sit in it, which is also why the row reads
+         as part of the night rather than as a second thing about it. */
+      return `<div class="gm-item">
+      <button class="gm-card" onclick="${go}">
         <span class="gm-top">
           <span class="gm-date${r.mine ? ' on' : ''}">${d
             ? `<i>${esc(MONTH_SHORT[d.getMonth()])}</i><b>${d.getDate()}</b>`
@@ -15636,7 +15667,10 @@ const Games = {
               style="width:${pc}%"></i></span>` : ''}
           </span>
         </span>
-      </button>`;
+      </button>
+      ${canOrganize() ? `<button class="gm-mgr" onclick="openManager('${esc(r.code)}')">
+        ${icon('manage')} Open the session manager</button>` : ''}
+      </div>`;
     }).join('')}</div>`
     : Feed.failed ? feedFailed('what\u2019s on')
     : `<div class="sos-list"><div class="sos-row run-empty">Nothing on yet. When somebody
@@ -21104,6 +21138,22 @@ function chatWhen(t){
    a feed that cannot say it failed looks like a club
    with nothing to say.
    ═══════════════════════════════════════════════════ */
+/* The club signing its own post. One definition, because four places do it —
+   a night, a crown, the birthday row and the source post above a comment
+   thread — and four copies of a piece of markup in this file is how two of
+   them end up different. It was the letters "SS", which is a stand-in for a
+   mark this app already draws.
+
+   The club's own icon rather than `sosMark()`. That mark is Sideout Society
+   the product — the one the front door and the story cards wear — and this
+   disc is the club posting, which is not the same signature. It is a file
+   rather than something drawn because it is a photograph of a paddle on a
+   ground, not a shape with a path. Decorative, because the club's name is
+   written beside it. */
+function clubAvatar(){
+  return `<span class="av sm pst-sys" aria-hidden="true"><img src="sos-icon.png" alt=""></span>`;
+}
+
 const Posts = {
   list: null, failed: false, absent: false, loading: false,
   open: {},           /* post id -> true when its thread is showing */
@@ -21396,7 +21446,7 @@ const Posts = {
     return `<article class="pst">
       <div class="pst-h">
         ${club
-          ? `<span class="av sm pst-sys">SS</span>`
+          ? clubAvatar()
           : avatar(who, p.author_photo, 'sm')}
         <span class="pst-who">
           <b>${esc(who)}${club ? '<i class="pst-tag">Club</i>' : ''}</b>
@@ -21443,7 +21493,7 @@ const Posts = {
           + (m.days === 1 ? 'tomorrow' : DAYS[new Date(m.when).getDay()])).join(' \u00b7 ');
     return `<article class="pst">
       <div class="pst-h">
-        <span class="av sm pst-sys">SS</span>
+        ${clubAvatar()}
         <span class="pst-who">
           <b>${esc(CONFIG.clubName || 'Sideout Society')}<i class="pst-tag">Club</i></b>
           <span>${today ? 'today' : 'this week'}</span>
@@ -21477,7 +21527,7 @@ const Posts = {
       : (r.joined || 0) + ' going so far.';
     return `<article class="pst">
       <div class="pst-h">
-        <span class="av sm pst-sys">SS</span>
+        ${clubAvatar()}
         <span class="pst-who">
           <b>${esc(CONFIG.clubName || 'Sideout Society')}<i class="pst-tag">Club</i></b>
           <span>${esc((t && untilText(t)) || 'Date to be set')}</span>
@@ -21738,7 +21788,7 @@ const Comments = {
       ${p ? `<article class="pst cmt-src">
         <div class="pst-h">
           ${(p.kind !== 'said' || !p.author)
-            ? `<span class="av sm pst-sys">SS</span>`
+            ? clubAvatar()
             : avatar(p.author_name || 'Somebody', p.author_photo, 'sm')}
           <span class="pst-who">
             <b>${esc((p.kind !== 'said' || !p.author)
@@ -22933,6 +22983,51 @@ function copySessionLink(code, btn){
    four callers of the other one now say for themselves what worked, which is
    the only thing they disagreed about. Returns whether it copied; the caller
    picks the words, because "Link copied" is wrong for an address and a code. */
+/* ── the manager app ──────────────────────────────────────────────────
+   Running a night lives in a separate app against this same Supabase
+   project, so an organizer looking at a night here used to be at a dead
+   end: they could see it and not run it. `#run/CODE` is that app's own
+   route and the code is the whole of the address.
+
+   A new window rather than a navigation, because an organizer scoring a
+   night will be in it for two hours and should not have to find their way
+   back to the club app afterwards — and because on an installed phone a
+   same-tab navigation to another origin walks out of the PWA. A blocked
+   pop-up is silent, which would read as the button doing nothing, so the
+   address is copied instead: the same answer the big screen gives. */
+const MANAGER_URL = 'https://sosqueue.netlify.app';
+
+function managerLink(code){
+  let url = MANAGER_URL + '/#run/' + encodeURIComponent(code);
+  /* The session is carried across as further path segments, not as query
+     parameters, and the reason is the route it has to survive. A hash router
+     that splits on "/" reads the code at parts[1]; append
+     `&access_token=…` and that code becomes the night's name with a JWT
+     stuck to the end of it. This way parts[1] is untouched and an app that
+     knows nothing about `at` simply never looks past it.
+
+     A fragment never reaches a server log, which is why Supabase hands its
+     own sessions over the same way. It does land in that window's address
+     bar and in its history, so the receiving app should read it and then
+     drop it with replaceState rather than leave it sitting there. */
+  const se = (typeof Auth !== 'undefined') ? Auth.session : null;
+  if(se && se.access_token){
+    url += '/at/' + encodeURIComponent(se.access_token);
+    if(se.refresh_token) url += '/rt/' + encodeURIComponent(se.refresh_token);
+  }
+  return url;
+}
+
+function openManager(code){
+  if(!code) return;
+  const url = managerLink(code);
+  let w = null;
+  try{ w = window.open(url, '_blank', 'noopener'); }catch(e){}
+  if(w) return;
+  if(legacyCopy(url)) toast('Pop-up blocked \u2014 the manager link is copied.');
+  else toast('Open the manager at ' + MANAGER_URL);
+}
+
 function legacyCopy(text){
   try{
     const t = document.createElement('textarea');

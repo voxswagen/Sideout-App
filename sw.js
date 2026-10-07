@@ -23,7 +23,7 @@
    handler deletes any cache that is not the current name, so a new
    name is what actually forces phones onto the new build — without
    it, an installed app can serve last week's stylesheet indefinitely. */
-const CACHE = 'sideout-v170';
+const CACHE = 'sideout-v173';
 const SHELL = ['/', '/index.html', '/manifest.json',
                '/icon-192.png', '/icon-512.png', '/icon-maskable.png',
                '/apple-touch-icon.png',
@@ -36,7 +36,12 @@ const SHELL = ['/', '/index.html', '/manifest.json',
                   cache should not wait on the network to see whose app this
                   is. Tightly cropped, so it is used at a width rather than
                   through a canvas-cropping window like the old export. */
-               '/sos-logo-white.png'];
+               '/sos-logo-white.png',
+               /* The club's own disc. It signs every post the club makes, so
+                  it is on Today before anything else has come back off the
+                  network — and an avatar that pops in after the row it sits
+                  in is worse than one that was there from the start. */
+               '/sos-icon.png'];
 
 self.addEventListener('install', ev =>{
   ev.waitUntil(
