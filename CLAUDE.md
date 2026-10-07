@@ -34,6 +34,15 @@ turns off the Score/Queue/Manage/Stats strip and the clock dock without
 than being chased to a dozen call sites, and `manageSession()` redirects to the
 watch view so a stale cache or an old notification still lands somewhere.
 
+**`gateScreens()` had an organizer branch, and it is what made the app look
+like it had no front page.** Every launch, an organizer with a night still
+loaded on the phone hit `else if(S.active) go('play')` — which now redirects —
+so the app opened on a session rather than on Today. Its `inApp` list named
+`setup`, `play`, `players`, `stats` and `playoff`, all five of them deleted
+screens. There is no organizer branch now: signed out goes to the landing page,
+and everybody signed in carries on where they were or lands on Today. Checked
+five ways, including an organizer with a live night.
+
 **What has been deleted, and what is left.** 119KB came out in three measured
 passes, each one verified by a harness that walks all twenty kept screens,
 checks the nine redirect, runs the painters, and asserts that no write reaches
@@ -123,7 +132,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v161`. Forgetting this means testers see last week's app and
+Currently `sideout-v162`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 

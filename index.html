@@ -19722,15 +19722,13 @@ function leaveSession(){
 function gateScreens(){
   if(AuthUI.shown){ showOnly('auth'); return; }
   const now = currentScreen();
-  if(canOrganize()){
-    /* an organizer mid-session belongs on the running screens; the
-       rest of the time Home is the sensible front page */
-    const inApp = navigated && ['setup','play','players','stats','playoff','home','me'].indexOf(now) >= 0;
-    if(inApp && now) showOnly(now);
-    else if(S.active) go('play');
-    else go('home');
-    return;
-  }
+  /* There is no organizer branch any more, and keeping one was what sent an
+     organizer with a night still loaded on their phone to `go('play')` on
+     every launch — which now redirects, so the app opened on a session
+     instead of on Today and looked as though it had no front page at all.
+     The named screens in that branch were the ones that ran a night, and all
+     five are gone. Everybody gets the same answer: carry on where you were if
+     you were somewhere, and Today if you were not. */
   if(Auth.signedIn()){
     if(now === 'audit'){ showOnly('audit'); Audit.open(); return; }
     if(now === 'roles'){ showOnly('roles'); Roles.open(); return; }
