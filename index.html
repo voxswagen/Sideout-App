@@ -1047,6 +1047,26 @@ input.bad{border-color:var(--fault)!important}
   color:rgba(255,255,255,.45)}
 .get-go .ic{width:17px;height:17px;vertical-align:-3px;margin-right:5px}
 
+/* The install card on the profile. It keeps its own markup and gets the
+   profile's palette, rather than being rewritten — the same move the shop's
+   and Manage's old rules got. */
+.pf-get{margin:22px 0 0;padding:16px;border-radius:16px;background:var(--sos-card);
+  border:1px solid var(--sos-hair)}
+.pf-get .get-top{display:flex;gap:13px;align-items:flex-start}
+.pf-get .get-mark{flex:none;width:46px;height:46px;border-radius:14px;display:grid;
+  place-items:center;background:var(--sos-fill);box-shadow:none}
+.pf-get .get-tx{flex:1;min-width:0}
+.pf-get .get-tx b{display:block;font-family:inherit;font-size:16px;font-weight:600;
+  letter-spacing:-.01em;color:var(--sos-ink)}
+.pf-get .get-tx span{display:block;margin-top:4px;font-family:inherit;font-size:13.5px;
+  line-height:1.45;letter-spacing:0;text-transform:none;color:var(--sos-dim);text-wrap:pretty}
+.pf-get .get-go{width:100%;margin-top:14px;min-height:48px;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px;border:0;border-radius:13px;
+  background:var(--sos-accent);color:var(--sos-on-accent);font-family:inherit;font-size:16px;
+  font-weight:600;letter-spacing:-.01em;cursor:pointer;filter:none}
+.pf-get .get-foot{margin:10px 0 0;font-family:inherit;font-size:12.5px;letter-spacing:0;
+  text-transform:none;color:var(--sos-dim);text-align:center}
+
 /* The three taps, as a list. These had no styling at all, which is why the
    glyphs came out at their natural size and filled the screen. */
 .howto{list-style:none;margin:14px 0 4px;padding:0}
@@ -5598,314 +5618,6 @@ body.casting{overflow:hidden}
   .sh-bar,.sh-head,.sh-seg,.sh-acts,.sh-note{max-width:560px;margin-left:auto;margin-right:auto}
 }
 
-/* ══════════════ THE FRONT PAGE ══════════════
-   Landing v2. Fluid at every width and no media queries: clamp() for type,
-   auto-fit minmax(min(100%,N)) for every grid, 16px gutters, nothing with a
-   fixed width. A breakpoint is a guess about a screen size; this has none to
-   get wrong.
-
-   It is its own dark surface, like the TV board, so it states its palette
-   rather than reading --sos-* — those follow the club's accent and this page
-   is the product's, not a club's. */
-#screen-landing.full.lp2{padding:0}
-.lp2{--l-bg:#0B161D;--l-panel:#0F1D26;--l-sunk:#14232C;--l-court:#1D5670;
-  --l-accent:#7FC4DE;--l-accent-2:#B5E0EF;--l-teal:#2D6A85;--l-green:#5FBF8A;
-  --l-body:#AFC3D2;--l-mute:#8FA8B9;--l-faint:#7FA3BA;--l-dim:#56707F;
-  --l-ink:#17242B;--l-ink-2:#43525B;--l-ink-3:#5A646E;--l-light:#F4F4F6;
-  min-height:100%;display:flex;flex-direction:column;background:var(--l-bg)}
-.lp2-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-/* ── the bar ─────────────────────────────────────────────────────────── */
-.lp2-bar{flex:none;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;
-  max-width:1120px;margin:0 auto;width:100%;box-sizing:border-box;padding:10px 16px;
-  background:rgba(11,22,29,.78);backdrop-filter:saturate(1.5) blur(14px);
-  -webkit-backdrop-filter:saturate(1.5) blur(14px);
-  border-bottom:1px solid rgba(255,255,255,.07)}
-.lp2-wrap{position:sticky;top:0;z-index:50;background:rgba(11,22,29,.78);
-  backdrop-filter:saturate(1.5) blur(14px);-webkit-backdrop-filter:saturate(1.5) blur(14px);
-  border-bottom:1px solid rgba(255,255,255,.07)}
-.lp2-wrap .lp2-bar{position:static;background:none;backdrop-filter:none;
-  -webkit-backdrop-filter:none;border:0}
-.lp2-logo{flex:1;min-width:0;display:flex;align-items:center}
-/* The wordmark is a tightly cropped transparent PNG now, so it is just an
-   image at a width — no canvas-cropping window, which is what the old
-   untrimmed export needed. */
-.lp2-logo img{display:block;width:100%;max-width:178px;height:auto}
-.lp2-staff,.lp2-signin,.lp2-join{flex:none;min-height:40px;display:inline-flex;align-items:center;
-  gap:6px;border-radius:11px;font-family:inherit;font-size:14px;font-weight:600;
-  letter-spacing:-.01em;cursor:pointer;white-space:nowrap;border:0;
-  -webkit-tap-highlight-color:transparent;transition:background .18s,border-color .18s,transform .18s}
-.lp2-staff{padding:0 11px;border:1px solid rgba(255,255,255,.16);background:none;color:#C9D7E1}
-.lp2-staff:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3)}
-.lp2-staff svg{width:15px;height:15px}
-.lp2-signin{padding:0 10px;background:none;color:#C9D7E1;font-size:15px}
-.lp2-signin:hover{background:rgba(255,255,255,.08)}
-.lp2-join{padding:0 16px;background:#fff;color:var(--l-bg);font-size:15px}
-.lp2-join:hover{transform:translateY(-1px)}
-
-/* ── the hero ────────────────────────────────────────────────────────── */
-.lp2-hero{position:relative;overflow:hidden;color:#fff}
-.lp2-ring{position:absolute;border-radius:99px;pointer-events:none}
-.lp2-ring.a{top:-280px;right:-220px;width:820px;height:820px;
-  border:2px solid rgba(74,132,172,.13);animation:lpDrift 24s ease-in-out infinite}
-.lp2-ring.b{bottom:-380px;left:-260px;width:900px;height:900px;
-  border:2px solid rgba(74,132,172,.07);animation:lpDrift 30s ease-in-out infinite reverse}
-@keyframes lpDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-22px,16px)}}
-.lp2-in{position:relative;max-width:1120px;margin:0 auto;
-  padding:clamp(40px,7vw,88px) 16px clamp(36px,5vw,64px)}
-.lp2-eye{display:flex;align-items:center;gap:9px}
-.lp2-dot{position:relative;width:7px;height:7px;flex:none}
-.lp2-dot i,.lp2-dot u{position:absolute;inset:0;border-radius:99px;background:var(--l-green)}
-.lp2-dot u{text-decoration:none;animation:lpPulse 2.2s ease-out infinite}
-@keyframes lpPulse{0%{transform:scale(1);opacity:.85}70%{transform:scale(2.6);opacity:0}100%{opacity:0}}
-.lp2-eye span{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--l-mute)}
-.lp2-h1{margin:16px 0 0;font-family:inherit;font-size:clamp(40px,9vw,84px);font-weight:800;
-  letter-spacing:-.045em;line-height:.98;max-width:13ch;color:#fff;text-wrap:balance}
-.lp2-h1 i{font-style:normal;color:var(--l-accent)}
-.lp2-sub{margin:18px 0 0;font-size:clamp(16.5px,2.2vw,20px);line-height:1.5;max-width:50ch;
-  color:var(--l-body);text-wrap:pretty}
-.lp2-ctas{margin-top:26px;display:flex;flex-wrap:wrap;gap:9px;max-width:460px}
-.lp2-go,.lp2-ghost{flex:1;min-width:160px;min-height:54px;display:inline-flex;align-items:center;
-  justify-content:center;border-radius:15px;font-family:inherit;font-size:17px;font-weight:600;
-  letter-spacing:-.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  transition:transform .2s,box-shadow .2s,background .2s}
-.lp2-go{background:#fff;border:0;color:var(--l-bg)}
-.lp2-go:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,0,0,.4)}
-.lp2-ghost{background:none;border:1px solid rgba(255,255,255,.24);color:#fff}
-.lp2-ghost:hover{background:rgba(255,255,255,.08)}
-
-/* ── the live board ──────────────────────────────────────────────────── */
-.lp2-board{position:relative;margin-top:clamp(32px,5vw,56px);border-radius:22px;
-  background:var(--l-panel);border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 40px 90px rgba(0,0,0,.45);padding:14px;overflow:hidden}
-.lp2-bh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 4px 12px}
-.lp2-bh .lv{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--l-green)}
-.lp2-bh .wh{flex:1;min-width:120px;font-size:14.5px;color:var(--l-body)}
-.lp2-bh .ck{font-size:20px;font-weight:700;letter-spacing:-.02em;color:#fff;
-  font-variant-numeric:tabular-nums}
-.lp2-bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
-  gap:14px;align-items:start}
-.lp2-cts{display:flex;flex-direction:column;gap:12px}
-.lp2-ch{display:flex;align-items:center;justify-content:space-between;padding:0 2px 7px}
-.lp2-ch b{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--l-faint)}
-.lp2-ch i{font-style:normal;font-size:16px;font-weight:700;letter-spacing:-.01em;color:#fff;
-  font-variant-numeric:tabular-nums}
-.lp2-court{position:relative;aspect-ratio:2/1;border-radius:12px;background:var(--l-court);
-  border:2px solid rgba(255,255,255,.55);transition:box-shadow .4s}
-.lp2-court s{position:absolute;text-decoration:none;background:rgba(255,255,255,.4)}
-.lp2-court s.net{left:50%;top:-2px;bottom:-2px;width:3px;margin-left:-1.5px;
-  background:rgba(255,255,255,.85)}
-.lp2-court s.k1{left:34%;top:0;bottom:0;width:2px}
-.lp2-court s.k2{left:66%;top:0;bottom:0;width:2px}
-.lp2-court s.m1{left:0;width:34%;top:50%;height:2px}
-.lp2-court s.m2{right:0;width:34%;top:50%;height:2px}
-.lp2-slot{position:absolute;width:1px;height:1px}
-.lp2-q{background:var(--l-sunk);border-radius:16px;padding:13px 14px}
-.lp2-qh{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.lp2-qh b{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--l-faint)}
-.lp2-qh span{font-size:12px;color:#7E97A8}
-.lp2-qrows{margin-top:10px;display:flex;flex-direction:column;gap:6px}
-.lp2-qrow{display:flex;align-items:center;gap:10px;height:38px}
-.lp2-qrow b{flex:none;width:18px;font-size:13px;font-weight:700}
-.lp2-qrow .sl{flex:none;width:96px;height:30px;position:relative}
-.lp2-qrow s{flex:1;height:1px;text-decoration:none}
-.lp2-you{margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;gap:9px}
-.lp2-you i{flex:none;width:9px;height:9px;border-radius:99px;background:var(--l-accent)}
-.lp2-you span{flex:1;font-size:15px;font-weight:600;color:#fff}
-/* A chip is positioned over the board and moved by transform to the centre of
-   a named slot. A chip whose slot cannot be found stays hidden rather than
-   parking itself at the corner. */
-.lp2-chip{position:absolute;left:0;top:0;width:92px;height:30px;border-radius:99px;
-  display:flex;align-items:center;gap:6px;padding:0 9px 0 4px;box-sizing:border-box;z-index:3;
-  background:rgba(11,22,29,.92);border:1px solid rgba(255,255,255,.14);
-  transition:transform .95s cubic-bezier(.65,0,.25,1),opacity .5s;will-change:transform}
-.lp2-chip.me{background:var(--l-accent);border-color:var(--l-accent-2);
-  animation:lpGlow 1.8s ease-out infinite}
-@keyframes lpGlow{0%{box-shadow:0 0 0 0 rgba(127,196,222,.55)}100%{box-shadow:0 0 0 18px rgba(127,196,222,0)}}
-.lp2-chip u{flex:none;width:22px;height:22px;border-radius:99px;display:flex;align-items:center;
-  justify-content:center;font-size:9.5px;font-weight:700;color:#fff;text-decoration:none}
-.lp2-chip.me u{background:var(--l-bg)}
-.lp2-chip b{font-size:12.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis}
-.lp2-chip.me b{font-weight:800;color:var(--l-bg)}
-@keyframes lpPop{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
-/* The notification is the product talking to you, so it is drawn as the
-   phone's own rather than as a banner of ours. */
-.lp2-toast{position:absolute;left:50%;top:12px;width:min(340px,calc(100% - 28px));
-  transform:translate(-50%,-160%);transition:transform .55s cubic-bezier(.2,.9,.25,1.15);
-  z-index:5;background:rgba(244,246,248,.97);border-radius:16px;padding:11px 13px;
-  display:flex;align-items:center;gap:11px;box-shadow:0 16px 40px rgba(0,0,0,.4)}
-.lp2-toast i{flex:none;width:34px;height:34px;border-radius:9px;background:var(--l-teal);
-  display:flex;align-items:center;justify-content:center}
-.lp2-toast i svg{width:18px;height:18px}
-.lp2-toast .tx{flex:1;min-width:0}
-.lp2-toast .tx span{display:block;font-size:12px;font-weight:600;color:#5A646E}
-.lp2-toast .tx b{display:block;margin-top:1px;font-size:14.5px;font-weight:600;
-  letter-spacing:-.01em;color:var(--l-ink)}
-
-/* ── counted facts ───────────────────────────────────────────────────── */
-.lp2-nums{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(18px,4vw,34px);
-  margin-top:clamp(26px,4vw,40px)}
-.lp2-nums div{display:flex;align-items:baseline;gap:7px}
-.lp2-nums b{font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-.04em;color:#fff}
-.lp2-nums span{font-size:14.5px;color:var(--l-body)}
-.lp2-nums s{width:1px;height:28px;background:rgba(255,255,255,.12);text-decoration:none}
-
-/* ── the community band ──────────────────────────────────────────────── */
-.lp2-light{background:var(--l-light);color:var(--l-ink)}
-.lp2-lin{max-width:1120px;margin:0 auto;padding:clamp(52px,8vw,96px) 16px clamp(28px,4vw,40px)}
-.lp2-kick{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--l-teal)}
-.lp2-h2{margin:12px 0 0;font-family:inherit;font-size:clamp(30px,5.4vw,52px);font-weight:800;
-  letter-spacing:-.04em;line-height:1.02;max-width:16ch;text-wrap:balance;color:var(--l-ink)}
-.lp2-p{margin:14px 0 0;font-size:17px;line-height:1.55;color:var(--l-ink-2);max-width:50ch;
-  text-wrap:pretty}
-.lp2-rows{padding:0 0 clamp(52px,8vw,96px);display:flex;flex-direction:column;gap:14px;
-  overflow:hidden}
-.lp2-mq{overflow:hidden}
-.lp2-mqin{display:flex;gap:14px;width:max-content;padding-left:16px}
-@keyframes lpMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-/* No backwards fill on purpose: if the animation never runs — a hidden tab, a
-   screenshot, a prerender — the element simply sits where it belongs rather
-   than starting invisible and staying that way. */
-@keyframes lpRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-.lp2-post{flex:none;width:300px;box-sizing:border-box;background:#fff;border-radius:18px;
-  padding:15px 16px;box-shadow:0 1px 3px rgba(23,36,43,.06),0 14px 30px rgba(23,36,43,.06)}
-.lp2-pwho{display:flex;align-items:center;gap:10px}
-.lp2-pwho u{flex:none;width:34px;height:34px;border-radius:99px;display:flex;align-items:center;
-  justify-content:center;font-size:12.5px;font-weight:600;color:#fff;text-decoration:none}
-.lp2-pwho div{flex:1;min-width:0}
-.lp2-pwho b{display:block;font-size:14.5px;font-weight:600;color:var(--l-ink);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp2-pwho span{display:block;font-size:12px;color:#66707A}
-.lp2-ptx{margin-top:10px;font-size:14.5px;line-height:1.45;color:var(--l-ink);text-wrap:pretty}
-.lp2-pacts{margin-top:12px;display:flex;gap:16px;font-size:13px;font-weight:600}
-.lp2-pacts .lk{color:#B23D33}
-.lp2-pacts .kd{color:#8A6712}
-.lp2-pacts .cm{color:#5A646E}
-.lp2-pill{flex:none;display:flex;align-items:center;gap:12px;border-radius:16px;
-  padding:12px 16px 12px 12px;box-sizing:border-box}
-.lp2-pill u{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;
-  justify-content:center;font-size:16px;font-weight:800;text-decoration:none}
-.lp2-pill b{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;
-  text-transform:uppercase}
-.lp2-pill span{display:block;margin-top:2px;font-size:15px;font-weight:700;letter-spacing:-.01em;
-  color:var(--l-ink);white-space:nowrap}
-
-/* ── fair by arithmetic ──────────────────────────────────────────────── */
-.lp2-dark{background:var(--l-sunk);color:#fff}
-.lp2-dark .lp2-kick{color:var(--l-accent)}
-.lp2-dark .lp2-h2{color:#fff;max-width:18ch;font-size:clamp(28px,5vw,46px);line-height:1.04}
-.lp2-stats{margin-top:clamp(28px,4vw,44px);display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px}
-.lp2-stat{background:var(--l-panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;
-  padding:22px;transition:transform .25s,border-color .25s}
-.lp2-stat:hover{transform:translateY(-4px);border-color:rgba(127,196,222,.4)}
-.lp2-stat b{display:block;font-size:clamp(40px,6vw,58px);font-weight:800;letter-spacing:-.045em;
-  line-height:1;color:#fff}
-.lp2-stat.green b{color:var(--l-green)}
-.lp2-stat span{display:block;margin-top:10px;font-size:15px;line-height:1.45;color:var(--l-body);
-  text-wrap:pretty}
-
-/* ── three steps ─────────────────────────────────────────────────────── */
-.lp2-steps{margin-top:clamp(20px,3vw,30px);display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px}
-.lp2-step{position:relative;background:#fff;border-radius:20px;padding:24px 22px;
-  box-shadow:0 1px 3px rgba(23,36,43,.06);overflow:hidden;
-  transition:transform .25s,box-shadow .25s}
-.lp2-step:hover{transform:translateY(-4px);
-  box-shadow:0 1px 3px rgba(23,36,43,.06),0 20px 44px rgba(23,36,43,.1)}
-.lp2-step u{position:absolute;right:-6px;top:-22px;font-size:120px;font-weight:800;
-  letter-spacing:-.06em;line-height:1;color:#EEF2F5;text-decoration:none}
-.lp2-step b{position:relative;display:block;font-size:21px;font-weight:700;letter-spacing:-.025em;
-  color:var(--l-ink)}
-.lp2-step span{position:relative;display:block;margin-top:8px;font-size:15.5px;line-height:1.5;
-  color:var(--l-ink-2);text-wrap:pretty}
-
-/* ── on this week ────────────────────────────────────────────────────── */
-.lp2-week{max-width:1120px;margin:0 auto;padding:0 16px clamp(52px,8vw,96px)}
-.lp2-wrow{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;
-  padding:11px 14px;margin-top:8px;background:#fff;border:0;border-radius:14px;cursor:pointer;
-  text-align:left;font-family:inherit;box-shadow:0 1px 3px rgba(23,36,43,.06);
-  transition:transform .2s,box-shadow .2s}
-.lp2-wrow:hover{transform:translateY(-2px);
-  box-shadow:0 1px 3px rgba(23,36,43,.06),0 14px 30px rgba(23,36,43,.08)}
-.lp2-wrow .t{flex:none;width:50px;border-radius:12px;background:#EEF0F2;padding:7px 0;
-  text-align:center}
-.lp2-wrow .t b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;
-  text-transform:uppercase;color:#66707A}
-.lp2-wrow .t i{display:block;font-style:normal;font-size:21px;font-weight:700;
-  letter-spacing:-.02em;line-height:1.05;color:var(--l-ink)}
-.lp2-wrow .n{flex:1;min-width:0}
-.lp2-wrow .n b{display:block;font-size:17px;font-weight:600;letter-spacing:-.01em;
-  color:var(--l-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp2-wrow .n span{display:block;margin-top:2px;font-size:13.5px;color:#66707A;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp2-wrow .s{flex:none;font-size:11px;font-weight:700;letter-spacing:.06em;
-  text-transform:uppercase;border-radius:99px;padding:4px 10px 3px;
-  color:#2A7049;background:#E9F3EC}
-.lp2-wrow .s.few{color:#B9762A;background:rgba(185,118,42,.12)}
-.lp2-wrow .s.full{color:var(--l-ink-3);background:#EEF0F2}
-
-/* ── the code ────────────────────────────────────────────────────────── */
-.lp2-cta{position:relative;overflow:hidden;color:#fff}
-.lp2-cta .lp2-ring{top:-240px;left:50%;width:760px;height:760px;margin-left:-380px;
-  border:2px solid rgba(74,132,172,.12);animation:none}
-.lp2-ctain{position:relative;max-width:1120px;margin:0 auto;
-  padding:clamp(60px,9vw,112px) 16px;text-align:center}
-.lp2-cta h2{margin:0 auto;font-family:inherit;font-size:clamp(32px,6vw,60px);font-weight:800;
-  letter-spacing:-.045em;line-height:1;max-width:14ch;text-wrap:balance;color:#fff}
-.lp2-code{margin:28px auto 0;display:flex;justify-content:center;gap:clamp(6px,1.4vw,10px);
-  perspective:600px}
-.lp2-code i{width:clamp(48px,11vw,72px);height:clamp(60px,14vw,90px);border-radius:14px;
-  background:#1B2E39;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;
-  justify-content:center;font-style:normal;font-size:clamp(28px,6.4vw,44px);font-weight:800;
-  color:#fff}
-@keyframes lpFlip{0%{transform:rotateX(90deg);opacity:0}100%{transform:rotateX(0);opacity:1}}
-.lp2-cta p{margin:20px auto 0;font-size:17px;line-height:1.5;color:var(--l-body);max-width:42ch;
-  text-wrap:pretty}
-.lp2-cta .lp2-ctas{margin:26px auto 0;justify-content:center}
-/* The install card keeps its markup and gets this page's palette, rather than
-   being rewritten — the same move the shop's and Manage's old rules got. */
-.lp2-get{max-width:460px;margin:22px auto 0;padding:18px;border-radius:18px;text-align:left;
-  background:var(--l-panel);border:1px solid rgba(255,255,255,.08)}
-.lp2-get .get-top{display:flex;gap:13px;align-items:flex-start}
-.lp2-get .get-mark{flex:none;width:46px;height:46px;border-radius:14px;display:grid;
-  place-items:center;background:rgba(255,255,255,.08);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13)}
-.lp2-get .get-tx{flex:1;min-width:0}
-.lp2-get .get-tx b{display:block;font-family:inherit;font-size:16px;font-weight:700;
-  letter-spacing:-.02em;color:#fff}
-.lp2-get .get-tx span{display:block;margin-top:4px;font-family:inherit;font-size:13.5px;
-  line-height:1.45;letter-spacing:0;text-transform:none;color:var(--l-body);text-wrap:pretty}
-.lp2-get .get-go{width:100%;margin-top:14px;min-height:48px;display:inline-flex;
-  align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;
-  background:#fff;color:var(--l-bg);font-family:inherit;font-size:16px;font-weight:600;
-  letter-spacing:-.01em;cursor:pointer}
-.lp2-get .get-foot{margin:10px 0 0;font-family:inherit;font-size:12.5px;letter-spacing:0;
-  text-transform:none;color:#7E97A8;text-align:center}
-
-/* ── the footer ──────────────────────────────────────────────────────── */
-.lp2-foot{border-top:1px solid rgba(255,255,255,.07)}
-.lp2-footin{max-width:1120px;margin:0 auto;padding:24px 16px calc(36px + env(safe-area-inset-bottom,0px));
-  display:flex;flex-wrap:wrap;align-items:center;gap:14px}
-.lp2-footin img{flex:none;display:block;width:170px;max-width:100%;height:auto;opacity:.85}
-.lp2-footin .tag{flex:1;min-width:130px;font-size:13.5px;color:var(--l-mute)}
-.lp2-links{display:flex;gap:16px;flex-wrap:wrap}
-.lp2-links a{font-size:13.5px;color:var(--l-mute);text-decoration:none}
-.lp2-links a:hover{color:#fff}
-
-/* The page is authored visible: reveal only ever *adds* the final state, so
-   if the script never runs the page still reads its own words. */
-@media (prefers-reduced-motion:reduce){
-  .lp2 *{animation:none !important;transition:none !important}
-}
-
 /* ══════════════ THE QUEUE, AS STACKS ══════════════
    Wide on purpose. It collapses to one column on a phone so it is never
    broken there, but it is drawn for a laptop on the bench — the only place
@@ -6247,185 +5959,6 @@ body.casting{overflow:hidden}
      runs the page still reads its own words. Everything that moves is driven
      straight against the DOM from one mount — a repaint would throw away the
      reveal styles the observer has just written and flicker the board. -->
-<section class="screen full lp2" id="screen-landing">
-<div class="lp2-scroll" id="lp2-scroll">
-
-  <div class="lp2-wrap">
-    <div class="lp2-bar">
-      <span class="lp2-logo"><img src="sos-logo-white.png" alt="Sideout Society"></span>
-      <!-- Staff is the way to the manager app, where nights are set up and
-           scored. Until that address is wired in it signs you in here, which
-           is the first half of getting there either way. -->
-      <button class="lp2-staff" onclick="lpStaff()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/></svg>Staff</button>
-      <button class="lp2-signin" onclick="AuthUI.open(()=>{ gateScreens(); }, 'in')">Sign in</button>
-      <button class="lp2-join" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join a night</button>
-    </div>
-  </div>
-
-  <div class="lp2-hero">
-    <div class="lp2-ring a"></div>
-    <div class="lp2-ring b"></div>
-    <div class="lp2-in">
-      <div class="lp2-eye" data-rv="1">
-        <span class="lp2-dot"><i></i><u></u></span>
-        <span>Sideout Society · open play</span>
-      </div>
-      <h1 class="lp2-h1" data-rv="2">Never ask who&rsquo;s <i>next again.</i></h1>
-      <p class="lp2-sub" data-rv="3">A fair queue, live courts, and your spot in line on your
-        phone. Sideout runs the night so the organiser can actually play.</p>
-      <div class="lp2-ctas" data-rv="4">
-        <button class="lp2-go" onclick="findSession()">Join tonight&rsquo;s queue</button>
-        <button class="lp2-ghost" onclick="lpDemo()">See a night run</button>
-      </div>
-
-      <!-- The board is the product running, not a screenshot: the real rule,
-           first to eleven and win by two, then the four come off and the next
-           four walk on. A page that animated a fake score could drift from
-           what the product does; this one cannot. -->
-      <div class="lp2-board" id="lp2-board" data-rv="5">
-        <div class="lp2-bh">
-          <span class="lv">Live</span>
-          <span class="wh" id="lp2-when">Thursday Open Play · Pickleturf</span>
-          <span class="ck" id="lp2-clock">7:42</span>
-        </div>
-        <div class="lp2-bgrid">
-          <div class="lp2-cts">
-            <div>
-              <div class="lp2-ch"><b>Court 1</b><i data-cs="0">0 &ndash; 0</i></div>
-              <div class="lp2-court" data-ct="0">
-                <s class="net"></s><s class="k1"></s><s class="k2"></s><s class="m1"></s><s class="m2"></s>
-                <span class="lp2-slot" data-slot="c0-0" style="left:17%;top:27%"></span>
-                <span class="lp2-slot" data-slot="c0-1" style="left:17%;top:73%"></span>
-                <span class="lp2-slot" data-slot="c0-2" style="left:83%;top:27%"></span>
-                <span class="lp2-slot" data-slot="c0-3" style="left:83%;top:73%"></span>
-              </div>
-            </div>
-            <div>
-              <div class="lp2-ch"><b>Court 2</b><i data-cs="1">0 &ndash; 0</i></div>
-              <div class="lp2-court" data-ct="1">
-                <s class="net"></s><s class="k1"></s><s class="k2"></s><s class="m1"></s><s class="m2"></s>
-                <span class="lp2-slot" data-slot="c1-0" style="left:17%;top:27%"></span>
-                <span class="lp2-slot" data-slot="c1-1" style="left:17%;top:73%"></span>
-                <span class="lp2-slot" data-slot="c1-2" style="left:83%;top:27%"></span>
-                <span class="lp2-slot" data-slot="c1-3" style="left:83%;top:73%"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="lp2-q">
-            <div class="lp2-qh"><b>Up next</b><span>Longest wait goes first</span></div>
-            <div class="lp2-qrows">
-              <div class="lp2-qrow"><b style="color:#7FC4DE">1</b><span class="sl"><span class="lp2-slot" data-slot="q0" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
-              <div class="lp2-qrow"><b style="color:#7FC4DE">2</b><span class="sl"><span class="lp2-slot" data-slot="q1" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
-              <div class="lp2-qrow"><b style="color:#7FC4DE">3</b><span class="sl"><span class="lp2-slot" data-slot="q2" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
-              <div class="lp2-qrow"><b style="color:#7FC4DE">4</b><span class="sl"><span class="lp2-slot" data-slot="q3" style="left:50%;top:50%"></span></span><s style="background:rgba(127,196,222,.18)"></s></div>
-              <div class="lp2-qrow"><b style="color:#56707F">5</b><span class="sl"><span class="lp2-slot" data-slot="q4" style="left:50%;top:50%"></span></span><s style="background:rgba(255,255,255,.06)"></s></div>
-              <div class="lp2-qrow"><b style="color:#56707F">6</b><span class="sl"><span class="lp2-slot" data-slot="q5" style="left:50%;top:50%"></span></span><s style="background:rgba(255,255,255,.06)"></s></div>
-            </div>
-            <div class="lp2-you"><i></i><span id="lp2-you">You are 4th in line</span></div>
-          </div>
-        </div>
-
-        <div class="lp2-toast" id="lp2-toast">
-          <i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15.5 6 9.5z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg></i>
-          <span class="tx"><span>Sideout · now</span><b id="lp2-toast-tx">You&rsquo;re up next. Grab your paddle.</b></span>
-        </div>
-      </div>
-
-      <!-- Counted, never quoted. A front page that says "1,240 players" when
-           the club has 85 is the first thing somebody finds out you were
-           wrong about. A figure that cannot be counted is left out. -->
-      <div class="lp2-nums" id="lp-nums" data-rv="6" hidden></div>
-    </div>
-  </div>
-
-  <div class="lp2-light">
-    <div class="lp2-lin">
-      <div class="lp2-kick" data-rv="1">The club in your pocket</div>
-      <h2 class="lp2-h2" data-rv="2">The night doesn&rsquo;t end at the last point.</h2>
-      <p class="lp2-p" data-rv="3">Results post themselves to the club feed. People give kudos
-        for the run nobody saw coming, and argue about it in the thread until next week.</p>
-    </div>
-    <div class="lp2-rows">
-      <div class="lp2-mq"><div class="lp2-mqin" data-mq="48" id="lp2-mq-a"></div></div>
-      <div class="lp2-mq"><div class="lp2-mqin" data-mq="-56" id="lp2-mq-b"></div></div>
-    </div>
-  </div>
-
-  <div class="lp2-dark">
-    <div class="lp2-lin">
-      <div class="lp2-kick" data-rv="1">Fair by arithmetic</div>
-      <h2 class="lp2-h2" data-rv="2">Nobody sits twice while someone plays three in a row.</h2>
-      <!-- These three are the result of the simulation in CLAUDE.md — forty-three
-           players across four courts over twenty rounds — not illustrative
-           figures. That is the only reason they are allowed on this page. -->
-      <div class="lp2-stats">
-        <div class="lp2-stat" data-rv="1"><b data-count="2">2</b><span>The longest anybody sits
-          out, on a night of forty-three across four courts.</span></div>
-        <div class="lp2-stat green" data-rv="2"><b data-count="0">0</b><span>Players made to sit
-          two rounds back to back.</span></div>
-        <div class="lp2-stat" data-rv="3"><b>7&ndash;8</b><span>Games each, unchanged. The
-          fairness costs nobody a game.</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="lp2-light">
-    <div class="lp2-lin">
-      <div class="lp2-kick" data-rv="1">Three taps from your sofa to a court</div>
-      <div class="lp2-steps">
-        <div class="lp2-step" data-rv="1"><u>1</u><b>Enter the code</b><span>It is on the board at
-          the venue. You are in the line before you have found your shoes.</span></div>
-        <div class="lp2-step" data-rv="2"><u>2</u><b>Watch your spot</b><span>Your phone shows
-          where you are and buzzes when you are up. No more hovering by the courts.</span></div>
-        <div class="lp2-step" data-rv="3"><u>3</u><b>Play, then brag</b><span>Scores bank to your
-          record and the night posts to the club feed by itself.</span></div>
-      </div>
-    </div>
-    <!-- Real nights, read from the server. The whole block disappears when
-         there is nothing: an empty "on this week" says the product is dead
-         far louder than no block at all. -->
-    <div class="lp2-week" id="lp-live" hidden></div>
-  </div>
-
-  <div class="lp2-cta">
-    <div class="lp2-ring"></div>
-    <div class="lp2-ctain">
-      <h2 data-rv="1">Tonight&rsquo;s code is on the board.</h2>
-      <div class="lp2-code" id="lp2-code"><i>P</i><i>T</i><i>L</i><i>A</i><i>N</i></div>
-      <p data-rv="2">Type it in and you are in the line. No app store, and nothing to set up.</p>
-      <div class="lp2-ctas" data-rv="3">
-        <button class="lp2-go" onclick="findSession()">Enter a code</button>
-        <button class="lp2-ghost" onclick="AuthUI.open(()=>{ gateScreens(); }, 'up')">Join the club</button>
-      </div>
-      <!-- The install card. Its only home was the old front page, and the
-           redesign has no slot for one — but an iPhone cannot be told a
-           session has gone up unless the app is on the Home Screen, so
-           dropping it would have quietly taken notifications off every iOS
-           phone that had not installed yet. It sits under the line that is
-           already about not needing an app store. `Install.paint()` hides it
-           on a device that has already installed. -->
-      <div class="lp2-get" id="lp-get" hidden></div>
-    </div>
-  </div>
-
-  <div class="lp2-foot">
-    <div class="lp2-footin">
-      <img src="sos-logo-white.png" alt="Sideout Society">
-      <span class="tag">Open play, run properly.</span>
-      <span class="lp2-links">
-        <a href="#privacy">Privacy</a>
-        <a href="#terms">Terms</a>
-        <a href="#contact">Contact</a>
-      </span>
-    </div>
-  </div>
-
-</div>
-</section>
 
   <!-- A night that has finished is a place, not a pop-up. It has three tabs
        like a live session does, and the results underneath are the whole
@@ -6584,7 +6117,7 @@ body.casting{overflow:hidden}
     <header class="ah-bar">
       <img src="sos-logo-white.png" alt="Sideout Society">
       <span class="sp"></span>
-      <button class="ah-staff" onclick="lpStaff()">
+      <button class="ah-staff" onclick="staffApp()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/></svg>Staff</button>
     </header>
@@ -6693,7 +6226,6 @@ body.casting{overflow:hidden}
 
     <footer class="ah-foot">
       <span class="c">&copy; Sideout Society</span>
-      <button onclick="AuthUI.about()">What is Sideout?</button>
       <button onclick="AuthUI.soonPage('Privacy')">Privacy</button>
       <button onclick="AuthUI.soonPage('Terms')">Terms</button>
       <button onclick="AuthUI.soonPage('Help')">Help</button>
@@ -17020,14 +16552,6 @@ const AuthUI = {
 
   soon(which){ toast(which + ' sign-in is under development.'); },
 
-  /* The marketing page, for somebody who arrived without knowing what this
-     is. Its own Sign in and Join a night come back here. */
-  about(){
-    this.unpitch();
-    this.shown = false;
-    showOnly('landing');
-    try{ paintLandingFacts(); }catch(e){}
-  },
   soonPage(what){ toast(what + ' has not been written yet.'); },
 
   /* ── the pitch ────────────────────────────────────────────────────────
@@ -18975,6 +18499,14 @@ async function paintMe(){
       </button>
     </div>
 
+    ${/* The install card. Its home was the front page, and the front page has
+          gone — but an iPhone cannot be told a session has gone up unless the
+          app is on the Home Screen, so it needed somewhere real rather than
+          nowhere. Here is better than where it was: it sits with Notifications,
+          which is the setting it exists to make possible, and it is a signed-in
+          member who needs it. `Install.paint()` hides it once installed. */''}
+    <div class="pf-get" id="lp-get" hidden></div>
+
     ${meOrganizing()}
 
     <div class="pf-card pf-out">
@@ -19602,7 +19134,7 @@ function canOrganize(){
 /* Every screen has to be listed here or showOnly() never puts `.on` on it —
    the section exists, go() routes to it, renderRun() fills it, and nothing
    appears. Same shape of trap as registering a format in five places. */
-const SCREENS = ['landing','auth','home','groups','group','player','games','board','me','members','roles','audit','setup','new','session','play','run','people','players','listing','share','stacks','comments','stats','playoff','past','results','market','chats'];
+const SCREENS = ['auth','home','groups','group','player','games','board','me','members','roles','audit','setup','new','session','play','run','people','players','listing','share','stacks','comments','stats','playoff','past','results','market','chats'];
 /* The screens that belong to running a session, as opposed to the
    ones that belong to the club. */
 /* Empty on purpose. The session shell — the Score / Queue / Manage / Stats
@@ -19766,7 +19298,7 @@ function syncNav(name){
      that use it for a title and a way back. */
   const titled = (name === 'home' || name === 'games' || name === 'board'
     || name === 'market' || name === 'chats' || name === 'me' || name === 'group');
-  const bare = (name === 'landing' || name === 'auth' || name === 'session'
+  const bare = (name === 'auth' || name === 'session'
     || name === 'people' || name === 'new' || name === 'listing'
     || name === 'share' || name === 'comments' || titled);
   /* Running a session is a different job from browsing the club, so it
@@ -19848,15 +19380,14 @@ function showOnly(name){
     const el = document.getElementById('screen-' + n);
     if(el) el.classList.toggle('on', n === name);
   });
-  const bare = (name === 'landing' || name === 'auth');
+  const bare = (name === 'auth');
   document.body.classList.toggle('authing', name === 'auth');
   /* the body keeps room for the dock; the front page has no dock, and
      that spare 88px was the whole reason it would not sit on one screen.
      Sign-in has no dock either — it was reserving room for a bar that
      body.authing hides, which is exactly the 88px that pushed the button
      under the fold and made a two-field form scroll. */
-  document.body.classList.toggle('nodock', name === 'landing' || name === 'auth');
-  if(name === 'landing') paintLandingFacts();
+  document.body.classList.toggle('nodock', name === 'auth');
   /* The session brand bar is gone. It carried a back button, the club badge,
      the format underneath, the Live pill and the big-screen button — all of
      it about running a night, none of it about the club. And it had no
@@ -19914,13 +19445,13 @@ function gateScreens(){
      still along the bottom and a "sign in" button in the middle of it:
      somebody looking at a shell they cannot use assumes it is broken.
 
-     This used to be the marketing page. The front door does that job better
-     for somebody who already knows what this is, which at a one-club link is
-     nearly everybody — and the marketing page is one tap away on "What is
-     Sideout?" for whoever does not. With no accounts configured there is
-     nothing to sign in to, so that case still gets the page. */
+     There is no marketing page any more. It made somebody who already knows
+     what this is — which at a one-club link is nearly everybody — click Sign
+     in before they could do anything, and a front door you have to open twice
+     is not a front door. With no accounts configured there is nothing to sign
+     in to at all, so that case goes straight to the app. */
   if(Auth.on()) AuthUI.open(null, 'in');
-  else showOnly('landing');
+  else go('home');
 }
 /* The landing CTA. Local mode goes straight in; with accounts on you
    need to be signed in, and an organizer, before there is anything
@@ -23958,285 +23489,11 @@ function leaveWatching(){
    rule — first to eleven, win by two — so the page cannot drift from what the
    app does, and the four coming off go to the back of the queue exactly as
    they would on a court. */
-const LP = {
-  COL: {
-    You:'#2D6A85', Lorenzo:'#1F4F65', Mika:'#A05A6B', AJ:'#3F7397', Kat:'#9A6340',
-    Teara:'#6D6A9C', Kuya:'#3A3F45', Sol:'#3D7A6E', Jasmine:'#8E5572', Ry:'#3F7397',
-    CJ:'#4E6C7C', Bea:'#8E5572', Shai:'#6D6A9C', Nico:'#3D7A6E', Dee:'#9A6340', Sam:'#1F4F65'
-  },
-  W: 92, H: 30,
-  timers: [], built: false,
-
-  reduced(){
-    try{ return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
-    catch(e){ return false; }
-  },
-
-  start(){
-    this.stop();
-    this.reduce = this.reduced();
-    [this.marquees, this.reveal, this.rows, this.board].forEach(f =>{
-      try{ f.call(this); }catch(e){ try{ console.error('[landing]', e); }catch(_){} }
-    });
-  },
-
-  stop(){
-    (this.timers || []).forEach(t =>{ clearInterval(t); clearTimeout(t); });
-    this.timers = [];
-    if(this.io) { try{ this.io.disconnect(); }catch(e){} this.io = null; }
-    if(this.ro) { try{ this.ro.disconnect(); }catch(e){} this.ro = null; }
-    if(this.onSize){ window.removeEventListener('resize', this.onSize); this.onSize = null; }
-    this.built = false;
-    const b = document.getElementById('lp2-board');
-    if(b) b.querySelectorAll('.lp2-chip').forEach(c => c.remove());
-  },
-
-  /* ── reveal ───────────────────────────────────────────────────────────
-     Never hide anything the observer might fail to bring back. What is
-     already on screen at mount rises in on a keyframe with no backwards
-     fill, so if the animation never runs (a hidden tab, a screenshot) the
-     element simply sits where it belongs. Only what is below the fold is
-     hidden, and a safety timer shows anything the observer has not
-     reported by then. */
-  reveal(){
-    const els = [].slice.call(document.querySelectorAll('#screen-landing [data-rv]'));
-    if(!els.length || this.reduce) return;
-    if(document.visibilityState === 'hidden' || !('IntersectionObserver' in window)) return;
-    const vh = window.innerHeight || 800;
-    const later = [];
-    els.forEach(el =>{
-      const d = ((Number(el.getAttribute('data-rv')) || 1) - 1) * 90;
-      if(el.getBoundingClientRect().top < vh){
-        el.__rv = true;
-        el.style.animation = 'lpRise .8s cubic-bezier(.22,.8,.3,1) ' + d + 'ms';
-        this.count(el);
-      } else {
-        el.style.transition = 'opacity .8s cubic-bezier(.22,.8,.3,1), transform .8s cubic-bezier(.22,.8,.3,1)';
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(22px)';
-        later.push(el);
-      }
-    });
-    const show = el =>{
-      if(el.__rv) return;
-      el.__rv = true;
-      el.style.transitionDelay = ((Number(el.getAttribute('data-rv')) || 1) - 1) * 90 + 'ms';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-      this.count(el);
-    };
-    this.io = new IntersectionObserver(es => es.forEach(e =>{
-      if(!e.isIntersecting) return;
-      show(e.target); this.io.unobserve(e.target);
-    }), { rootMargin:'0px 0px -8% 0px', threshold:.05 });
-    later.forEach(el => this.io.observe(el));
-    this.timers.push(setTimeout(()=> later.forEach(show), 1400));
-
-    /* The code flips in once, when it is reached. */
-    const code = document.getElementById('lp2-code');
-    if(code && 'IntersectionObserver' in window){
-      const flip = new IntersectionObserver(es => es.forEach(e =>{
-        if(!e.isIntersecting || code.__f) return;
-        code.__f = true;
-        [].slice.call(code.children).forEach((t, i) =>{
-          t.style.animation = 'lpFlip .6s cubic-bezier(.2,.9,.3,1.2) ' + (i * 110) + 'ms';
-        });
-        flip.disconnect();
-      }), { threshold:.3 });
-      flip.observe(code);
-    }
-  },
-
-  /* A figure counts up to what it already says, so the number in the markup
-     is the number either way. */
-  count(el){
-    const n = el.matches('[data-count]') ? el : el.querySelector('[data-count]');
-    if(!n || n.__c) return;
-    n.__c = true;
-    const target = parseInt(n.getAttribute('data-count'), 10);
-    if(!isFinite(target) || target === 0) return;
-    const t0 = performance.now();
-    const step = now =>{
-      const p = Math.min(1, (now - t0) / 1000);
-      n.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
-      if(p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  },
-
-  marquees(){
-    if(this.reduce) return;
-    document.querySelectorAll('#screen-landing [data-mq]').forEach(el =>{
-      const s = Number(el.getAttribute('data-mq'));
-      el.style.animation = 'lpMarq ' + Math.abs(s) + 's linear infinite' + (s < 0 ? ' reverse' : '');
-    });
-  },
-
-  /* The two marquee rows. Duplicated so the loop has no seam. */
-  rows(){
-    const a = document.getElementById('lp2-mq-a'), b = document.getElementById('lp2-mq-b');
-    if(!a || !b) return;
-    const ini = w => String(w).split(' ').map(x => x[0]).join('').slice(0, 2);
-    const posts = [
-      ['Sideout Society','an hour ago','Lorenzo took the night outright. Third crown of the season.',31,28,9],
-      ['Kuya Ramon','yesterday','Two years ago I could not serve. Tonight I beat Lorenzo. Retiring at the top.',44,19,12],
-      ['Mika Santos','3 hours ago','Whoever left a grey Selkirk by court three, I have it. Describe the grip tape.',12,0,4],
-      ['Jasmine Delgado','Tuesday','7am Sunday is a personal attack and I will be there.',22,6,8],
-      ['CJ Mercado','Monday','Every week somebody leaves a paddle and every week it is never mine.',17,3,5]
-    ].map(([who, when, tx, lk, kd, cm]) =>{
-      const sys = who === 'Sideout Society';
-      return `<div class="lp2-post"><div class="lp2-pwho">
-        <u style="background:${sys ? '#17242B' : (this.COL[who.split(' ')[0]] || '#4E6C7C')}">${sys ? 'SS' : esc(ini(who))}</u>
-        <div><b>${esc(who)}</b><span>${esc(when)}</span></div></div>
-        <div class="lp2-ptx">${esc(tx)}</div>
-        <div class="lp2-pacts"><span class="lk">&#9829; ${lk}</span>
-          <span class="kd">&#9733; ${kd}</span><span class="cm">${cm} replies</span></div></div>`;
-    }).join('');
-
-    const tones = {
-      gold:  ['#FBF7EC','#EADFC2','#F1E4BF','#8A6712'],
-      green: ['#EEF6F1','#CFE5D7','#D7EBDF','#2A7049'],
-      teal:  ['#ffffff','rgba(60,60,67,.12)','#E7F0F4','#2D6A85']
-    };
-    const pills = [
-      ['Crown','Lorenzo takes the night','gold','♛'],
-      ['Session full','Wednesday Regular · 24 of 24','teal','S'],
-      ['Kudos','Kuya beat the champ','gold','★'],
-      ['New member','Shai joined the club','green','N'],
-      ['Podium','AJ, 2nd · 5–2','teal','P'],
-      ['Birthday','Happy birthday, Bea','green','✦']
-    ].map(([kind, title, tone, mark]) =>{
-      const [bg, br, tile, fg] = tones[tone];
-      return `<div class="lp2-pill" style="background:${bg};border:1px solid ${br}">
-        <u style="background:${tile};color:${fg}">${mark}</u>
-        <div><b style="color:${fg}">${esc(kind)}</b><span>${esc(title)}</span></div></div>`;
-    }).join('');
-
-    a.innerHTML = posts + posts;
-    b.innerHTML = pills + pills;
-  },
-
-  /* ── the board ────────────────────────────────────────────────────── */
-  board(){
-    const stage = document.getElementById('lp2-board');
-    if(!stage || this.built) return;
-    if(stage.querySelectorAll('[data-slot]').length < 14) return;
-    this.built = true;
-    this.stage = stage;
-    this.courts = [['Lorenzo','Mika','AJ','Kat'], ['Teara','Kuya','Sol','Jasmine']];
-    this.queue  = ['Ry','CJ','Bea','You','Shai','Nico','Dee','Sam'];
-    this.score  = [[3,2],[5,6]];
-    this.busy   = [false,false];
-    this.chips  = {};
-
-    Object.keys(this.COL).forEach(n =>{
-      const me = n === 'You';
-      const d = document.createElement('div');
-      d.className = 'lp2-chip' + (me ? ' me' : '');
-      d.innerHTML = '<u style="background:' + (me ? '' : this.COL[n]) + '">'
-        + esc(n.slice(0, 2).toUpperCase()) + '</u><b>' + esc(n) + '</b>';
-      d.style.opacity = '0';
-      stage.appendChild(d);
-      this.chips[n] = d;
-    });
-
-    this.paintScores();
-    this.layout();
-    this.timers.push(setTimeout(()=> this.layout(), 60));
-    if(window.ResizeObserver){
-      this.ro = new ResizeObserver(()=> this.layout());
-      this.ro.observe(stage);
-    }
-    this.onSize = ()=> this.layout();
-    window.addEventListener('resize', this.onSize);
-    if(this.reduce) return;
-
-    let secs = 462;
-    this.timers.push(setInterval(()=>{
-      secs++;
-      const c = document.getElementById('lp2-clock');
-      if(c) c.textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
-    }, 1000));
-    this.timers.push(setInterval(()=> this.rally(), 560));
-  },
-
-  rally(){
-    const open = [0,1].filter(i => !this.busy[i]);
-    if(!open.length) return;
-    const ci = open[Math.floor(Math.random() * open.length)];
-    this.score[ci][Math.random() < .5 ? 0 : 1]++;
-    const el = this.stage.querySelector('[data-cs="' + ci + '"]');
-    if(el){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'lpPop .4s ease-out'; }
-    this.paintScores();
-    const [a, b] = this.score[ci];
-    /* The real rule, so the page cannot say something the product does not. */
-    if(Math.max(a, b) >= 11 && Math.abs(a - b) >= 2) this.finish(ci);
-  },
-
-  finish(ci){
-    this.busy[ci] = true;
-    const court = this.stage.querySelector('[data-ct="' + ci + '"]');
-    if(court) court.style.boxShadow = '0 0 0 4px rgba(95,191,138,.7)';
-    this.timers.push(setTimeout(()=>{
-      if(court) court.style.boxShadow = 'none';
-      const off = this.courts[ci];
-      this.courts[ci] = this.queue.splice(0, 4);
-      this.queue = this.queue.concat(off);
-      this.score[ci] = [0, 0];
-      this.paintScores();
-      this.layout();
-      this.timers.push(setTimeout(()=>{ this.busy[ci] = false; }, 1100));
-    }, 900));
-  },
-
-  paintScores(){
-    [0,1].forEach(i =>{
-      const el = this.stage && this.stage.querySelector('[data-cs="' + i + '"]');
-      if(el) el.textContent = this.score[i][0] + ' – ' + this.score[i][1];
-    });
-  },
-
-  /* Chips are moved to the centre of a named slot, measured each time so a
-     resize cannot leave them behind. A chip whose slot is not there stays
-     hidden rather than parking itself at 0,0. */
-  layout(){
-    if(!this.stage || !this.chips) return;
-    const st = this.stage.getBoundingClientRect();
-    const at = key =>{
-      const s = this.stage.querySelector('[data-slot="' + key + '"]');
-      if(!s) return null;
-      const r = s.getBoundingClientRect();
-      return [r.left - st.left + r.width / 2, r.top - st.top + r.height / 2];
-    };
-    const place = (n, p, o) =>{
-      const el = this.chips[n];
-      if(!el) return;
-      if(!p){ el.style.opacity = '0'; return; }
-      el.style.transform = 'translate(' + (p[0] - this.W / 2) + 'px,' + (p[1] - this.H / 2) + 'px)';
-      el.style.opacity = String(o);
-    };
-    this.courts.forEach((c, ci) => c.forEach((n, i) => place(n, at('c' + ci + '-' + i), 1)));
-    this.queue.forEach((n, i) => place(n, at('q' + Math.min(i, 5)), i < 6 ? 1 : 0));
-
-    const ord = k => k + (k % 10 === 1 && k !== 11 ? 'st' : k % 10 === 2 && k !== 12 ? 'nd'
-      : k % 10 === 3 && k !== 13 ? 'rd' : 'th');
-    const qi = this.queue.indexOf('You');
-    const ci = this.courts.findIndex(c => c.indexOf('You') >= 0);
-    const set = (id, s) =>{ const e = document.getElementById(id); if(e && e.textContent !== s) e.textContent = s; };
-    set('lp2-you', ci >= 0 ? 'You are on Court ' + (ci + 1) + '. Go.' : 'You are ' + ord(qi + 1) + ' in line');
-    let show = false;
-    if(ci >= 0){ show = true; set('lp2-toast-tx', 'Court ' + (ci + 1) + ' is yours. Go play.'); }
-    else if(qi >= 0 && qi < 4){ show = true; set('lp2-toast-tx', 'You’re up next. Grab your paddle.'); }
-    const t = document.getElementById('lp2-toast');
-    const tf = show ? 'translate(-50%,0)' : 'translate(-50%,-160%)';
-    if(t && t.style.transform !== tf) t.style.transform = tf;
-  }
-};
 
 /* The manager app is where nights are set up and scored. Until its address is
    wired in, signing in here is the first half of getting there either way —
    and it is the honest thing to do rather than a button that goes nowhere. */
-function lpStaff(){
+function staffApp(){
   AuthUI.open(()=>{ gateScreens(); }, 'in');
   toast('Running a night is in the Sideout manager app.');
 }
@@ -24245,93 +23502,7 @@ function lpStaff(){
    the board above is the product moving, but a finished night is the thing
    itself and anybody can open one without an account. Nothing to show, and it
    takes you to the board rather than to an apology. */
-async function lpDemo(){
-  let past = (typeof Feed !== 'undefined' && Feed.past) ? Feed.past : null;
-  if(!past && typeof Live !== 'undefined' && Live.ready()){
-    try{ past = await Live.rpc('sideout_past', { p_club: CONFIG.club || 'sideout' }); }
-    catch(e){ past = null; }
-  }
-  const one = (past || [])[0];
-  if(one && one.code){ pastSession(one.code); return; }
-  const b = document.querySelector('.lp2-board');
-  if(b) try{ b.scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
-}
 
-async function paintLandingFacts(){
-  /* The bar and the footer wear the club's own mark as a cropped image now,
-     so there is no SVG to draw here. The board and the reveal start from the
-     same place the facts do — this runs whenever the front page is shown. */
-  LP.start();
-  paintIcons(document.getElementById('screen-landing'));
-
-  /* Every number on this page is counted, never quoted. A front page that
-     says "1,240 players" when the club has 85 is the first thing somebody
-     finds out you were wrong about, and it is the one page where being
-     caught exaggerating costs the most. A figure we cannot count is left
-     out rather than guessed. */
-  const nums = document.getElementById('lp-nums');
-  const live = document.getElementById('lp-live');
-  const put = (members, sessions, clubs) =>{
-    if(!nums) return;
-    const cell = (n, w) => `<div><b>${n}</b><span>${esc(w)}</span></div>`;
-    const bits = [];
-    if(members) bits.push(cell(members, members === 1 ? 'player' : 'players'));
-    if(sessions) bits.push(cell(sessions, sessions === 1 ? 'session coming up' : 'sessions coming up'));
-    if(clubs) bits.push(cell(clubs, clubs === 1 ? 'club' : 'clubs'));
-    nums.innerHTML = bits.join('<s></s>');
-    nums.hidden = !bits.length;
-  };
-
-  /* whatever this device already knows, on screen at once */
-  const cached = (typeof Club !== 'undefined' && Club.cache) ? Club.cache() : null;
-  put((cached && cached.list && cached.list.length) || 0, 0, 0);
-
-  if(!Live.ready()) return;
-  let members = 0, clubs = 0, up = [];
-  try{
-    const rows = await Live.api('members?club=eq.' +
-      encodeURIComponent(CONFIG.club || 'sideout') + '&select=id');
-    members = Array.isArray(rows) ? rows.length : 0;
-  }catch(e){}
-  try{ up = await Live.rpc('sideout_upcoming', { p_club: CONFIG.club || 'sideout' }) || []; }
-  catch(e){ up = []; }
-  try{
-    const gs = await Live.rpc('sideout_groups', { p_club: CONFIG.club || 'sideout' }) || [];
-    clubs = gs.length;
-  }catch(e){}
-  if(!document.getElementById('lp-nums')) return;
-  put(members, up.length, clubs);
-
-  /* What is actually on. Three at most, soonest first, and the whole block
-     disappears if there is nothing — an empty "live now" panel says the
-     product is dead far louder than no panel at all. */
-  if(!live) return;
-  const soon = up.filter(r => !r.ended)
-    .sort((x, y) => (Feed.ms(x.starts_at) || 0) - (Feed.ms(y.starts_at) || 0))
-    .slice(0, 3);
-  if(!soon.length){ live.hidden = true; return; }
-  live.innerHTML = `<div class="lp2-kick">On this week</div>` + soon.map(r =>{
-    const t = Feed.ms(r.starts_at);
-    const d = t ? new Date(t) : null;
-    /* 12-hour, or the 9pm session reads "21 PM". The line under it is the
-       day for anything that is not today, because a time on its own three
-       days out tells you nothing useful. */
-    const h24 = d ? d.getHours() : 0;
-    const hh = d ? String(((h24 + 11) % 12) + 1) : '--';
-    const today = d && d.toDateString() === new Date().toDateString();
-    const ap = d ? (today ? (h24 < 12 ? 'AM' : 'PM') : DAYS[d.getDay()].slice(0, 3)) : '';
-    const left = r.cap ? Math.max(0, r.cap - (r.joined || 0)) : null;
-    const tag = left === null ? `${r.joined || 0} in`
-              : (left === 0 ? 'Full' : left + ' spot' + (left === 1 ? '' : 's'));
-    const cls = left === 0 ? 'full' : (left !== null && left <= 4 ? 'few' : '');
-    return `<button class="lp2-wrow" onclick="openSession('${esc(r.code)}')">
-      <span class="t"><b>${ap}</b><i>${hh}</i></span>
-      <span class="n"><b>${esc(r.title || 'Open play')}</b>
-        <span>${esc(r.venue ? (parseVenue(r.venue) || {}).name || r.venue : (d ? longDate(t) : ''))}</span></span>
-      <span class="s ${cls}">${esc(tag)}</span></button>`;
-  }).join('');
-  live.hidden = false;
-}
 
 /* Coming back from a reset link. Supabase hands the session over in
    the fragment, so it never reaches a server log. */

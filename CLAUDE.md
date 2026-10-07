@@ -183,7 +183,7 @@ not exist on macOS, so the Supabase MCP server failed to start with
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v167`. Forgetting this means testers see last week's app and
+Currently `sideout-v168`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -296,15 +296,30 @@ where somebody attaches an existing record to their account. Anything
 reading that table needs an explicit kind filter — treating "not a leave"
 as a join announced claims as new players arriving.
 
-**`/` is the front door, not the marketing page.** `gateScreens()` sent a
-signed-out visitor to `screen-landing`; it opens the sign-in screen now. Both
-designs in the handoff claim the same address — Landing v2 says it "replaces
-the home page" and Home says it "is the app's front door" — and for a one-club
-link the front door is the better answer, because nearly everybody arriving
-already knows what this is. The marketing page is one tap away on **What is
-Sideout?** in the front door's footer, and its own Sign in and Join a night
-come straight back. With no accounts configured there is nothing to sign in
-to, so that case still gets the landing page.
+**There is no marketing page. `/` is the front door.** Both designs in the
+handoff claimed the same address — Landing v2 said it "replaces the home page"
+and Home said it "is the app's front door" — and the landing lost: at a
+one-club link nearly everybody arriving already knows what this is, and
+putting a page in front of them that they have to click **Sign in** on is a
+front door you have to open twice.
+
+So `screen-landing` is deleted: 179 lines of markup, 308 of CSS, the `LP`
+board driver, `lpDemo()` and `paintLandingFacts()`. `'landing'` is out of
+`SCREENS` and out of `syncNav`'s lists. With no accounts configured there is
+nothing to sign in to, so that case goes straight to the app rather than to a
+page that no longer exists.
+
+**The install card moved to the profile, and is better for it.** Its home was
+the front page twice over, and both are gone — but an iPhone cannot be told a
+session has gone up unless the app is on the Home Screen, so it needed
+somewhere real rather than nowhere. It sits under SETTINGS beside
+Notifications, which is the setting it exists to make possible, and it is a
+signed-in member who needs it. `Install.paint()` still hides it once
+installed, and `#lp-get` is still the id it looks for — the one piece of the
+front page that outlived it.
+
+`sos-logo-white.png` is still used, by the front door's header, and is still
+in the service worker's `SHELL`.
 
 **The front door is one screen, and the multi-step signup is gone.** The old
 auth screen asked for eight things across three steps, which was the right

@@ -32,7 +32,7 @@ PROBE = """
 
    var KEEP=['home','games','board','market','chats','me','session','past',
              'results','groups','group','player','members','roles','audit',
-             'listing','share','comments','landing','auth'];
+             'listing','share','comments','auth'];
    out.push('=== kept screens ===');
    KEEP.forEach(function(n){
      var before=errs.length;
