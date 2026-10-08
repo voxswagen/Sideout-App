@@ -23091,30 +23091,32 @@ function copySessionLink(code, btn){
    same-tab navigation to another origin walks out of the PWA. A blocked
    pop-up is silent, which would read as the button doing nothing, so the
    address is copied instead: the same answer the big screen gives. */
-const MANAGER_URL = 'https://sosqueue.netlify.app';
+/* Same origin, on purpose and by proxy. `_redirects` serves the manager at
+   /queue/ from this site, so the two share a localStorage — which is the
+   whole of the sign-in handover. The manager's desk is a copy of this app and
+   reads the session under this app's own key, `sideout_session`; on one
+   origin it simply finds it, and nobody signs in twice.
+
+   The address is relative for the same reason: it is this site now, and a
+   link that names a host is a link that is wrong the day the host changes. */
+const MANAGER_URL = '/queue';
 
 function managerLink(code){
-  /* Deliberately NOT `#run/CODE`, and the reason is worth the paragraph
-     because the obvious link is the broken one.
+  /* The deep link works again now that the origin is shared, and it did not
+     before. Two things had to be true and neither was:
 
-     The manager's desk is a copy of *this* app running in an iframe, and it
-     reads the session out of `localStorage` under this app's own
-     `Auth.KEY` — `sideout_session`. On sosqueue's origin that key is written
-     by its `giveDeskSignIn()`, and `giveDeskSignIn()` has exactly one caller:
-     the **Run session** button on its own sessions list. Arriving at
-     `#run/CODE` from a link skips it, so the desk never gets a session, its
-     `ready()` returns null for twenty seconds and the screen says
-     "Couldn't sign you in on the desk — try Run session again". The error is
-     naming the only path that works.
+     `#run/CODE` and nothing after it — the manager's router is
+     `hash.slice(4).toUpperCase().replace(/[^A-Z0-9]/g,'')`, which takes
+     everything after `run/` and strips every character that is not a letter
+     or a digit, so anything appended is not separated from the code, it is
+     concatenated into it.
 
-     So this lands on that list. It is one more tap than a deep link and it
-     is a tap that succeeds.
-
-     The deep link becomes correct the moment the two apps share an origin:
-     this app writes `sideout_session` itself, so the desk would find it with
-     no handover at all — which is plainly what it was built expecting, since
-     it is this codebase and reads this key. Until then, the list. */
-  return MANAGER_URL + '/#sessions';
+     And a session the desk can find. Its `giveDeskSignIn()` has exactly one
+     caller — the Run session button on the manager's own list — so arriving
+     from a link used to skip it and the desk sat there until it gave up.
+     Across one origin there is nothing to skip: this app has already written
+     the key the desk reads. */
+  return MANAGER_URL + '/#run/' + encodeURIComponent(code);
 }
 
 function openManager(code){
@@ -23122,13 +23124,9 @@ function openManager(code){
   const url = managerLink(code);
   let w = null;
   try{ w = window.open(url, '_blank', 'noopener'); }catch(e){}
-  /* The link lands on the manager's list rather than on this night, for the
-     reason `managerLink()` sets out, so say which one to pick. Naming the
-     code rather than the title because that is what its rows are keyed on
-     and two nights a week can share a name. */
-  if(w){ toast('Pick ' + code + ' and tap Run session.'); return; }
+  if(w) return;
   if(legacyCopy(url)) toast('Pop-up blocked \u2014 the manager link is copied.');
-  else toast('Open the manager at ' + MANAGER_URL);
+  else toast('Open the manager at ' + location.origin + MANAGER_URL);
 }
 
 function legacyCopy(text){

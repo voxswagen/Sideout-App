@@ -219,7 +219,7 @@ would be open to the internet.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v181`. Forgetting this means testers see last week's app and
+Currently `sideout-v183`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -391,41 +391,54 @@ night here and not run it, which is a dead end on the one screen they most
 need not to hit. Every upcoming night carries **Open the session manager**
 under it for `canOrganize()`, going to `sosqueue.netlify.app/#run/CODE`.
 
-**The link goes to the manager's session *list*, not to `#run/CODE`, and the
-obvious link is the broken one.** Two separate traps, both found by reading
-sosqueue's source rather than reasoning about it.
+**The manager is served from this origin at `/queue/`, and that one line of
+`_redirects` deletes a whole class of bug.** It is deployed separately —
+dragged into Netlify as its own site — and it is a copy of *this app* behind
+its own screen: its desk reads the signed-in session straight out of
+`localStorage` under this app's own `Auth.KEY`, `sideout_session`.
+`localStorage` is per-origin, so across two domains that handover cannot
+happen however the link is written.
 
-*First:* nothing may be appended to its URL. Its router is
+Proxied rather than moved, so the manager keeps its own deploy and the
+drag-a-folder workflow is unchanged:
 
-```js
-if (hash.startsWith("run/")) {
-  const code = hash.slice(4).toUpperCase().replace(/[^A-Z0-9]/g, "");
+```
+/queue/*    https://sosqueue.netlify.app/:splat    200
 ```
 
-— everything after `run/`, uppercased, with every non-alphanumeric character
-*removed*. A token added after the code is not separated from it, it is
-**concatenated into** it: `#run/ABC123/at/eyJhbGci…` arrives as
-`ABC123ATEYJHBGCI…`, and "no such session in this club" is the right answer to
-that question. No appended scheme of any shape survives that line.
+**`sw.js` has to stand aside for that prefix or none of it works.**
+`req.mode === 'navigate'` matches every page on the origin, so this worker
+would answer the manager's navigations with *this app's shell* and the manager
+would never load at all. It returns early for `/queue` and `/queue/*`.
 
-*Second, and the reason the deep link is gone:* **the manager's desk is a copy
-of this app**, running in an iframe, reading the session out of `localStorage`
-under this app's own `Auth.KEY` — `sideout_session`. On sosqueue's origin that
-key is written by its `giveDeskSignIn()`, and that function has exactly one
-caller: the **Run session** button on its own sessions list. Arriving at
-`#run/CODE` from a link skips it, the desk never gets a session, its `ready()`
-returns null for twenty seconds, and the screen says *"Couldn't sign you in on
-the desk — try Run session again"*. The error names the only path that works.
+Checked before any of it was written, because this link had already been wrong
+twice: the manager uses no root-absolute paths, registers no service worker of
+its own (the desk's registration sits behind `if(false)`), and its engine posts
+to `parent` with `location.origin`, which is satisfied either way. Then checked
+after: `/queue/` and `/queue/desk/index.html?engine=1` both serve the manager,
+`/` is untouched.
 
-So `managerLink()` returns `/#sessions` and `openManager()` toasts which code
-to pick. One more tap, and it is a tap that succeeds.
+**The two reasons `#run/CODE` used to fail, both now gone, both worth keeping:**
 
-**The deep link becomes correct the moment the two apps share an origin**, and
-so does the sign-in: this app writes `sideout_session` itself, so the desk
-would find it with no handover at all. That is plainly what the desk was built
-expecting, since it *is* this codebase and reads this key. Serving sosqueue
-under `sosplay.netlify.app/…` is a deployment change that deletes this whole
-problem and costs no code. Until then, the list.
+* **Nothing may be appended to it.** The router is
+  `hash.slice(4).toUpperCase().replace(/[^A-Z0-9]/g, "")` — everything after
+  `run/`, with every non-alphanumeric character *removed*, so a token added
+  after the code is not separated from it but **concatenated into** it.
+  `#run/ABC123/at/eyJhbGci…` arrived as `ABC123ATEYJHBGCI…` and "no such
+  session in this club" was the right answer.
+* **The desk needs a session it can find.** `giveDeskSignIn()` has exactly one
+  caller — the **Run session** button on the manager's own list — so arriving
+  from a link skipped it, the desk's `ready()` returned null for twenty
+  seconds and the screen said *"Couldn't sign you in on the desk — try Run
+  session again"*. The error was naming the only path that worked. On one
+  origin there is nothing to skip: this app has already written the key.
+
+`MANAGER_URL` is `'/queue'`, relative, because it is this site now and a link
+that names a host is a link that is wrong the day the host changes.
+
+**The lesson, stated plainly because it cost two wrong fixes:** the manager is
+a public static page. `curl` it and `grep` the route, the auth and the asset
+paths. Reasoning about what another app probably does was wrong both times.
 
 A new window rather than a navigation, because an organizer scoring a night is
 in it for two hours and on an installed phone a same-tab navigation to another
