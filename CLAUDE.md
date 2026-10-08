@@ -219,7 +219,7 @@ would be open to the internet.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v179`. Forgetting this means testers see last week's app and
+Currently `sideout-v180`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -564,6 +564,25 @@ is deleted.** What survives of it is one asset and one rule:
 The front door states its own palette (`--a-*` on `#screen-auth.ah`) for the
 reason the landing did and the TV board still does: those tokens follow the
 club's accent, and this page is the product's, not a club's.
+
+**A missing favicon is not a blank tab — it is somebody else's logo.** There
+was no `<link rel="icon">` in the file and no `favicon.ico` in the repo, so
+Netlify answered `/favicon.ico` with its own default and every tab wore
+Netlify's teal crosshair. Checked by fetching it: 15,086 bytes of
+`image/vnd.microsoft.icon` that is not in `git ls-files`. `favicon.ico` (48px,
+for the bare request a browser or crawler makes without reading the markup),
+`favicon-32.png` and `favicon-16.png` are the club's now, declared in that
+order.
+
+**The preview image's size decides the shape of the card, and 256 is chosen.**
+WhatsApp draws a big poster once the image is roughly 300px square or larger,
+which is how a 512 `og:image` turned a link in a group chat into half a screen
+of logo. `og-image.png` is 256 — under WhatsApp's threshold, and still above
+the minimums Facebook (200) and Twitter (144) will accept, so it is a
+thumbnail everywhere rather than rejected somewhere. It is a separate file
+from `icon-512.png` on purpose: the app icon wants to be as large as the
+platform will take, and the preview wants to be small, and one file cannot be
+both.
 
 **A link preview is not drawn by anything in the app, and there was no
 `og:image` at all.** The card that comes up when somebody shares
