@@ -219,7 +219,7 @@ would be open to the internet.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v178`. Forgetting this means testers see last week's app and
+Currently `sideout-v179`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -587,6 +587,13 @@ Two things about those tags:
   will not resolve a relative `og:image`. `https://sosplay.netlify.app/` is
   the only place in the file that knows where it is deployed; move the app and
   those lines move with it.
+* **There is deliberately no `og:url`, and it is not an oversight.** It was
+  there for one commit and it was wrong: `og:url` declares the canonical
+  address, so a session link — `?s=MWEGF`, which is the link anybody actually
+  shares — announced itself as plain `/`. A scraper that honours that collapses
+  every session link onto one entry and then serves whatever it cached for `/`,
+  which is how a freshly-shared link can still show a card from months ago.
+  Without it each link is scraped as itself. Do not add it back.
 * **`summary`, not `summary_large_image`.** The artwork is square, and a
   square asked to fill a 1.91:1 banner is either letterboxed or cropped
   through the middle of the paddle.

@@ -69,8 +69,15 @@ const CONFIG = {
 
      `summary` rather than `summary_large_image`: the artwork is square, and
      a square asked to fill a 1.91:1 banner is either letterboxed or cropped
-     through the middle of the paddle. -->
-<meta property="og:url" content="https://sosplay.netlify.app/">
+     through the middle of the paddle.
+
+     There is deliberately **no `og:url`**. It was here for one commit and it
+     was a mistake: `og:url` declares the canonical address, so a session link
+     — `?s=MWEGF`, which is the link anybody actually shares — was announcing
+     itself as plain `/`. A scraper that honours that collapses every session
+     link onto one entry, and then hands back whatever it cached for `/`
+     months ago. Without it each link is scraped as itself, which is also the
+     honest answer: a session link is a different page to a watcher. -->
 <meta property="og:image" content="https://sosplay.netlify.app/icon-512.png">
 <meta property="og:image:width" content="512">
 <meta property="og:image:height" content="512">
