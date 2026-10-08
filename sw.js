@@ -23,7 +23,7 @@
    handler deletes any cache that is not the current name, so a new
    name is what actually forces phones onto the new build — without
    it, an installed app can serve last week's stylesheet indefinitely. */
-const CACHE = 'sideout-v181';
+const CACHE = 'sideout-v182';
 const SHELL = ['/', '/index.html', '/manifest.json',
                '/icon-192.png', '/icon-512.png', '/icon-maskable.png',
                '/apple-touch-icon.png',
@@ -86,6 +86,15 @@ self.addEventListener('fetch', ev =>{
      behind the back of it. This is the whole of the offline story: the app
      opens, and then everything it shows is asked of Supabase, which either
      answers or is reported as not having answered. */
+  /* The manager app is served from this origin under /queue/ so that the two
+     share a localStorage and the desk can read `sideout_session` without
+     anybody signing in twice. That makes it OUR origin, which means this
+     worker would otherwise answer its navigations with this app's shell and
+     the manager would never load at all — `req.mode === 'navigate'` matches
+     every page on the origin, not just ours. Stand aside for that prefix
+     entirely: it is a different app and it looks after itself. */
+  if(url.pathname === '/queue' || url.pathname.startsWith('/queue/')) return;
+
   const isShell = req.mode === 'navigate'
     || url.pathname === '/' || url.pathname === '/index.html';
 
@@ -118,6 +127,9 @@ self.addEventListener('fetch', ev =>{
         }
         return res;
       })
+      /* The shell is the right last resort for this app and the wrong one for
+         anything else; /queue/ has already returned above, so what reaches
+         here is ours. */
       .catch(()=> caches.match(req).then(hit => hit || caches.match('/index.html')))
   );
 });

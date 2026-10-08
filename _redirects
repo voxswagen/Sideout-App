@@ -9,3 +9,19 @@
 # after the fact opens the recap rather than a join flow for a session
 # that is already over.
 /recap/*    /index.html?r=:splat   200
+
+# The manager app, served from this origin on purpose.
+#
+# It is deployed separately (dragged into Netlify as its own site) and it is
+# a copy of this app behind its own screen: its desk reads the signed-in
+# session straight out of localStorage under this app's key,
+# `sideout_session`. localStorage is per-origin, so on two domains that
+# handover cannot happen and an organizer signs in twice — and a link
+# to #run/CODE lands on "Couldn't sign you in on the desk".
+#
+# Proxied rather than moved, so the manager keeps its own deploy and its own
+# workflow; this just gives it an address on this origin. sw.js stands aside
+# for the same prefix, or this app's shell would answer its navigations.
+# Keep this ABOVE the catch-alls if any are ever added below.
+/queue/*    https://sosqueue.netlify.app/:splat    200
+/queue      https://sosqueue.netlify.app/          200
