@@ -219,7 +219,7 @@ would be open to the internet.
 **Bump `CACHE` in `sw.js` on every deploy touching CSS or markup.** The
 activate handler deletes any cache whose name isn't current, so a new name is
 the only thing that actually forces installed phones onto the new build.
-Currently `sideout-v177`. Forgetting this means testers see last week's app and
+Currently `sideout-v178`. Forgetting this means testers see last week's app and
 report bugs that are already fixed. Read the value out of `sw.js` rather than
 trusting this line — it has been wrong by five versions before.
 
@@ -564,6 +564,41 @@ is deleted.** What survives of it is one asset and one rule:
 The front door states its own palette (`--a-*` on `#screen-auth.ah`) for the
 reason the landing did and the TV board still does: those tokens follow the
 club's accent, and this page is the product's, not a club's.
+
+**A link preview is not drawn by anything in the app, and there was no
+`og:image` at all.** The card that comes up when somebody shares
+`sosplay.netlify.app` — in WhatsApp, Messages, Slack — is built from the meta
+tags, and the file had `og:type`, `og:site_name`, `og:title` and
+`og:description` and no image. So every unfurler fell back to scraping
+whatever icon it could find, which was `apple-touch-icon.png`, which was still
+the old green crown mark. **Changing a logo inside the app cannot touch this**,
+and that is the thing to remember: the preview is a fifth surface, after the
+screen, the Home Screen icon, the manifest and the canvas cards.
+
+Proved against the live site rather than assumed — `curl` it and grep the
+meta tags; the deployed `apple-touch-icon.png` was 11,066 bytes, byte for byte
+the old file.
+
+Now stated, and the four icons (`apple-touch-icon` 180, `icon-192`,
+`icon-512`, `icon-maskable`) are regenerated from the club's 2048px original.
+Two things about those tags:
+
+* **The URL is absolute and therefore hardcodes the host.** Most unfurlers
+  will not resolve a relative `og:image`. `https://sosplay.netlify.app/` is
+  the only place in the file that knows where it is deployed; move the app and
+  those lines move with it.
+* **`summary`, not `summary_large_image`.** The artwork is square, and a
+  square asked to fill a 1.91:1 banner is either letterboxed or cropped
+  through the middle of the paddle.
+
+`icon-maskable` is the same full-bleed square as the others. That is right for
+the background, which should bleed, but the handle's tip sits very close to
+the 80% safe circle — an Android launcher that crops to a tight circle may
+shave it. Padding the artwork instead would put a seam across a gradient,
+which is worse; worth knowing rather than worth fixing blind.
+
+`sos-mark.png` is a different thing again and was not touched: an "SOS"
+monogram on transparent, used only by the big screen (`.tv-sos`).
 
 **The old name is gone, including from the identifiers.** `picksilog()`,
 `picksilogSrc()` and `picksilogURI()` are `sosMark()`, `sosMarkSrc()` and

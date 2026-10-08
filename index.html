@@ -57,7 +57,26 @@ const CONFIG = {
 <meta property="og:site_name" content="Sideout Society">
 <meta property="og:title" content="Sideout Society Pickleball Application">
 <meta property="og:description" content="Follow the courts live, see who is playing, and add yourself to the list.">
+<!-- There was no og:image at all, so every unfurl — WhatsApp, Messages,
+     Slack — fell back to whatever icon it could scrape, which was the old
+     mark, and no amount of changing the icons inside the app touched it.
+     Stated now, and it is the club's own disc.
+
+     Absolute, because most unfurlers will not resolve a relative og:image.
+     That hardcodes the production host, so if this app ever moves off
+     sosplay.netlify.app these two lines have to move with it — they are the
+     only place in the file that knows where it is deployed.
+
+     `summary` rather than `summary_large_image`: the artwork is square, and
+     a square asked to fill a 1.91:1 banner is either letterboxed or cropped
+     through the middle of the paddle. -->
+<meta property="og:url" content="https://sosplay.netlify.app/">
+<meta property="og:image" content="https://sosplay.netlify.app/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="The Sideout Society paddle">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://sosplay.netlify.app/icon-512.png">
 <title>Sideout Society</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
